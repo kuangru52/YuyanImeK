@@ -237,9 +237,10 @@ class CandidatesContainer(context: Context, inputView: InputView) : BaseContaine
                 mCandidatesAdapter.notifyDataSetChanged()
             }
 //            if(DecodingInfo.candidateSize > DecodingInfo.activeCandidate) mRVSymbolsView.scrollToPosition(DecodingInfo.activeCandidate)
+            val isLx17 = InputModeSwitcher.skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
             val prefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
             val showPrefix = (InputModeSwitcher.isChineseT9 ||
-                (InputModeSwitcher.skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_LX17 && prefixMode != Lx17PrefixMode.None))
+                (isLx17 && prefixMode != Lx17PrefixMode.None))
             if (showPrefix) {
                 mRVLeftPrefix.visibility = VISIBLE
                 updatePrefixsView()

@@ -39,6 +39,7 @@
     <string name="lx17_prefix_mode_none">无</string>
     <string name="lx17_prefix_mode_left">左筛</string>
     <string name="lx17_prefix_mode_center">中筛</string>
+    <string name="lx17_prefix_mode_bottom">底筛</string>
     <string name="lx17_left_delete_title">乱序17左删</string>
     <string name="space_auto">英文单词自动追加空格</string>
     <string name="emoji_symbol_setting">表情与符号</string>

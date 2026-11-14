@@ -80,10 +80,10 @@ open class InputBaseContainer(context: Context?, inputView: InputView) : BaseCon
                 val isLx17 = InputModeSwitcher.skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
                 val lx17PrefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
 
-                val leftOffset = if (isLx17 && lx17PrefixMode == Lx17PrefixMode.None) {
+                val leftOffset = if (isLx17 && (lx17PrefixMode == Lx17PrefixMode.None || lx17PrefixMode == Lx17PrefixMode.Bottom)) {
                     0
                 } else if (isT9OrLx17) {
-                    if (softKeySymbolHolder != null && softKeySymbolHolder.mLeft == 0) {
+                    if (softKeySymbolHolder != null && softKeySymbolHolder.mLeft == 0 && softKeySymbolHolder.mTop == 0) {
                         softKeySymbolHolder.mRight + softKeyboard.keyXMargin
                     } else if (InputModeSwitcher.isChineseT9) {
                         (EnvironmentSingleton.instance.skbWidth * 0.185f).toInt()

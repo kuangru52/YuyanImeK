@@ -239,7 +239,7 @@ object KeyPreset {
         KeyEvent.KEYCODE_S to arrayOf("丨", "2"),
         KeyEvent.KEYCODE_P to arrayOf("丿", "3"),
         KeyEvent.KEYCODE_N to arrayOf("丶", "4"),
-        KeyEvent.KEYCODE_Z to arrayOf("⼄", "5"),
+        KeyEvent.KEYCODE_Z to arrayOf("ㄥ", "5"),
         KeyEvent.KEYCODE_X to arrayOf("通配", "6"),
         KeyEvent.KEYCODE_APOSTROPHE to arrayOf("分词", "7"),
         KeyEvent.KEYCODE_MINUS to arrayOf("-", "8"),

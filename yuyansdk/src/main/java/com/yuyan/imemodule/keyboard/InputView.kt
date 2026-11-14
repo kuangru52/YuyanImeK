@@ -866,7 +866,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
         }
     }
 
-    private fun updateCandidate() {
+    fun updateCandidate() {
         DictDecoder.updateDecodingCandidate()
         if (!DictDecoder.isCandidatesEmpty) {
             (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()

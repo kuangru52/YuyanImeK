@@ -415,14 +415,30 @@ class KeyboardLoaderUtil private constructor() {
                 createT9NumberKeys(arrayOf(InputModeSwitcher.USER_KEYCODE_RETURN, InputModeSwitcher.USER_KEYCODE_SYMBOL, 7, KeyEvent.KEYCODE_SPACE))
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_LX17 -> {
-                createLX17Keys(arrayOf(InputModeSwitcher.USER_KEYCODE_SYMBOL, InputModeSwitcher.USER_KEYCODE_NUMBER, KeyEvent.KEYCODE_SPACE))
+                val prefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
+                if (prefixMode == Lx17PrefixMode.Bottom) {
+                    createLX17Keys(arrayOf(
+                        InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL,
+                        KeyEvent.KEYCODE_SPACE,
+                        InputModeSwitcher.USER_KEYCODE_NUMBER,
+                        InputModeSwitcher.USER_KEYCODE_SYMBOL
+                    ))
+                } else {
+                    createLX17Keys(arrayOf(InputModeSwitcher.USER_KEYCODE_SYMBOL, InputModeSwitcher.USER_KEYCODE_NUMBER, KeyEvent.KEYCODE_SPACE))
+                }
             }
             else -> { //0x1000 InputModeSwitcherManager.MASK_SKB_LAYOUT_QWERTY_PINYIN
                 createQwertyPYKeys(arrayOf(InputModeSwitcher.USER_KEYCODE_SYMBOL, InputModeSwitcher.USER_KEYCODE_NUMBER,
                         InputModeSwitcher.USER_KEYCODE_LEFT_COMMA, KeyEvent.KEYCODE_SPACE))
             }
         }
-        if (t9Keys.size == 3) {
+        if (skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_LX17 && AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue() == Lx17PrefixMode.Bottom) {
+            t9Keys[0].apply { mLeftF = 0.005f; widthF = 0.33f }
+            t9Keys[1].apply { mLeftF = 0.34f; widthF = 0.225f }
+            t9Keys[2].apply { mLeftF = 0.57f; widthF = 0.11f }
+            t9Keys[3].apply { mLeftF = 0.685f; widthF = 0.11f }
+            softKeyToggle.apply { mLeftF = 0.80f; widthF = 0.195f }
+        } else if (t9Keys.size == 3) {
             t9Keys[0].apply { mLeftF = 0.005f; widthF = 0.140f }
             t9Keys[1].apply { mLeftF = 0.145f; widthF = 0.1416667f }
             t9Keys[2].apply { mLeftF = 0.2866667f; widthF = 0.425f }

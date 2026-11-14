@@ -106,6 +106,7 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
         val softKeyboard = mMajorView!!.getSoftKeyboard()
         val isLx17 = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
         val prefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
+
         if (isLx17 && prefixMode == Lx17PrefixMode.None) {
             if (mRVLeftPrefix.parent != null) {
                 (mRVLeftPrefix.parent as ViewGroup).removeView(mRVLeftPrefix)
@@ -116,16 +117,17 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
         mRVLeftPrefix.visibility = VISIBLE
 
         val centerSymbol = isLx17 && !mIsExpanded && prefixMode == Lx17PrefixMode.Center
+        val bottomSymbol = isLx17 && prefixMode == Lx17PrefixMode.Bottom
         val skbWidth = EnvironmentSingleton.instance.skbWidth
+        val skbHeight = EnvironmentSingleton.instance.skbHeight
         val softKeySymbolHolder = softKeyboard.getKeyByCode(InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL)
 
-        val bottomMargin = if (softKeySymbolHolder != null) {
-            EnvironmentSingleton.instance.skbHeight - softKeySymbolHolder.mBottom + softKeyboard.keyYMargin
-        } else {
-            softKeyboard.keyYMargin
-        }
-
         val prefixLayoutParams = if (centerSymbol) {
+            val bottomMargin = if (softKeySymbolHolder != null) {
+                skbHeight - softKeySymbolHolder.mBottom + softKeyboard.keyYMargin
+            } else {
+                softKeyboard.keyYMargin
+            }
             val colWidth = (skbWidth / 7.0f).toInt()
             val leftX = (skbWidth * (3.0f / 7.0f)).toInt()
             LayoutParams(colWidth, 0).apply {
@@ -133,7 +135,21 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
                 topOfParent(softKeyboard.keyYMargin)
                 bottomOfParent(bottomMargin)
             }
+        } else if (bottomSymbol) {
+            val leftX = softKeySymbolHolder?.mLeft ?: 0
+            val topY = softKeySymbolHolder?.mTop ?: (skbHeight * 0.75f).toInt()
+            val width = softKeySymbolHolder?.let { it.mRight - it.mLeft } ?: (skbWidth * 0.33f).toInt()
+            val height = softKeySymbolHolder?.let { it.mBottom - it.mTop } ?: (skbHeight * 0.25f).toInt()
+            LayoutParams(width, height).apply {
+                leftOfParent(leftX)
+                topOfParent(topY)
+            }
         } else {
+            val bottomMargin = if (softKeySymbolHolder != null) {
+                skbHeight - softKeySymbolHolder.mBottom + softKeyboard.keyYMargin
+            } else {
+                softKeyboard.keyYMargin
+            }
             val colWidth = if (softKeySymbolHolder != null) softKeySymbolHolder.mRight else (skbWidth * 0.18).toInt()
             LayoutParams(colWidth, 0).apply {
                 leftOfParent(0)
@@ -141,7 +157,11 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
                 bottomOfParent(bottomMargin)
             }
         }
-        val prefixLayoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        val prefixLayoutManager = if (bottomSymbol) {
+            LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        } else {
+            LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        }
         mRVLeftPrefix.setLayoutManager(prefixLayoutManager)
         if (mRVLeftPrefix.parent != null) {
             val parent = mRVLeftPrefix.parent as ViewGroup
@@ -153,6 +173,19 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
 
     //更新符号显示,九宫格左侧符号栏
     fun updateSymbolListView() {
+        val isLx17 = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
+        val prefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
+        val isHorizontal = isLx17 && prefixMode == Lx17PrefixMode.Bottom
+        if (isHorizontal) {
+            mLlAddSymbol.layoutParams = LinearLayout.LayoutParams(dp(36), LinearLayout.LayoutParams.MATCH_PARENT).apply {
+                setMargins(dp(4), dp(4), dp(4), dp(4))
+            }
+        } else {
+            mLlAddSymbol.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                setMargins(dp(4), dp(8), dp(4), dp(8))
+            }
+        }
+
         var prefixs = DictDecoder.prefixs
         val isPrefixs = prefixs.isNotEmpty()
         if (!isPrefixs) { // 有候选拼音显示候选拼音

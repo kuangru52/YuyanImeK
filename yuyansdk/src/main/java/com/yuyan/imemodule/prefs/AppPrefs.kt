@@ -232,12 +232,14 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
             listOf(
                 Lx17PrefixMode.None,
                 Lx17PrefixMode.Left,
-                Lx17PrefixMode.Center
+                Lx17PrefixMode.Center,
+                Lx17PrefixMode.Bottom
             ),
             listOf(
                 R.string.lx17_prefix_mode_none,
                 R.string.lx17_prefix_mode_left,
-                R.string.lx17_prefix_mode_center
+                R.string.lx17_prefix_mode_center,
+                R.string.lx17_prefix_mode_bottom
             )
         )
 
