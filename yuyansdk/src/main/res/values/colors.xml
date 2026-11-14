@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="skb_elevation_color">#bfbfbf</color>
+    <color name="red_400">#EF5350</color>
+    <color name="color_gray">#B4B4B4</color>
+
+    <color name="x_recycler_color_text_gray">#FF777777</color>
+    <color name="x_recycler_color_loading_color1">#55777777</color>
+    <color name="x_recycler_color_loading_color2">#B1777777</color>
+    <color name="x_recycler_color_loading_color3">#FF777777</color>
+
+    <!-- 卡片风格设置界面色彩定义 (Light) - 语燕绿主题统一 -->
+    <color name="settings_page_bg">#EFEFF4</color>
+    <color name="settings_card_bg">#FFFFFF</color>
+    <color name="settings_icon_box_bg">#E8F8F0</color>
+    <color name="settings_icon_tint">#07C160</color>
+    <color name="settings_title_text">#18181B</color>
+    <color name="settings_summary_text">#71717A</color>
+    <color name="settings_divider">#E5E7EB</color>
+    <color name="settings_category_title">#07C160</color>
+</resources>

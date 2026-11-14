@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 卡片风格设置界面色彩定义 (Night) - 语燕绿主题统一 -->
+    <color name="settings_page_bg">#121214</color>
+    <color name="settings_card_bg">#242428</color>
+    <color name="settings_icon_box_bg">#163824</color>
+    <color name="settings_icon_tint">#10B981</color>
+    <color name="settings_title_text">#F4F4F5</color>
+    <color name="settings_summary_text">#A1A1AA</color>
+    <color name="settings_divider">#3F3F46</color>
+    <color name="settings_category_title">#34D399</color>
+</resources>

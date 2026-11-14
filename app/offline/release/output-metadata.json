@@ -1,0 +1,37 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.yuyan.pinyin.offline.release",
+  "variantName": "offlineRelease",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 2026111412,
+      "versionName": "K64",
+      "outputFile": "YuyanImeK-K64_2026111412_release.apk"
+    }
+  ],
+  "elementType": "File",
+  "baselineProfiles": [
+    {
+      "minApi": 28,
+      "maxApi": 30,
+      "baselineProfiles": [
+        "baselineProfiles/1/YuyanImeK-K64_2026111412_release.dm"
+      ]
+    },
+    {
+      "minApi": 31,
+      "maxApi": 2147483647,
+      "baselineProfiles": [
+        "baselineProfiles/0/YuyanImeK-K64_2026111412_release.dm"
+      ]
+    }
+  ],
+  "minSdkVersionForDexing": 23
+}

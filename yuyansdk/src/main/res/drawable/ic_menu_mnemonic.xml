@@ -1,0 +1,36 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="35dp"
+    android:height="35dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- 灯泡外轮廓 (精致线稿) -->
+    <path
+        android:pathData="M24,8C17.37,8 12,13.37 12,20c0,4.2 2.15,7.87 5.38,10.08C18.4,30.77 19,31.91 19,33.14V35c0,0.55 0.45,1 1,1h8c0.55,0 1,-0.45 1,-1v-1.86c0,-1.23 0.6,-2.37 1.62,-3.06C33.85,27.87 36,24.2 36,20C36,13.37 30.63,8 24,8z"
+        android:strokeColor="#000000"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"/>
+    <!-- 灯泡内部钨丝 (线稿) -->
+    <path
+        android:pathData="M20,24L22,19L24,22L26,19L28,24"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"/>
+    <!-- 灯座螺纹 (线稿) -->
+    <path
+        android:pathData="M20,39H28 M21,42H27"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"/>
+    <!-- 四周精致折线光芒 (线稿) -->
+    <path
+        android:pathData="M24,3V5 M8,10L9.8,11.8 M4,20H6 M8,30L9.8,28.2 M40,10L38.2,11.8 M44,20H42 M40,30L38.2,28.2"
+        android:strokeColor="#000000"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"/>
+</vector>

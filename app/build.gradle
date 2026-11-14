@@ -1,0 +1,136 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+}
+
+android {
+    compileSdk 36
+    namespace 'com.yuyan'
+    defaultConfig {
+        applicationId "com.yuyan.pinyin"
+        minSdk 23
+        targetSdk 36
+        versionCode Integer.valueOf(versionCodeDate())
+        versionName "K64"
+
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        ndk {
+            abiFilters 'arm64-v8a'
+        }
+
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++17"
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
+
+        lintOptions {
+            abortOnError false
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path file("src/main/jni/CMakeLists.txt")
+            version "3.22.1"
+        }
+    }
+
+    aaptOptions {
+        noCompress 'onnx', 'model'
+    }
+    
+    packaging {
+        jniLibs {
+            useLegacyPackaging false
+        }
+    }
+
+    signingConfigs {
+        release {
+            def keystorePropertiesFile = rootProject.file("keystore/keystore.properties")
+            def keystoreProperties = new Properties()
+            if (keystorePropertiesFile.exists()) {
+                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+            }
+            def keystoreFilePath = System.getenv("RELEASE_STORE_FILE") ?: keystoreProperties.getProperty('storeFile')
+            def keystorePassword = System.getenv("RELEASE_STORE_PASSWORD") ?: keystoreProperties.getProperty('storePassword')
+            def keyAliasName = System.getenv("RELEASE_KEY_ALIAS") ?: keystoreProperties.getProperty('keyAlias')
+            def keyPasswordValue = System.getenv("RELEASE_KEY_PASSWORD") ?: keystoreProperties.getProperty('keyPassword')
+            if (keystoreFilePath) {
+                def keystoreFile = rootProject.file(keystoreFilePath)
+                if (keystoreFile.exists() && keystorePassword && keyAliasName && keyPasswordValue) {
+                    storeFile keystoreFile
+                    storePassword keystorePassword
+                    keyAlias keyAliasName
+                    keyPassword keyPasswordValue
+                    v1SigningEnabled true
+                    v2SigningEnabled true
+                }
+            }
+        }
+    }
+
+    //多渠道打包
+    flavorDimensions = ["default"]
+    productFlavors {
+        offline {
+            dimension "default"
+            applicationIdSuffix  ".offline"
+        }
+    }
+
+    buildTypes {
+        release {
+            // 混淆
+            minifyEnabled true
+            shrinkResources true
+            applicationIdSuffix  ".release"
+            resValue "string", "app_name", "语燕输入法K"
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard.cfg'
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig signingConfigs.release
+            }
+        }
+
+        debug {
+            applicationIdSuffix ".debug"
+            resValue "string", "app_name", "语燕输入法Kt"
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig signingConfigs.release
+            }
+        }
+
+    }
+    //    第三方库使用java1.8
+    compileOptions {
+        sourceCompatibility 17
+        targetCompatibility 17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+    android.applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach {
+            outputFileName = "YuyanImeK-K${getKVersionCode()}_${versionCodeDate()}_${variant.buildType.name}.apk"
+        }
+    }
+}
+
+static def getKVersionCode() {
+    return 64 // K版当前版本号: K64
+}
+
+static def versionCodeDate() {
+    return new Date().format("yyyyMMddHH", TimeZone.getTimeZone("GMT+8"))
+}
+
+static def versionNameDate() {
+    return new Date().format("yyyyMMdd.HH", TimeZone.getTimeZone("GMT+8")) + " (K" + getKVersionCode() + ")"
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation project(':yuyansdk')
+}

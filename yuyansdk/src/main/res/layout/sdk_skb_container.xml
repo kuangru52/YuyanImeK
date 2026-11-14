@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/inputView"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentEnd="true">
+    <include
+        android:id="@+id/ll_skb_holder_layout_left"
+        layout="@layout/sdk_skb_holder_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignBottom="@+id/ll_input_keyboard_container"
+        android:visibility="gone"/>
+    <RelativeLayout
+        android:id="@+id/ll_input_keyboard_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:gravity="center_horizontal"
+        android:layout_toEndOf="@+id/ll_skb_holder_layout_left">
+
+        <!-- 1. 主键盘卡片（通栏全宽度铺满，横屏/竖屏完美无缝展示） -->
+        <RelativeLayout
+            android:id="@+id/ll_main_keyboard_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentTop="true">
+
+            <!-- 专用的背景 View -->
+            <View
+                android:id="@+id/v_background_blur_layer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/ll_foreground_content"
+                android:layout_alignBottom="@+id/ll_foreground_content"
+                android:layout_alignStart="@+id/ll_foreground_content"
+                android:layout_alignEnd="@+id/ll_foreground_content"/>
+
+            <!-- 前景内容层：候选词工具栏 + 键盘按键区 -->
+            <LinearLayout
+                android:id="@+id/ll_foreground_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:layout_alignParentTop="true">
+
+                <!-- 候选词工具栏 (通栏全宽度匹配，候选词与工具栏图标完整延伸) -->
+                <com.yuyan.imemodule.view.CandidatesBar
+                    android:id="@+id/candidates_bar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+                <!-- 键盘按键区 -->
+                <com.yuyan.imemodule.keyboard.container.InputViewParent
+                    android:id="@+id/skb_input_keyboard_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </RelativeLayout>
+
+        <!-- 2. 真正的外置悬浮拼音胶囊 View (位于主键盘卡片外侧顶部上方，直接压盖在 App 输入框左下角) -->
+        <LinearLayout
+            android:id="@+id/composing_tag_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:visibility="gone"
+            android:layout_alignParentStart="true"
+            android:layout_above="@+id/ll_main_keyboard_card"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="2dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp">
+            <TextView
+                android:id="@+id/tv_composing_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:singleLine="true"
+                android:includeFontPadding="false"/>
+        </LinearLayout>
+    </RelativeLayout>
+    <include
+        android:id="@+id/ll_skb_holder_layout_right"
+        layout="@layout/sdk_skb_holder_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/ll_input_keyboard_container"
+        android:layout_alignBottom="@+id/ll_input_keyboard_container"
+        android:visibility="gone"/>
+    <LinearLayout
+        android:id="@+id/iv_keyboard_holder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@+id/ll_input_keyboard_container"
+        android:layout_alignStart="@+id/ll_input_keyboard_container"/>
+</RelativeLayout>
