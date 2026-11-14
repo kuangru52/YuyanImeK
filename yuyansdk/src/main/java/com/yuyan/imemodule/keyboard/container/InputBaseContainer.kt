@@ -94,11 +94,17 @@ open class InputBaseContainer(context: Context?, inputView: InputView) : BaseCon
                     0
                 }
 
+                val bottomMargin = if (isLx17 && lx17PrefixMode == Lx17PrefixMode.Bottom && softKeySymbolHolder != null) {
+                    (EnvironmentSingleton.instance.skbHeight - softKeySymbolHolder.mTop).coerceAtLeast(0)
+                } else {
+                    0
+                }
+
                 val params = LayoutParams(0, matchParent).apply {
                     leftOfParent(leftOffset)
                     rightOfParent(0)
                     topOfParent(0)
-                    bottomOfParent(0)
+                    bottomOfParent(bottomMargin)
                 }
                 addView(mCandidatesGridOverlay, params)
 
@@ -180,11 +186,51 @@ open class InputBaseContainer(context: Context?, inputView: InputView) : BaseCon
                     }
                 }
                 val delParams = LayoutParams(wrapContent, wrapContent).apply {
-                    bottomOfParent(DevicesUtils.dip2px(10f))
+                    bottomOfParent(bottomMargin + DevicesUtils.dip2px(10f))
                     rightOfParent(DevicesUtils.dip2px(10f))
                 }
                 addView(mDeleteButton, delParams)
             }
+
+            val isLx17 = InputModeSwitcher.skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
+            val lx17PrefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
+            val softKeyboard = mMajorView?.getSoftKeyboard()
+            val softKeySymbolHolder = softKeyboard?.getKeyByCode(InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL)
+
+            val leftOffset = if (isLx17 && (lx17PrefixMode == Lx17PrefixMode.None || lx17PrefixMode == Lx17PrefixMode.Bottom)) {
+                0
+            } else if (InputModeSwitcher.isChineseT9 || isLx17) {
+                if (softKeySymbolHolder != null && softKeySymbolHolder.mLeft == 0 && softKeySymbolHolder.mTop == 0) {
+                    softKeySymbolHolder.mRight + (softKeyboard?.keyXMargin ?: 0)
+                } else if (InputModeSwitcher.isChineseT9) {
+                    (EnvironmentSingleton.instance.skbWidth * 0.185f).toInt()
+                } else {
+                    (EnvironmentSingleton.instance.skbWidth * 0.145f).toInt()
+                }
+            } else {
+                0
+            }
+
+            val bottomMargin = if (isLx17 && lx17PrefixMode == Lx17PrefixMode.Bottom && softKeySymbolHolder != null) {
+                (EnvironmentSingleton.instance.skbHeight - softKeySymbolHolder.mTop).coerceAtLeast(0)
+            } else {
+                0
+            }
+
+            val overlayParams = (mCandidatesGridOverlay?.layoutParams as? LayoutParams)
+            if (overlayParams != null) {
+                overlayParams.leftMargin = leftOffset
+                overlayParams.bottomMargin = bottomMargin
+                mCandidatesGridOverlay?.layoutParams = overlayParams
+            }
+
+            val delParams = (mDeleteButton?.layoutParams as? LayoutParams)
+            if (delParams != null) {
+                delParams.bottomMargin = bottomMargin + DevicesUtils.dip2px(10f)
+                delParams.rightMargin = DevicesUtils.dip2px(10f)
+                mDeleteButton?.layoutParams = delParams
+            }
+
             mCandidatesGridOverlay?.visibility = VISIBLE
             mDeleteButton?.visibility = VISIBLE
             mCandidatesAdapter?.notifyDataSetChanged()
