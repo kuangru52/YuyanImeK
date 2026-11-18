@@ -72,6 +72,7 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
     private var tabKaomoji: TextView
     private lateinit var ivExprLock: ImageView
     private lateinit var ivExprSend: ImageView
+    private lateinit var ivExprDelete: ImageView
     private lateinit var ivSymbolLock: ImageView
 
     private lateinit var bottomControlBar: RelativeLayout
@@ -111,7 +112,7 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
         if (mHandler == null) {
             mHandler = object : Handler(Looper.getMainLooper()) {
                 override fun handleMessage(msg: Message) {
-                    if (isLockSymbol && repeatKey()) {
+                    if (repeatKey()) {
                         val repeat = Message.obtain(this, MSG_REPEAT)
                         sendMessageDelayed(repeat, REPEAT_INTERVAL)
                     }
@@ -190,7 +191,7 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
             scaleType = ImageView.ScaleType.FIT_CENTER
             val sz = dp(24)
             layoutParams = LinearLayout.LayoutParams(sz, sz).apply {
-                setMargins(0, 0, dp(4), 0)
+                setMargins(0, 0, dp(8), 0)
             }
             setOnClickListener {
                 DevicesUtils.tryPlayKeyDown()
@@ -202,9 +203,40 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
             }
         }
 
+        @SuppressLint("ClickableViewAccessibility")
+        ivExprDelete = ImageView(context).apply {
+            setImageResource(R.drawable.sdk_skb_key_delete_icon)
+            drawable?.setTint(activeTheme.keyTextColor)
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            val sz = dp(24)
+            layoutParams = LinearLayout.LayoutParams(sz, sz).apply {
+                setMargins(dp(6), 0, dp(4), 0)
+            }
+            setOnTouchListener { v, event ->
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        DevicesUtils.tryPlayKeyDown(KeyEvent.KEYCODE_DEL)
+                        DevicesUtils.tryVibrate(v)
+                        inputView?.responseKeyEvent(SoftKey(KeyEvent.KEYCODE_DEL))
+                        mHandler?.removeMessages(MSG_REPEAT)
+                        val repeat = Message.obtain(mHandler, MSG_REPEAT)
+                        mHandler?.sendMessageDelayed(repeat, REPEAT_START_DELAY)
+                        true
+                    }
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        mHandler?.removeMessages(MSG_REPEAT)
+                        v.performClick()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }
+
         topExprHeader.addView(tabsContainer)
         topExprHeader.addView(ivExprSend)
         topExprHeader.addView(ivExprLock)
+        topExprHeader.addView(ivExprDelete)
 
         // 2. 中间主要内容区域：左侧分类列表 + 右侧符号 ViewPager2
         val topContentLayout = LinearLayout(context).apply {
