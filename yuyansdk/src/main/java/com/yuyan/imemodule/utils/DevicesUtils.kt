@@ -61,4 +61,59 @@ object DevicesUtils {
         }
         soundEffect(soundEffect)
     }
+
+    /**
+     * 动态检测手机物理屏幕底部的圆角半径 (px)
+     */
+    @JvmStatic
+    fun getScreenBottomCornerRadiusPx(view: View?): Float {
+        if (view == null) return 0f
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            val insets = view.rootWindowInsets
+            if (insets != null) {
+                val bottomLeft = insets.getRoundedCorner(android.view.RoundedCorner.POSITION_BOTTOM_LEFT)
+                val bottomRight = insets.getRoundedCorner(android.view.RoundedCorner.POSITION_BOTTOM_RIGHT)
+                val radiusPx = maxOf(bottomLeft?.radius ?: 0, bottomRight?.radius ?: 0)
+                if (radiusPx > 0) {
+                    return radiusPx.toFloat()
+                }
+            }
+        }
+        return 0f
+    }
+
+    /**
+     * 判断当前键盘按键/底部区域是否直接接触屏幕物理底部
+     */
+    @JvmStatic
+    fun isKeyboardTouchingScreenBottom(view: View?): Boolean {
+        val env = com.yuyan.imemodule.singleton.EnvironmentSingleton.instance
+        val appPrefs = com.yuyan.imemodule.prefs.AppPrefs.getInstance()
+
+        // 1. 悬浮键盘、横屏模式、单手模式 -> 不接触物理底部
+        if (env.keyboardModeFloat || env.isLandscape) return false
+        if (appPrefs.keyboardSetting.oneHandedModSwitch.getValue()) return false
+
+        // 2. 检查底部 NavigationBar Insets (三大金刚键 / 系统导航栏)
+        if (view != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            val insets = view.rootWindowInsets
+            if (insets != null) {
+                val navInsets = insets.getInsets(android.view.WindowInsets.Type.navigationBars())
+                val tappableInsets = insets.getInsets(android.view.WindowInsets.Type.tappableElement())
+                if (tappableInsets.bottom > 0 || navInsets.bottom > dip2px(20f)) {
+                    return false
+                }
+            }
+        } else {
+            if (env.systemNavbarWindowsBottom > dip2px(20f)) {
+                return false
+            }
+        }
+
+        // 3. 全面屏垫高/多功能键盘使能 (fullDisplayKeyboardEnable)
+        val fullDisplayEnable = appPrefs.internal.fullDisplayKeyboardEnable.getValue()
+        if (fullDisplayEnable) return false
+
+        return true
+    }
 }

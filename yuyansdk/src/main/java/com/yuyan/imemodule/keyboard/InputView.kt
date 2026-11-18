@@ -484,33 +484,37 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
 
         val isFloat = env.keyboardModeFloat
         val hasWallpaper = activeTheme.backgroundImage != null || activeTheme.keyboardResources != 0
+        val actualCustomBg = customBackground ?: if (hasWallpaper) activeTheme.backgroundDrawable() else null
 
-        val bg: Drawable = if (hasWallpaper && customBackground != null) {
-            if (customBackground is BitmapDrawable) {
+        val bg: Drawable = if (hasWallpaper && actualCustomBg != null) {
+            if (actualCustomBg is BitmapDrawable) {
                 val fullDisplayEnable = appPrefs.internal.fullDisplayKeyboardEnable.getValue()
                 val totalH = env.inputAreaHeight + if (fullDisplayEnable && !env.isLandscape) env.heightForFullDisplayBar else 0
                 val targetW = if (env.skbWidth > 0) env.skbWidth else (if (width > 0) width else dp(1080))
                 val targetH = if (totalH > 0) totalH else (if (height > 0) height else dp(800))
-                val scaledBitmap = customBackground.bitmap.scale(targetW, targetH)
+                val scaledBitmap = actualCustomBg.bitmap.scale(targetW, targetH)
                 scaledBitmap.toDrawable(context.resources).apply {
-                    colorFilter = customBackground.colorFilter
+                    colorFilter = actualCustomBg.colorFilter
                 }
             } else {
-                customBackground
+                actualCustomBg
             }
         } else {
+            val isTouchBottom = DevicesUtils.isKeyboardTouchingScreenBottom(this)
+            val detectedScreenRadiusPx = if (isTouchBottom) DevicesUtils.getScreenBottomCornerRadiusPx(this) else 0f
+            val bottomRadiusPx = if (isFloat) radiusPx else (if (isTouchBottom && detectedScreenRadiusPx > 0f) detectedScreenRadiusPx else 0f)
+
             val maskDrawable = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 setColor(if (isBlurEnabled) maskColorArgb else ((baseColor and 0x00FFFFFF) or (alpha255 shl 24)))
                 if (isFloat) {
                     cornerRadius = radiusPx
                 } else {
-                    val largeR = dp(32f)
                     cornerRadii = floatArrayOf(
-                        radiusPx, radiusPx,  // Top-Left
-                        radiusPx, radiusPx,  // Top-Right
-                        largeR, largeR,      // Bottom-Right
-                        largeR, largeR       // Bottom-Left
+                        radiusPx, radiusPx,        // Top-Left
+                        radiusPx, radiusPx,        // Top-Right
+                        bottomRadiusPx, bottomRadiusPx,  // Bottom-Right
+                        bottomRadiusPx, bottomRadiusPx   // Bottom-Left
                     )
                 }
             }
@@ -530,12 +534,11 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
                     if (isFloat) {
                         cornerRadius = radiusPx
                     } else {
-                        val largeR = dp(32f)
                         cornerRadii = floatArrayOf(
-                            radiusPx, radiusPx,  // Top-Left
-                            radiusPx, radiusPx,  // Top-Right
-                            largeR, largeR,      // Bottom-Right
-                            largeR, largeR       // Bottom-Left
+                            radiusPx, radiusPx,        // Top-Left
+                            radiusPx, radiusPx,        // Top-Right
+                            bottomRadiusPx, bottomRadiusPx,  // Bottom-Right
+                            bottomRadiusPx, bottomRadiusPx   // Bottom-Left
                         )
                     }
                 }
@@ -547,7 +550,29 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
 
         val vBackgroundBlur: View = mSkbRoot.findViewById(R.id.v_background_blur)
         vBackgroundBlur.background = bg
-        vBackgroundBlur.clipToOutline = false
+
+        if (hasWallpaper) {
+            val cardOutlineProvider = object : android.view.ViewOutlineProvider() {
+                override fun getOutline(view: View, outline: android.graphics.Outline) {
+                    val w = if (view.width > 0) view.width else (if (env.skbWidth > 0) env.skbWidth else dp(1080))
+                    val h = if (view.height > 0) view.height else (if (env.skbHeight > 0) env.skbHeight else dp(800))
+                    outline.setRoundRect(0, 0, w, h, radiusPx)
+                }
+            }
+            vBackgroundBlur.clipToOutline = true
+            vBackgroundBlur.outlineProvider = cardOutlineProvider
+            vBackgroundBlur.invalidateOutline()
+
+            mLlMainKeyboardCard.clipToOutline = true
+            mLlMainKeyboardCard.outlineProvider = cardOutlineProvider
+            mLlMainKeyboardCard.invalidateOutline()
+        } else {
+            vBackgroundBlur.clipToOutline = false
+            vBackgroundBlur.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+
+            mLlMainKeyboardCard.clipToOutline = false
+            mLlMainKeyboardCard.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+        }
         vBackgroundBlur.invalidate()
 
         mLlMainKeyboardCard.background = null
@@ -1215,7 +1240,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
             isAddPhrases = true
             KeyboardManager.instance.switchKeyboard(InputModeSwitcher.skbImeLayout)
             initView(context)
-        imeGlassBlurWindow = com.yuyan.imemodule.service.ImeGlassBlurWindow(context)
+            imeGlassBlurWindow = com.yuyan.imemodule.service.ImeGlassBlurWindow(context)
             if (extra != null) {
                 DataBaseKT.instance.quickPhraseDao().deleteByContent(extra.content)
                 mAddPhrasesLayout.setExtraData(extra)
@@ -1263,7 +1288,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
             if (keyCode == KeyEvent.KEYCODE_ENTER) {
                 isAddPhrases = false
                 initView(context)
-        imeGlassBlurWindow = com.yuyan.imemodule.service.ImeGlassBlurWindow(context)
+                imeGlassBlurWindow = com.yuyan.imemodule.service.ImeGlassBlurWindow(context)
                 onSettingsMenuClick(SkbMenuMode.Phrases)
             }
         } else {

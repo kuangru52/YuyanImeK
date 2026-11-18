@@ -32,6 +32,7 @@ import com.yuyan.imemodule.entity.keyboard.SoftKeyboard
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.singleton.EnvironmentSingleton.Companion.instance
+import com.yuyan.imemodule.utils.DevicesUtils
 import kotlin.math.max
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withSave
@@ -384,10 +385,21 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
     }
 
     private fun drawSplitNumSymKey(canvas: Canvas, softKey: SoftKey, keyXMargin: Int, keyYMargin: Int) {
-        val left = softKey.mLeft + keyXMargin
+        val maxBottom = mSoftKeyboard?.mKeyRows?.maxOfOrNull { row -> row.maxOfOrNull { it.mBottom } ?: 0 } ?: 0
+        val minLeft = mSoftKeyboard?.mKeyRows?.minOfOrNull { row -> row.minOfOrNull { it.mLeft } ?: 0 } ?: 0
+        val maxRight = mSoftKeyboard?.mKeyRows?.maxOfOrNull { row -> row.maxOfOrNull { it.mRight } ?: 0 } ?: 0
+
+        val isBottomRow = kotlin.math.abs(softKey.mBottom - maxBottom) <= 15
+        val isLeftEdge = kotlin.math.abs(softKey.mLeft - minLeft) <= 15
+        val isRightEdge = kotlin.math.abs(softKey.mRight - maxRight) <= 15
+
+        val outerXPadding = dp(6)
+        val outerBottomPadding = dp(6)
+
+        val left = softKey.mLeft + keyXMargin + (if (isLeftEdge) outerXPadding else 0)
         val top = softKey.mTop + keyYMargin
-        val right = softKey.mRight - keyXMargin
-        val bottom = softKey.mBottom - keyYMargin
+        val right = softKey.mRight - keyXMargin - (if (isRightEdge) outerXPadding else 0)
+        val bottom = softKey.mBottom - keyYMargin - (if (isBottomRow) outerBottomPadding else 0)
         val shadowDepth = dp(2f).toInt().coerceAtLeast(1)
 
         val topBg = applyKeyAlpha(mActiveTheme.numberKeyBackgroundColor)
@@ -479,10 +491,22 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
             drawSplitNumSymKey(canvas, softKey, keyXMargin, keyYMargin)
             return
         }
-        val left = softKey.mLeft + keyXMargin
+        val maxBottom = mSoftKeyboard?.mKeyRows?.maxOfOrNull { row -> row.maxOfOrNull { it.mBottom } ?: 0 } ?: 0
+        val minLeft = mSoftKeyboard?.mKeyRows?.minOfOrNull { row -> row.minOfOrNull { it.mLeft } ?: 0 } ?: 0
+        val maxRight = mSoftKeyboard?.mKeyRows?.maxOfOrNull { row -> row.maxOfOrNull { it.mRight } ?: 0 } ?: 0
+
+        val isBottomRow = kotlin.math.abs(softKey.mBottom - maxBottom) <= 15
+        val isLeftEdge = kotlin.math.abs(softKey.mLeft - minLeft) <= 15
+        val isRightEdge = kotlin.math.abs(softKey.mRight - maxRight) <= 15
+
+        // 外侧按键安全内缩边距，防止贴紧屏幕最边缘或最底部
+        val outerXPadding = dp(6)
+        val outerBottomPadding = dp(6)
+
+        val left = softKey.mLeft + keyXMargin + (if (isLeftEdge) outerXPadding else 0)
         val top = softKey.mTop + keyYMargin
-        val right = softKey.mRight - keyXMargin
-        val bottom = softKey.mBottom - keyYMargin
+        val right = softKey.mRight - keyXMargin - (if (isRightEdge) outerXPadding else 0)
+        val bottom = softKey.mBottom - keyYMargin - (if (isBottomRow) outerBottomPadding else 0)
 
         val keyUniqueKey = softKey.label.ifEmpty { softKey.code.toString() }
         val customColor = customKeyColorMap[keyUniqueKey]
@@ -515,20 +539,24 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
         val isPressed = softKey.pressed || (mService?.hasSelection == true && softKey.code == InputModeSwitcher.USER_KEYCODE_SELECT_MODE)
         val shadowDepth = dp(2f).toInt().coerceAtLeast(1)
         val radius = if (keyRadius > 0) keyRadius.toFloat() else dp(8f)
+
         val env = com.yuyan.imemodule.singleton.EnvironmentSingleton.instance
         val isFloat = env.keyboardModeFloat
-        val screenCornerRadius = if (!isFloat) dp(32f) else radius
-
-        val maxBottom = mSoftKeyboard?.mKeyRows?.maxOfOrNull { row -> row.maxOfOrNull { it.mBottom } ?: 0 } ?: 0
-        val minLeft = mSoftKeyboard?.mKeyRows?.minOfOrNull { row -> row.minOfOrNull { it.mLeft } ?: 0 } ?: 0
-        val maxRight = mSoftKeyboard?.mKeyRows?.maxOfOrNull { row -> row.maxOfOrNull { it.mRight } ?: 0 } ?: 0
-
-        val isBottomRow = kotlin.math.abs(softKey.mBottom - maxBottom) <= 15
-        val isLeftEdge = kotlin.math.abs(softKey.mLeft - minLeft) <= 15
-        val isRightEdge = kotlin.math.abs(softKey.mRight - maxRight) <= 15
+        val isCornerAdaptEnabled = prefs.bottomKeyCornerAdaptEnable.getValue()
+        val isTouchBottom = isCornerAdaptEnabled && DevicesUtils.isKeyboardTouchingScreenBottom(this)
+        val detectedScreenRadiusPx = if (isTouchBottom) DevicesUtils.getScreenBottomCornerRadiusPx(this) else 0f
 
         val isBottomLeftKey = (!isFloat && isBottomRow && isLeftEdge)
         val isBottomRightKey = (!isFloat && isBottomRow && isRightEdge)
+
+        // 统一以标准单行按键高度 (standardRowHeight) 为基准计算自适应圆角，
+        // 避免 T9/中文9键 等跨行大按键 (如右侧 2 行高的“完成”键) 因键体过高而导致左右圆角半径不一致。
+        val bottomRowKeys = mSoftKeyboard?.mKeyRows?.lastOrNull()
+        val standardRowHeight = bottomRowKeys?.firstOrNull()?.let { (it.mBottom - it.mTop).toFloat() } ?: dp(42f)
+
+        val marginPx = dp(12f)
+        val adaptiveRadiusPx = (detectedScreenRadiusPx - marginPx).coerceIn(radius, standardRowHeight * 0.45f)
+        val screenCornerRadius = if (isTouchBottom && detectedScreenRadiusPx > 0f) adaptiveRadiusPx else radius
 
         val radii = when {
             isBottomLeftKey -> floatArrayOf(radius, radius, radius, radius, radius, radius, screenCornerRadius, screenCornerRadius)

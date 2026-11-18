@@ -81,6 +81,12 @@ class ThemePrefs(sharedPreferences: SharedPreferences) :
         "dp"
     )
 
+    val bottomKeyCornerAdaptEnable = switch(
+        R.string.bottom_key_corner_adapt,
+        "bottom_key_corner_adapt_enable",
+        true
+    )
+
     val keyboardBalloonShow = switch(
         R.string.keypopup_input_settings,
         "keyboard_balloon_show_enable",
