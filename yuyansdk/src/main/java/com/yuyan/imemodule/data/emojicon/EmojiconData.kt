@@ -16,7 +16,7 @@ object EmojiconData {
 
     val symbolData: Map<Int, List<String>> = linkedMapOf(
         R.drawable.icon_emojibar_recents to emptyList(),
-        R.drawable.icon_symbol_chinese to listOf("—", "／", "｜", "＼", "【", "】", "“", "”", "「", "」", "～", "：", "；", "《", "》", "¥", "#", "@", "·", "，", "、", "。", "？", "！", "…"),
+        R.drawable.icon_symbol_chinese to listOf("—", "／", "｜", "＼", "【", "】", "“", "”", "「", "」", "～", "：", "；", "《", "》", "¥", "#", "@", "·", "，", "、", "。", "？", "！", "……"),
         R.drawable.icon_symbol_english to listOf("-", "_", "|", "#", "%", "&", "^", "*", "+", "=", "~", "/", ":", ";", "(", ")", "$", "@", "\"", "·", ".", ",", "?", "!", "…", "'"),
         R.drawable.icon_symbol_math to listOf("+", "-", "×", "÷", "/", "=", "≠", "≈", "＞", "＜", "·", "±", "^", "%", "‰", "℅", "≥", "≤", "≯", "≮", "√", "∛", "∜", "°", "℃", "℉"),
         R.drawable.icon_symbol_parentheses to listOf("【", "】", "「", "」", "（", "）", "［", "］", "｛", "｝", "〖", "〗", "『", "』", "〈", "〉", "〔", "〕", "《", "》", "«", "»", "‘", "’", "“", "”"),

@@ -50,8 +50,12 @@ class SymbolAdapter(context: Context?, val viewType: SymbolMode, private val pag
     override fun onBindViewHolder(holder: SymbolHolder, position: Int) {
         val data = mDatas!![position]
         holder.textView.text = data
-        val symbolTextSize = if (data.length > 2) 11f else if (data.length > 1) 13f else 15f
-        holder.textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, symbolTextSize)
+        val symbolTextSize = when (viewType) {
+            SymbolMode.Emojicon -> 26f
+            SymbolMode.Emoticon -> if (data.length > 12) 11f else if (data.length > 6) 13f else 15f
+            SymbolMode.Symbol -> if (data.length > 2) 13f else if (data.length > 1) 16f else 18f
+        }
+        holder.textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, symbolTextSize)
         holder.tVSdb.text = "英"
         holder.tVSdb.visibility = if(viewType != SymbolMode.Symbol) View.GONE else {
             when (halfWidthSymbolsMode) {
@@ -82,8 +86,6 @@ class SymbolAdapter(context: Context?, val viewType: SymbolMode, private val pag
         var tVSdb: TextView
         init {
             textView.setTextColor(activeTheme.keyTextColor)
-            val textSizeMultiplier = if (viewType == SymbolMode.Emojicon || viewType == SymbolMode.Emoticon) 1.2f else 1.0f
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, instance.candidateTextSize * textSizeMultiplier)
             tVSdb = view.findViewById(R.id.tv_sdb_symbols_item)
             tVSdb.setTextColor(activeTheme.keyTextColor)
             val customTypeface = com.yuyan.imemodule.data.theme.CustomFontManager.getTypeface(view.context)
@@ -99,14 +101,16 @@ class SymbolAdapter(context: Context?, val viewType: SymbolMode, private val pag
                 ).apply {
                     setMargins(view.dp(1), view.dp(1), view.dp(1), view.dp(1))
                 }
-            } else if (viewType == SymbolMode.Emojicon && pagerIndex == 1 && YuyanEmojiCompat.isWeChatInput) {
+            } else if (viewType == SymbolMode.Emojicon) {
+                // Emoji 界面：固定每行 6 个 (6 列)，宽度均匀分配，高度与字体加大
+                val emojiItemWidth = (EnvironmentSingleton.instance.skbWidth - view.dp(18)) / 6
+                val emojiItemHeight = (EnvironmentSingleton.instance.skbHeight * 0.75f / 4.5f).toInt().coerceAtLeast(view.dp(42))
                 (view.layoutParams as? FlexboxLayoutManager.LayoutParams)?.apply {
-                    width = (EnvironmentSingleton.instance.skbWidth - view.dp(18)) / 3
-                    height = gridHeight
+                    width = emojiItemWidth
+                    height = emojiItemHeight
                     setMargins(view.dp(1), view.dp(1), view.dp(1), view.dp(1))
                 }
-                textView.setPadding(view.dp(4), view.dp(2), view.dp(4), view.dp(2))
-                view.setBackgroundResource(R.drawable.shape_emojicon_background)
+                textView.setPadding(0, 0, 0, 0)
             } else {
                 val itemSize = (EnvironmentSingleton.instance.skbWidth - view.dp(78)) / 5
                 (view.layoutParams as? FlexboxLayoutManager.LayoutParams)?.apply {
