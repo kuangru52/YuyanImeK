@@ -66,7 +66,8 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
     private var mSideTabAdapter: SideTabAdapter? = null
     private var mBottomTabAdapter: BottomTabAdapter? = null
 
-    // 表情页面顶部标题栏控件
+    // 符号页面左侧分类栏容器
+    private var leftSideContainer: LinearLayout
     private var topExprHeader: LinearLayout
     private var tabEmoji: TextView
     private var tabKaomoji: TextView
@@ -74,6 +75,7 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
     private lateinit var ivExprSend: ImageView
     private lateinit var ivExprDelete: ImageView
     private lateinit var ivSymbolLock: ImageView
+    private lateinit var ivSymbolDelete: ImageView
 
     private lateinit var bottomControlBar: RelativeLayout
 
@@ -205,7 +207,7 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
 
         @SuppressLint("ClickableViewAccessibility")
         ivExprDelete = ImageView(context).apply {
-            setImageResource(R.drawable.sdk_skb_key_delete_icon)
+            setImageResource(R.drawable.icon_symbol_delete_line)
             drawable?.setTint(activeTheme.keyTextColor)
             scaleType = ImageView.ScaleType.FIT_CENTER
             val sz = dp(24)
@@ -238,17 +240,46 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
         topExprHeader.addView(ivExprLock)
         topExprHeader.addView(ivExprDelete)
 
-        // 2. 中间主要内容区域：左侧分类列表 + 右侧符号 ViewPager2
+        // 2. 中间主要内容区域：左侧分类列表容器 + 右侧符号 ViewPager2
         val topContentLayout = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f)
         }
 
+        leftSideContainer = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(dp(56), LayoutParams.MATCH_PARENT)
+        }
+
         mRVLeftSideTabs = RecyclerView(context).apply {
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-            layoutParams = LinearLayout.LayoutParams(dp(72), LayoutParams.MATCH_PARENT)
+            layoutParams = LinearLayout.LayoutParams(dp(56), 0, 1f)
             overScrollMode = OVER_SCROLL_NEVER
         }
+
+        // 符号模式左下角精美小锁图标（位于分类列表正下方）
+        ivSymbolLock = ImageView(context).apply {
+            setImageResource(if (isLockSymbol) R.drawable.icon_symbol_lock_pretty else R.drawable.icon_symbol_unlock_pretty)
+            drawable?.setTint(activeTheme.keyTextColor)
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            val sz = dp(26)
+            val lp = LinearLayout.LayoutParams(sz, sz).apply {
+                gravity = Gravity.CENTER_HORIZONTAL
+                setMargins(0, dp(2), 0, dp(6))
+            }
+            layoutParams = lp
+            setOnClickListener {
+                DevicesUtils.tryPlayKeyDown()
+                DevicesUtils.tryVibrate(this)
+                isLockSymbol = !isLockSymbol
+                setImageResource(if (isLockSymbol) R.drawable.icon_symbol_lock_pretty else R.drawable.icon_symbol_unlock_pretty)
+                drawable?.setTint(activeTheme.keyTextColor)
+            }
+        }
+
+        leftSideContainer.addView(mRVLeftSideTabs)
+        leftSideContainer.addView(ivSymbolLock)
 
         mVPSymbolsView = ViewPager2(context).apply {
             layoutParams = LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1f)
@@ -266,7 +297,7 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
             }
         })
 
-        topContentLayout.addView(mRVLeftSideTabs)
+        topContentLayout.addView(leftSideContainer)
         topContentLayout.addView(mVPSymbolsView)
 
         // 3. 表情页面底部横向可滑动分类栏
@@ -277,25 +308,38 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
             overScrollMode = OVER_SCROLL_NEVER
         }
 
-        // 4. 符号模式右下角精美小锁悬浮图标
-        ivSymbolLock = ImageView(context).apply {
-            setImageResource(if (isLockSymbol) R.drawable.icon_symbol_lock_pretty else R.drawable.icon_symbol_unlock_pretty)
+        // 4. 符号模式右下角悬浮退格删除图标（位于原锁定图标悬浮位置）
+        @SuppressLint("ClickableViewAccessibility")
+        ivSymbolDelete = ImageView(context).apply {
+            setImageResource(R.drawable.icon_symbol_delete_line)
             drawable?.setTint(activeTheme.keyTextColor)
             scaleType = ImageView.ScaleType.FIT_CENTER
             val sz = dp(32)
             val lp = RelativeLayout.LayoutParams(sz, sz).apply {
                 addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
                 addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
-                setMargins(0, 0, dp(16), dp(12))
+                setMargins(0, 0, dp(14), dp(10))
             }
             layoutParams = lp
             visibility = View.GONE
-            setOnClickListener {
-                DevicesUtils.tryPlayKeyDown()
-                DevicesUtils.tryVibrate(this)
-                isLockSymbol = !isLockSymbol
-                setImageResource(if (isLockSymbol) R.drawable.icon_symbol_lock_pretty else R.drawable.icon_symbol_unlock_pretty)
-                drawable?.setTint(activeTheme.keyTextColor)
+            setOnTouchListener { v, event ->
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        DevicesUtils.tryPlayKeyDown(KeyEvent.KEYCODE_DEL)
+                        DevicesUtils.tryVibrate(v)
+                        inputView?.responseKeyEvent(SoftKey(KeyEvent.KEYCODE_DEL))
+                        mHandler?.removeMessages(MSG_REPEAT)
+                        val repeat = Message.obtain(mHandler, MSG_REPEAT)
+                        mHandler?.sendMessageDelayed(repeat, REPEAT_START_DELAY)
+                        true
+                    }
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        mHandler?.removeMessages(MSG_REPEAT)
+                        v.performClick()
+                        true
+                    }
+                    else -> false
+                }
             }
         }
 
@@ -304,7 +348,7 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
         rootLayout.addView(mRVBottomCategoryBar)
 
         rootRelativeLayout.addView(rootLayout)
-        rootRelativeLayout.addView(ivSymbolLock)
+        rootRelativeLayout.addView(ivSymbolDelete)
 
         val containerLp = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {
             topToTop = LayoutParams.PARENT_ID
@@ -345,8 +389,8 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
         mShowType = SymbolMode.Symbol
         topExprHeader.visibility = View.GONE
         mRVBottomCategoryBar.visibility = View.GONE
-        mRVLeftSideTabs.visibility = View.VISIBLE
-        ivSymbolLock.visibility = View.VISIBLE
+        leftSideContainer.visibility = View.VISIBLE
+        ivSymbolDelete.visibility = View.VISIBLE
 
         val mSymbolsEmoji = EmojiconData.symbolData
         mVPSymbolsView.adapter = SymbolPagerAdapter(context, mSymbolsEmoji, mShowType) { symbol, _ ->
@@ -368,14 +412,13 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
         mExprSubTab = subTab
         topExprHeader.visibility = View.VISIBLE
         mRVBottomCategoryBar.visibility = View.VISIBLE
-        mRVLeftSideTabs.visibility = View.GONE
-        ivSymbolLock.visibility = View.GONE
+        leftSideContainer.visibility = View.GONE
+        ivSymbolDelete.visibility = View.GONE
         ivExprSend.visibility = if (isLockExpression) View.VISIBLE else View.GONE
 
         val activeBg = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
-            val r = dp(8).toFloat()
-            cornerRadii = floatArrayOf(r, r, r, r, 0f, 0f, 0f, 0f)
+            cornerRadius = dp(6f)
             setColor(activeTheme.keyBackgroundColor)
         }
         val activeColor = activeTheme.accentKeyBackgroundColor
@@ -428,12 +471,12 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val tv = TextView(context).apply {
-                textSize = 13f
+                textSize = 12f
                 gravity = Gravity.CENTER
             }
             val view = LinearLayout(context).apply {
                 gravity = Gravity.CENTER
-                layoutParams = ViewGroup.LayoutParams(dp(72), dp(42))
+                layoutParams = ViewGroup.LayoutParams(dp(56), dp(34))
                 addView(tv)
             }
             return ViewHolder(view, tv)
@@ -443,6 +486,16 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
             val name = if (position < symbolCategoryNames.size) symbolCategoryNames[position] else "符号"
             holder.tv.text = name
             val isSel = position == selectedIndex
+            if (isSel) {
+                val bg = GradientDrawable().apply {
+                    shape = GradientDrawable.RECTANGLE
+                    cornerRadius = holder.itemView.dp(6f)
+                    setColor(activeTheme.keyBackgroundColor)
+                }
+                holder.itemView.background = bg
+            } else {
+                holder.itemView.background = null
+            }
             holder.tv.setTextColor(if (isSel) activeTheme.accentKeyBackgroundColor else activeTheme.keyTextColor)
             holder.tv.typeface = if (isSel) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
             holder.itemView.setOnClickListener {
@@ -487,6 +540,16 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             holder.text.text = categories[position]
             val isSel = position == selectedIndex
+            if (isSel) {
+                val bg = GradientDrawable().apply {
+                    shape = GradientDrawable.RECTANGLE
+                    cornerRadius = holder.itemView.dp(6f)
+                    setColor(activeTheme.keyBackgroundColor)
+                }
+                holder.itemView.background = bg
+            } else {
+                holder.itemView.background = null
+            }
             holder.text.setTextColor(if (isSel) activeTheme.accentKeyBackgroundColor else activeTheme.keyTextColor)
             holder.text.typeface = if (isSel) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
             holder.itemView.setOnClickListener {
