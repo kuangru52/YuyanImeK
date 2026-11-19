@@ -1,17 +1,6 @@
-@file:Suppress(
-    "DEPRECATION", "SetTextI18n", "RedundantSuppression", "UnusedImport",
-    "SimplifyBooleanWithConstants", "CanBeVal", "UNCHECKED_CAST", "UnusedSymbol",
-    "UsePropertyAccessSyntax", "OPT_IN_USAGE", "OVERRIDE_DEPRECATION", "DEPRECATION_ERROR",
-    "UNUSED_VARIABLE", "UNUSED_PARAMETER", "UNUSED_ANONYMOUS_PARAMETER", "PROPERTY_HIDES_FUNCTION",
-    "VARIABLE_WITH_REDUNDANT_INITIALIZER", "REDUNDANT_NULLABLE", "SENSELESS_COMPARISON",
-    "UNUSED_EXPRESSION", "LocalVariableName", "ClassName", "MemberVisibilityCanBePrivate",
-    "PackageNaming", "SpellCheckingInspection", "UnnecessaryVariable", "RemoveRedundantQualifierName"
-)
-
 package com.yuyan.imemodule.keyboard.container
 
 import com.yuyan.imemodule.prefs.AppPrefs
-import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import android.annotation.SuppressLint
@@ -76,8 +65,6 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
     private lateinit var ivExprDelete: ImageView
     private lateinit var ivSymbolLock: ImageView
     private lateinit var ivSymbolDelete: ImageView
-
-    private lateinit var bottomControlBar: RelativeLayout
 
     var isLockSymbol: Boolean
         get() = AppPrefs.getInstance().internal.lockSymbolEnable.getValue()

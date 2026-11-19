@@ -1,5 +1,3 @@
-@file:Suppress("ALL")
-
 package com.yuyan.imemodule.keyboard
 
 import android.content.Context
@@ -25,6 +23,7 @@ import androidx.core.content.ContextCompat
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.data.theme.Theme
 import com.yuyan.imemodule.data.theme.ThemeManager.activeTheme
+import com.yuyan.imemodule.singleton.EnvironmentSingleton
 import com.yuyan.imemodule.data.theme.ThemeManager.prefs
 import com.yuyan.imemodule.entity.keyboard.SoftKey
 import com.yuyan.imemodule.entity.keyboard.SoftKeyToggle
@@ -540,7 +539,7 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
         val shadowDepth = dp(2f).toInt().coerceAtLeast(1)
         val radius = if (keyRadius > 0) keyRadius.toFloat() else dp(8f)
 
-        val env = com.yuyan.imemodule.singleton.EnvironmentSingleton.instance
+        val env = EnvironmentSingleton.instance
         val isFloat = env.keyboardModeFloat
         val isCornerAdaptEnabled = prefs.bottomKeyCornerAdaptEnable.getValue()
         val isTouchBottom = isCornerAdaptEnabled && DevicesUtils.isKeyboardTouchingScreenBottom(this)

@@ -1,24 +1,3 @@
-
-@file:Suppress(
-    "DEPRECATION", "SetTextI18n", "RedundantSuppression", "UnusedImport",
-    "SimplifyBooleanWithConstants", "CanBeVal", "UNCHECKED_CAST", "UnusedSymbol",
-    "UsePropertyAccessSyntax", "OPT_IN_USAGE", "OVERRIDE_DEPRECATION", "DEPRECATION_ERROR",
-    "UNUSED_VARIABLE", "UNUSED_PARAMETER", "UNUSED_ANONYMOUS_PARAMETER", "PROPERTY_HIDES_FUNCTION",
-    "VARIABLE_WITH_REDUNDANT_INITIALIZER", "REDUNDANT_NULLABLE", "SENSELESS_COMPARISON",
-    "UNUSED_EXPRESSION", "LocalVariableName", "ClassName", "MemberVisibilityCanBePrivate",
-    "PackageNaming", "SpellCheckingInspection", "UnnecessaryVariable", "RemoveRedundantQualifierName",
-    "HasPlatformType", "NOTHING_TO_INLINE", "RedundantExplicitType", "NAME_SHADOWING",
-    "UNNECESSARY_SAFE_CALL", "UNNECESSARY_NOT_NULL_ASSERTION", "ReplaceArrayEqualityOpWithArraysEquals",
-    "UseCompatLoadingForDrawables", "CutPasteId", "ViewHolder", "InflateParams", "ResourceType",
-    "ControlFlowWithEmptyBody", "LiftReturnOrAssignment", "ObjectLiteralToLambda", "RedundantAsync",
-    "RedundantLambdaArrow", "RedundantOverride", "RedundantSamConstructor", "RedundantUnitReturnType",
-    "RemoveExplicitTypeArguments", "ReplaceSingleFinalLet", "SimplifiableCallChain", "TrailingComma",
-    "UnnecessaryParentheses", "UnusedEquals", "UseRequire", "UselessCallOnNotNull", "UNUSED_VALUE",
-    "AndroidLintUsePropertyAccessSyntax", "AndroidLintSetTextI18n", "AndroidLintClickableViewAccessibility",
-    "AndroidLintUseCompatLoadingForDrawables", "AndroidLintCutPasteId", "AndroidLintViewHolder",
-    "AndroidLintInflateParams", "AndroidLintResourceType"
-)
-
 package com.yuyan.imemodule.ui.fragment.theme
 
 import androidx.recyclerview.widget.RecyclerView
@@ -33,7 +12,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.graphics.ImageDecoder
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.GradientDrawable
@@ -585,7 +563,7 @@ class CustomThemeActivity : AppCompatActivity() {
             setPadding(dp(16), dp(12), dp(16), dp(12))
             background = ContextCompat.getDrawable(context, R.drawable.sdk_bg_settings_card_single)
             clipToOutline = true
-            outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+            outlineProvider = ViewOutlineProvider.BACKGROUND
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT

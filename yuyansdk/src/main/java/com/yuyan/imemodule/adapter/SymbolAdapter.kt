@@ -1,13 +1,3 @@
-@file:Suppress(
-    "DEPRECATION", "SetTextI18n", "RedundantSuppression", "UnusedImport",
-    "SimplifyBooleanWithConstants", "CanBeVal", "UNCHECKED_CAST", "UnusedSymbol",
-    "UsePropertyAccessSyntax", "OPT_IN_USAGE", "OVERRIDE_DEPRECATION", "DEPRECATION_ERROR",
-    "UNUSED_VARIABLE", "UNUSED_PARAMETER", "UNUSED_ANONYMOUS_PARAMETER", "PROPERTY_HIDES_FUNCTION",
-    "VARIABLE_WITH_REDUNDANT_INITIALIZER", "REDUNDANT_NULLABLE", "SENSELESS_COMPARISON",
-    "UNUSED_EXPRESSION", "LocalVariableName", "ClassName", "MemberVisibilityCanBePrivate",
-    "PackageNaming", "SpellCheckingInspection", "UnnecessaryVariable", "RemoveRedundantQualifierName"
-)
-
 package com.yuyan.imemodule.adapter
 
 import android.content.Context
@@ -21,12 +11,10 @@ import androidx.emoji2.widget.EmojiTextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.yuyan.imemodule.R
-import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
 import com.yuyan.imemodule.data.theme.ThemeManager.activeTheme
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.prefs.behavior.HalfWidthSymbolsMode
 import com.yuyan.imemodule.prefs.behavior.SymbolMode
-import com.yuyan.imemodule.singleton.EnvironmentSingleton
 import com.yuyan.imemodule.singleton.EnvironmentSingleton.Companion.instance
 import com.yuyan.imemodule.utils.StringUtils
 
@@ -92,7 +80,7 @@ class SymbolAdapter(context: Context?, val viewType: SymbolMode, private val pag
             textView.typeface = customTypeface ?: android.graphics.Typeface.DEFAULT
             tVSdb.typeface = customTypeface ?: android.graphics.Typeface.DEFAULT
 
-            val gridHeight = (EnvironmentSingleton.instance.skbHeight * 0.75f / 5f).toInt().coerceAtLeast(view.dp(36))
+            val gridHeight = (instance.skbHeight * 0.75f / 5f).toInt().coerceAtLeast(view.dp(36))
 
             if (viewType == SymbolMode.Symbol) {
                 view.layoutParams = RecyclerView.LayoutParams(
@@ -103,8 +91,8 @@ class SymbolAdapter(context: Context?, val viewType: SymbolMode, private val pag
                 }
             } else if (viewType == SymbolMode.Emojicon) {
                 // Emoji 界面：固定每行 6 个 (6 列)，宽度均匀分配，高度与字体加大
-                val emojiItemWidth = (EnvironmentSingleton.instance.skbWidth - view.dp(18)) / 6
-                val emojiItemHeight = (EnvironmentSingleton.instance.skbHeight * 0.75f / 4.5f).toInt().coerceAtLeast(view.dp(42))
+                val emojiItemWidth = (instance.skbWidth - view.dp(18)) / 6
+                val emojiItemHeight = (instance.skbHeight * 0.75f / 4.5f).toInt().coerceAtLeast(view.dp(42))
                 (view.layoutParams as? FlexboxLayoutManager.LayoutParams)?.apply {
                     width = emojiItemWidth
                     height = emojiItemHeight
@@ -112,7 +100,7 @@ class SymbolAdapter(context: Context?, val viewType: SymbolMode, private val pag
                 }
                 textView.setPadding(0, 0, 0, 0)
             } else {
-                val itemSize = (EnvironmentSingleton.instance.skbWidth - view.dp(78)) / 5
+                val itemSize = (instance.skbWidth - view.dp(78)) / 5
                 (view.layoutParams as? FlexboxLayoutManager.LayoutParams)?.apply {
                     width = itemSize
                     height = gridHeight

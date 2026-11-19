@@ -1,14 +1,4 @@
-@file:Suppress(
-    "DEPRECATION", "SetTextI18n", "RedundantSuppression", "UnusedImport",
-    "SimplifyBooleanWithConstants", "CanBeVal", "UNCHECKED_CAST", "UnusedSymbol",
-    "UsePropertyAccessSyntax", "OPT_IN_USAGE", "OVERRIDE_DEPRECATION", "DEPRECATION_ERROR",
-    "UNUSED_VARIABLE", "UNUSED_PARAMETER", "UNUSED_ANONYMOUS_PARAMETER", "PROPERTY_HIDES_FUNCTION",
-    "VARIABLE_WITH_REDUNDANT_INITIALIZER", "REDUNDANT_NULLABLE", "SENSELESS_COMPARISON",
-    "UNUSED_EXPRESSION", "LocalVariableName", "ClassName", "MemberVisibilityCanBePrivate",
-    "PackageNaming", "SpellCheckingInspection", "UnnecessaryVariable", "RemoveRedundantQualifierName",
-    "WrongThread", "UIThread", "UseDestructuringDeclaration", "BooleanLiteralArgument", "TrailingComma",
-    "CollapsibleIfStatements", "Parentheses"
-)
+@file:Suppress("WrongThread")
 
 package com.yuyan.imemodule.view
 

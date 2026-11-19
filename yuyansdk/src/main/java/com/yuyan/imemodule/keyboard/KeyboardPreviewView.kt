@@ -1,14 +1,3 @@
-@file:Suppress(
-    "DEPRECATION", "SetTextI18n", "RedundantSuppression", "UnusedImport",
-    "SimplifyBooleanWithConstants", "CanBeVal", "UNCHECKED_CAST", "UnusedSymbol",
-    "UsePropertyAccessSyntax", "OPT_IN_USAGE", "OVERRIDE_DEPRECATION", "DEPRECATION_ERROR",
-    "UNUSED_VARIABLE", "UNUSED_PARAMETER", "UNUSED_ANONYMOUS_PARAMETER", "PROPERTY_HIDES_FUNCTION",
-    "VARIABLE_WITH_REDUNDANT_INITIALIZER", "REDUNDANT_NULLABLE", "SENSELESS_COMPARISON",
-    "UNUSED_EXPRESSION", "LocalVariableName", "ClassName", "MemberVisibilityCanBePrivate",
-    "PackageNaming", "SpellCheckingInspection", "UnnecessaryVariable", "RemoveRedundantQualifierName",
-    "BooleanLiteralArgument", "TrailingComma", "Parentheses"
-)
-
 package com.yuyan.imemodule.keyboard
 
 import android.annotation.SuppressLint
@@ -38,7 +27,6 @@ import com.yuyan.imemodule.keyboard.container.SymbolContainer
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
-import com.yuyan.imemodule.prefs.behavior.SymbolMode
 import com.yuyan.imemodule.service.DictDecoder
 import com.yuyan.imemodule.service.ImeService
 import com.yuyan.imemodule.singleton.EnvironmentSingleton.Companion.instance
@@ -420,8 +408,6 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
 
             if (!isInteractiveMode) {
                 if (event.action == MotionEvent.ACTION_UP) {
-                    val skbW = instance.skbWidth
-                    val skbH = instance.skbHeight
                     val clickedKey = softKeyboard.mapToKey(x, y)
                     if (clickedKey != null) {
                         keyboardView.selectedKey = clickedKey
