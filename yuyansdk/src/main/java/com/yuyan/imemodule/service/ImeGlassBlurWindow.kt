@@ -1,14 +1,3 @@
-@file:Suppress(
-    "DEPRECATION", "SetTextI18n", "RedundantSuppression", "UnusedImport",
-    "SimplifyBooleanWithConstants", "CanBeVal", "UNCHECKED_CAST", "UnusedSymbol",
-    "UsePropertyAccessSyntax", "OPT_IN_USAGE", "OVERRIDE_DEPRECATION", "DEPRECATION_ERROR",
-    "UNUSED_VARIABLE", "UNUSED_PARAMETER", "UNUSED_ANONYMOUS_PARAMETER", "PROPERTY_HIDES_FUNCTION",
-    "VARIABLE_WITH_REDUNDANT_INITIALIZER", "REDUNDANT_NULLABLE", "SENSELESS_COMPARISON",
-    "UNUSED_EXPRESSION", "LocalVariableName", "ClassName", "MemberVisibilityCanBePrivate",
-    "PackageNaming", "SpellCheckingInspection", "UnnecessaryVariable", "RemoveRedundantQualifierName",
-    "PrivateApi", "DiscouragedPrivateApi"
-)
-
 package com.yuyan.imemodule.service
 
 import android.app.Dialog
@@ -112,11 +101,7 @@ class ImeGlassBlurWindow(private val context: Context) {
 
             val blurRadiusPx = DevicesUtils.dip2px(config.blurRadiusDp)
 
-            val windowContext = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                anchorView.display?.let { context.createDisplayContext(it) } ?: context
-            } else {
-                context
-            }
+            val windowContext = anchorView.display?.let { context.createDisplayContext(it) } ?: context
 
             if (globalBlurDialog == null) {
                 currentWindowToken = windowToken
@@ -127,9 +112,7 @@ class ImeGlassBlurWindow(private val context: Context) {
                     setContentView(View(windowContext))
                     window?.let { w ->
                         w.setLayout(1, 1)
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                            w.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-                        }
+                        w.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
 
                         w.setFlags(
                             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
@@ -207,26 +190,15 @@ class ImeGlassBlurWindow(private val context: Context) {
                         WindowManager.LayoutParams.FLAG_BLUR_BEHIND
             }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                try {
-                    window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                    window.setBackgroundBlurRadius(blurRadiusPx)
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                }
+            try {
+                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                window.setBackgroundBlurRadius(blurRadiusPx)
+            } catch (e: Throwable) {
+                e.printStackTrace()
             }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val appearance = if (!isNightMode) WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS else 0
-                window.insetsController?.setSystemBarsAppearance(appearance, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS)
-            } else {
-                @Suppress("DEPRECATION")
-                window.decorView.systemUiVisibility = if (!isNightMode) {
-                    window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                } else {
-                    window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-                }
-            }
+            val appearance = if (!isNightMode) WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS else 0
+            window.insetsController?.setSystemBarsAppearance(appearance, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS)
 
             applyVendorBlurFlags(window, blurStyle)
 
@@ -260,6 +232,7 @@ class ImeGlassBlurWindow(private val context: Context) {
         }
     }
 
+    @Suppress("PrivateApi", "DiscouragedPrivateApi")
     private fun applyVendorBlurFlags(window: Window, blurStyle: KeyboardBlurStyle) {
         val lp = window.attributes
         val manufacturer = Build.MANUFACTURER.orEmpty().lowercase()
