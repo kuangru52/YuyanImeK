@@ -70,6 +70,8 @@ class VoiceKeyboardContainer(context: Context, inputView: InputView) : BaseConta
             setViewTreeViewModelStoreOwner(inputView.imeService)
             setContent {
                 val theme = ThemeManager.activeTheme
+                val customTypeface = com.yuyan.imemodule.data.theme.CustomFontManager.getTypeface(context)
+                val fontFamily = customTypeface?.let { androidx.compose.ui.text.font.FontFamily(it) } ?: androidx.compose.ui.text.font.FontFamily.Default
                 VoiceKeyboardLayout(
                     keyBackgroundColor = androidx.compose.ui.graphics.Color(theme.keyBackgroundColor),
                     keyTextColor = androidx.compose.ui.graphics.Color(theme.keyTextColor),
@@ -77,6 +79,7 @@ class VoiceKeyboardContainer(context: Context, inputView: InputView) : BaseConta
                     keyboardBackgroundColor = androidx.compose.ui.graphics.Color(theme.keyboardColor),
                     accentKeyBackgroundColor = androidx.compose.ui.graphics.Color(theme.accentKeyBackgroundColor),
                     keyPressHighlightColor = androidx.compose.ui.graphics.Color(theme.keyPressHighlightColor),
+                    fontFamily = fontFamily,
                     isDarkTheme = theme.isDark,
                     triggerMode = com.yuyan.imemodule.prefs.AppPrefs.getInstance().keyboardSetting.voiceInputTriggerMode.getValue(),
                     bottomActive = isVoiceActive || voiceState == RecognitionState.LISTENING || voiceState == RecognitionState.PROCESSING,

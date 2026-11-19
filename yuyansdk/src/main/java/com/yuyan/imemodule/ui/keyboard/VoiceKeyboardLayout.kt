@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -66,6 +67,7 @@ fun VoiceKeyboardLayout(
     specialKeyBackgroundColor: Color,
     keyboardBackgroundColor: Color,
     modifier: Modifier = Modifier,
+    fontFamily: FontFamily = FontFamily.Default,
     accentKeyBackgroundColor: Color = Color.Unspecified,
     keyPressHighlightColor: Color = Color.Unspecified,
     isDarkTheme: Boolean = false,
@@ -283,6 +285,7 @@ fun VoiceKeyboardLayout(
                     color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily,
                     textAlign = TextAlign.Center
                 )
             }
