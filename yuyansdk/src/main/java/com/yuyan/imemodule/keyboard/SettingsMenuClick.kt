@@ -118,7 +118,11 @@ fun onSettingsMenuClick(inputView: InputView, skbMenuMode: SkbMenuMode) {
         }
         SkbMenuMode.Settings -> AppUtil.launchSettings(Launcher.instance.context)
         SkbMenuMode.OneHanded -> {
-            AppPrefs.getInstance().keyboardSetting.oneHandedModSwitch.setValue(!AppPrefs.getInstance().keyboardSetting.oneHandedModSwitch.getValue())
+            val enable = !AppPrefs.getInstance().keyboardSetting.oneHandedModSwitch.getValue()
+            if (enable) {
+                EnvironmentSingleton.instance.keyboardModeFloat = false
+            }
+            AppPrefs.getInstance().keyboardSetting.oneHandedModSwitch.setValue(enable)
             EnvironmentSingleton.instance.initData()
             KeyboardLoaderUtil.instance.clearKeyboardMap()
             KeyboardManager.instance.clearKeyboard()

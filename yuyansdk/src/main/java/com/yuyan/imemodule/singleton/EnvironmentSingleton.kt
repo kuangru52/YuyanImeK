@@ -124,8 +124,11 @@ class EnvironmentSingleton private constructor() {
         }
 
     var keyboardModeFloat:Boolean  // 悬浮键盘模式
-        get() = if (isLandscape)AppPrefs.getInstance().internal.keyboardModeFloatLandscape.getValue() else AppPrefs.getInstance().internal.keyboardModeFloat.getValue()
+        get() = if (isLandscape) AppPrefs.getInstance().internal.keyboardModeFloatLandscape.getValue() else AppPrefs.getInstance().internal.keyboardModeFloat.getValue()
         set(isFloatMode) {
+            if (isFloatMode) {
+                AppPrefs.getInstance().keyboardSetting.oneHandedModSwitch.setValue(false)
+            }
             if(isLandscape) AppPrefs.getInstance().internal.keyboardModeFloatLandscape.setValue(isFloatMode)
             else AppPrefs.getInstance().internal.keyboardModeFloat.setValue(isFloatMode)
         }

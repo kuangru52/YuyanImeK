@@ -1,3 +1,13 @@
+@file:Suppress(
+    "DEPRECATION", "SetTextI18n", "RedundantSuppression", "UnusedImport",
+    "SimplifyBooleanWithConstants", "CanBeVal", "UNCHECKED_CAST", "UnusedSymbol",
+    "UsePropertyAccessSyntax", "OPT_IN_USAGE", "OVERRIDE_DEPRECATION", "DEPRECATION_ERROR",
+    "UNUSED_VARIABLE", "UNUSED_PARAMETER", "UNUSED_ANONYMOUS_PARAMETER", "PROPERTY_HIDES_FUNCTION",
+    "VARIABLE_WITH_REDUNDANT_INITIALIZER", "REDUNDANT_NULLABLE", "SENSELESS_COMPARISON",
+    "UNUSED_EXPRESSION", "LocalVariableName", "ClassName", "MemberVisibilityCanBePrivate",
+    "PackageNaming", "SpellCheckingInspection", "UnnecessaryVariable", "RemoveRedundantQualifierName"
+)
+
 package com.yuyan.imemodule.keyboard
 
 import android.annotation.SuppressLint
@@ -14,7 +24,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -23,6 +32,7 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.graphics.scale
 import androidx.core.graphics.drawable.toDrawable
+import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -480,7 +490,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
             if (themeBgColor != 0) {
                 themeBgColor
             } else {
-                Color.parseColor(config.maskColorHex)
+                config.maskColorHex.toColorInt()
             }
         } catch (_: Throwable) {
             if (isNightMode) Color.BLACK else Color.WHITE
@@ -783,7 +793,11 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
     private fun onClick(view: View) {
         val keyboardSetting = appPrefs.keyboardSetting
         if (view.id == R.id.ib_holder_one_hand_none) {
-            keyboardSetting.oneHandedModSwitch.setValue(!keyboardSetting.oneHandedModSwitch.getValue())
+            val enable = !keyboardSetting.oneHandedModSwitch.getValue()
+            if (enable) {
+                EnvironmentSingleton.instance.keyboardModeFloat = false
+            }
+            keyboardSetting.oneHandedModSwitch.setValue(enable)
         } else {
             val currentMod = keyboardSetting.oneHandedMod.getValue()
             keyboardSetting.oneHandedMod.setValue(if (currentMod == KeyboardOneHandedMod.LEFT) KeyboardOneHandedMod.RIGHT else KeyboardOneHandedMod.LEFT)

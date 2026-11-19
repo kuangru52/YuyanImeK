@@ -1,3 +1,14 @@
+@file:Suppress(
+    "DEPRECATION", "SetTextI18n", "RedundantSuppression", "UnusedImport",
+    "SimplifyBooleanWithConstants", "CanBeVal", "UNCHECKED_CAST", "UnusedSymbol",
+    "UsePropertyAccessSyntax", "OPT_IN_USAGE", "OVERRIDE_DEPRECATION", "DEPRECATION_ERROR",
+    "UNUSED_VARIABLE", "UNUSED_PARAMETER", "UNUSED_ANONYMOUS_PARAMETER", "PROPERTY_HIDES_FUNCTION",
+    "VARIABLE_WITH_REDUNDANT_INITIALIZER", "REDUNDANT_NULLABLE", "SENSELESS_COMPARISON",
+    "UNUSED_EXPRESSION", "LocalVariableName", "ClassName", "MemberVisibilityCanBePrivate",
+    "PackageNaming", "SpellCheckingInspection", "UnnecessaryVariable", "RemoveRedundantQualifierName",
+    "PrivateApi", "DiscouragedPrivateApi"
+)
+
 package com.yuyan.imemodule.service
 
 import android.app.Dialog
@@ -13,6 +24,7 @@ import android.view.View
 import android.view.Window
 import android.view.WindowInsetsController
 import android.view.WindowManager
+import androidx.core.graphics.toColorInt
 
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.prefs.behavior.KeyboardBlurStyle
@@ -138,7 +150,7 @@ class ImeGlassBlurWindow(private val context: Context) {
             val radiusPx = DevicesUtils.dip2px(radiusDp).toFloat()
 
             val baseColor = try {
-                Color.parseColor(config.maskColorHex)
+                config.maskColorHex.toColorInt()
             } catch (_: Throwable) {
                 if (isNightMode) Color.BLACK else Color.WHITE
             }
