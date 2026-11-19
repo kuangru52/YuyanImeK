@@ -54,13 +54,6 @@ object ThemeManager {
         get() = if (::_activeTheme.isInitialized) _activeTheme else evaluateActiveTheme()
         set(value) {
             _activeTheme = value
-            try {
-                if (value.backgroundImage != null || value.keyboardResources != 0) {
-                    AppPrefs.getInstance().internal.keyboardBlurEnable.setValue(false)
-                } else {
-                    AppPrefs.getInstance().internal.keyboardBlurEnable.setValue(true)
-                }
-            } catch (_: Throwable) {}
             fireChange()
         }
 
@@ -121,20 +114,11 @@ object ThemeManager {
     }
 
     private fun evaluateActiveTheme(): Theme {
-        val theme = if (prefs.followSystemDayNightTheme.getValue()) {
+        return if (prefs.followSystemDayNightTheme.getValue()) {
             if (isDarkMode) prefs.darkModeTheme else prefs.lightModeTheme
         } else {
             prefs.normalModeTheme
         }.getValue()
-
-        try {
-            if (theme.backgroundImage != null || theme.keyboardResources != 0) {
-                AppPrefs.getInstance().internal.keyboardBlurEnable.setValue(false)
-            } else {
-                AppPrefs.getInstance().internal.keyboardBlurEnable.setValue(true)
-            }
-        } catch (_: Throwable) {}
-        return theme
     }
 
     @Keep
