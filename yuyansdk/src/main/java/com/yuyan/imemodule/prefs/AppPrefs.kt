@@ -366,7 +366,11 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
             R.string.keyboard_blur_enable_title,
             "keyboard_blur_enable",
             true,
-            R.string.keyboard_blur_enable_summary
+            R.string.keyboard_blur_enable_summary,
+            enableUiOn = {
+                val theme = com.yuyan.imemodule.data.theme.ThemeManager.activeTheme
+                theme.backgroundImage == null && theme.keyboardResources == 0
+            }
         )
         val keyboardBlurStyle = list(
             R.string.keyboard_blur_style_title,
