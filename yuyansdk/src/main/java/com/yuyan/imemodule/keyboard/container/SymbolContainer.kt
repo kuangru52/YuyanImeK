@@ -177,7 +177,7 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
             scaleType = ImageView.ScaleType.FIT_CENTER
             val sz = dp(24)
             layoutParams = LinearLayout.LayoutParams(sz, sz).apply {
-                setMargins(0, 0, dp(12), 0)
+                setMargins(0, 0, dp(8), 0)
             }
             visibility = if (isLockExpression) View.VISIBLE else View.GONE
             setOnClickListener {
@@ -215,7 +215,7 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
             scaleType = ImageView.ScaleType.FIT_CENTER
             val sz = dp(24)
             layoutParams = LinearLayout.LayoutParams(sz, sz).apply {
-                setMargins(dp(6), 0, dp(4), 0)
+                setMargins(0, 0, dp(4), 0)
             }
             visibility = if (isLockExpression) View.VISIBLE else View.GONE
             setOnTouchListener { v, event ->
@@ -240,8 +240,8 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
         }
 
         topExprHeader.addView(tabsContainer)
-        topExprHeader.addView(ivExprSend)
         topExprHeader.addView(ivExprLock)
+        topExprHeader.addView(ivExprSend)
         topExprHeader.addView(ivExprDelete)
 
         // 2. 中间主要内容区域：左侧分类列表容器 + 右侧符号 ViewPager2
