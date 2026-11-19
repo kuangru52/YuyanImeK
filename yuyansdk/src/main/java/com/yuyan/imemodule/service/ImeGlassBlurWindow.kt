@@ -222,7 +222,11 @@ class ImeGlassBlurWindow(private val context: Context) {
             window.setGravity(Gravity.TOP or Gravity.START)
             window.attributes = lp
 
-            if (!dialog.isShowing) {
+            if (dialog.isShowing) {
+                try {
+                    window.windowManager?.updateViewLayout(window.decorView, lp)
+                } catch (_: Throwable) {}
+            } else {
                 try {
                     dialog.show()
                 } catch (e: Throwable) {

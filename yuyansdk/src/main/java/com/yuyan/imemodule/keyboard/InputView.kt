@@ -619,7 +619,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
                 initialTouchY = event.rawY
                 initialTranslationX = mSkbRoot.translationX
                 initialTranslationY = mSkbRoot.translationY
-                dismissBlurWindow()
+                updateBlurWindow()
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
