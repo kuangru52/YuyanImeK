@@ -605,10 +605,15 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
                 }
                 topCap.draw(canvas)
             } else {
+                val isBlurActive = AppPrefs.getInstance().internal.keyboardBlurEnable.getValue()
                 val flatCap = GradientDrawable().apply {
                     shape = GradientDrawable.RECTANGLE
                     cornerRadii = radii
                     setColor(background)
+                    if (isBlurActive) {
+                        val strokeColor = if (mActiveTheme.isDark) 0x1AFFFFFF.toInt() else 0x12000000.toInt()
+                        setStroke(dp(1), strokeColor)
+                    }
                     setBounds(left, top, right, bottom)
                 }
                 flatCap.draw(canvas)

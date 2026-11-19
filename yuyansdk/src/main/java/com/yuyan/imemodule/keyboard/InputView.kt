@@ -475,8 +475,13 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
         }
         val alpha255 = ((alphaChannel / 100f) * 255).toInt().coerceIn(0, 255)
 
+        val themeBgColor = activeTheme.keyboardColor
         val maskBaseColor = try {
-            Color.parseColor(config.maskColorHex)
+            if (themeBgColor != 0) {
+                themeBgColor
+            } else {
+                Color.parseColor(config.maskColorHex)
+            }
         } catch (_: Throwable) {
             if (isNightMode) Color.BLACK else Color.WHITE
         }
