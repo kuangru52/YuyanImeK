@@ -193,7 +193,7 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
             scaleType = ImageView.ScaleType.FIT_CENTER
             val sz = dp(24)
             layoutParams = LinearLayout.LayoutParams(sz, sz).apply {
-                setMargins(0, 0, dp(8), 0)
+                setMargins(0, 0, if (isLockExpression) dp(8) else dp(4), 0)
             }
             setOnClickListener {
                 DevicesUtils.tryPlayKeyDown()
@@ -202,6 +202,9 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
                 setImageResource(if (isLockExpression) R.drawable.icon_symbol_lock_pretty else R.drawable.icon_symbol_unlock_pretty)
                 drawable?.setTint(activeTheme.keyTextColor)
                 ivExprSend.visibility = if (isLockExpression) View.VISIBLE else View.GONE
+                ivExprDelete.visibility = if (isLockExpression) View.VISIBLE else View.GONE
+                (layoutParams as? LinearLayout.LayoutParams)?.setMargins(0, 0, if (isLockExpression) dp(8) else dp(4), 0)
+                requestLayout()
             }
         }
 
@@ -214,6 +217,7 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
             layoutParams = LinearLayout.LayoutParams(sz, sz).apply {
                 setMargins(dp(6), 0, dp(4), 0)
             }
+            visibility = if (isLockExpression) View.VISIBLE else View.GONE
             setOnTouchListener { v, event ->
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
@@ -275,6 +279,7 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
                 isLockSymbol = !isLockSymbol
                 setImageResource(if (isLockSymbol) R.drawable.icon_symbol_lock_pretty else R.drawable.icon_symbol_unlock_pretty)
                 drawable?.setTint(activeTheme.keyTextColor)
+                ivSymbolDelete.visibility = if (isLockSymbol) View.VISIBLE else View.GONE
             }
         }
 
@@ -390,7 +395,7 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
         topExprHeader.visibility = View.GONE
         mRVBottomCategoryBar.visibility = View.GONE
         leftSideContainer.visibility = View.VISIBLE
-        ivSymbolDelete.visibility = View.VISIBLE
+        ivSymbolDelete.visibility = if (isLockSymbol) View.VISIBLE else View.GONE
 
         val mSymbolsEmoji = EmojiconData.symbolData
         mVPSymbolsView.adapter = SymbolPagerAdapter(context, mSymbolsEmoji, mShowType) { symbol, _ ->
@@ -415,6 +420,9 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
         leftSideContainer.visibility = View.GONE
         ivSymbolDelete.visibility = View.GONE
         ivExprSend.visibility = if (isLockExpression) View.VISIBLE else View.GONE
+        ivExprDelete.visibility = if (isLockExpression) View.VISIBLE else View.GONE
+        (ivExprLock.layoutParams as? LinearLayout.LayoutParams)?.setMargins(0, 0, if (isLockExpression) dp(8) else dp(4), 0)
+        ivExprLock.requestLayout()
 
         val activeBg = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
