@@ -1286,23 +1286,30 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
     }
 
     override fun showSymbols(symbols: Array<String>) {
+        if (symbols.isEmpty()) {
+            resetCandidateWindow()
+            return
+        }
         val list = symbols.map { CandidateListItem("📋", it) }.toTypedArray()
         DictDecoder.cacheCandidates(list, associate = true)
 
         mClipboardSuggestionDismissRunnable?.let { handler.removeCallbacks(it) }
 
-        val updateTime = appPrefs.internal.clipboardUpdateTime.getValue()
-        val timeoutSec = appPrefs.clipboard.clipboardItemTimeout.getValue()
-        val elapsedMs = System.currentTimeMillis() - updateTime
-        val remainingMs = (timeoutSec * 1000L - elapsedMs).coerceAtLeast(100L)
+        val isClipboardSuggestion = symbols.size == 1 && !symbols[0].startsWith("=") && !symbols[0].startsWith("≈")
+        if (isClipboardSuggestion) {
+            val updateTime = appPrefs.internal.clipboardUpdateTime.getValue()
+            val timeoutSec = appPrefs.clipboard.clipboardItemTimeout.getValue()
+            val elapsedMs = System.currentTimeMillis() - updateTime
+            val remainingMs = (timeoutSec * 1000L - elapsedMs).coerceAtLeast(3000L)
 
-        mClipboardSuggestionDismissRunnable = Runnable {
-            if (DictDecoder.isAssociate && DictDecoder.candidates.any { it.comment == "📋" }) {
-                DictDecoder.reset()
-                mSkbCandidatesBarView.initMenuView()
+            mClipboardSuggestionDismissRunnable = Runnable {
+                if (DictDecoder.isAssociate && DictDecoder.candidates.any { it.comment == "📋" }) {
+                    DictDecoder.reset()
+                    mSkbCandidatesBarView.initMenuView()
+                }
             }
+            handler.postDelayed(mClipboardSuggestionDismissRunnable!!, remainingMs)
         }
-        handler.postDelayed(mClipboardSuggestionDismissRunnable!!, remainingMs)
     }
 
     fun requestHideSelf() = service.requestHideSelf(0)
@@ -1539,7 +1546,11 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
                 } else {
                     val expr = CustomEngine.parseExpressionAtEnd(textBeforeCursor)
                     val result = CustomEngine.expressionCalculator(textBeforeCursor, expr)
-                    showSymbols(result)
+                    if (result.isNotEmpty()) {
+                        showSymbols(result)
+                    } else {
+                        resetCandidateWindow()
+                    }
                 }
             }
             chinesePredictionMode != ChineseAssociationMode.DISABLED && InputModeSwitcher.isChinese -> {

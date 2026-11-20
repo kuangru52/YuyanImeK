@@ -530,6 +530,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
      * 显示候选词
      */
     fun showCandidates() {
+        updateLayoutDimensions()
         val composingText = DictDecoder.composingStrForDisplay
         val isInputBoxDisplay = AppPrefs.getInstance().keyboardSetting.composingDisplayMode.getValue() == com.yuyan.imemodule.prefs.behavior.ComposingDisplayMode.INPUT_BOX
         val isSpaceVoice = (KeyboardManager.instance.currentContainer as? InputBaseContainer)?.inputView?.imeService?.isSpaceVoiceActive == true
@@ -716,9 +717,70 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
         }
     }
 
+    fun updateLayoutDimensions() {
+        val baseHeight = if (height > 0) height else instance.heightForCandidatesArea
+        if (baseHeight <= 0) return
+
+        val candidateFontScale = (ThemeManager.prefs.candidateTextSize.getValue() / 100f).coerceIn(0.6f, 1.5f)
+
+        val logoSize = (baseHeight * 0.78f * candidateFontScale).toInt().coerceIn(dp(16), baseHeight)
+        val menuHeight = (baseHeight * 0.82f * candidateFontScale).toInt().coerceIn(dp(18), baseHeight)
+        val menuPadding = (menuHeight * 0.08f).toInt().coerceAtLeast(dp(2))
+        val btnPadding = (menuHeight * 0.08f).toInt().coerceAtLeast(dp(2))
+
+        mIvMenuSetting?.let { view ->
+            view.scaleType = ImageView.ScaleType.FIT_CENTER
+            val lp = view.layoutParams
+            if (lp != null && (lp.width != logoSize || lp.height != logoSize)) {
+                lp.width = logoSize
+                lp.height = logoSize
+                view.layoutParams = lp
+            }
+        }
+
+        mCandidateLogoView?.let { view ->
+            view.scaleType = ImageView.ScaleType.FIT_CENTER
+            val lp = view.layoutParams
+            if (lp != null && (lp.width != logoSize || lp.height != logoSize)) {
+                lp.width = logoSize
+                lp.height = logoSize
+                view.layoutParams = lp
+            }
+        }
+
+        val updateBtnLp = { view: ImageView ->
+            view.scaleType = ImageView.ScaleType.FIT_CENTER
+            view.setPadding(btnPadding, btnPadding, btnPadding, btnPadding)
+            val lp = view.layoutParams
+            if (lp != null && (lp.width != menuHeight || lp.height != menuHeight)) {
+                lp.width = menuHeight
+                lp.height = menuHeight
+                view.layoutParams = lp
+            }
+        }
+
+        if (::mMenuRightArrowBtnLeft.isInitialized) updateBtnLp(mMenuRightArrowBtnLeft)
+        if (::mMenuRightArrowBtnRight.isInitialized) updateBtnLp(mMenuRightArrowBtnRight)
+        if (::mCloseAssociateBtnLeft.isInitialized) updateBtnLp(mCloseAssociateBtnLeft)
+        if (::mCloseAssociateBtnRight.isInitialized) updateBtnLp(mCloseAssociateBtnRight)
+
+        if (::mFlowerType.isInitialized) {
+            mFlowerType.textSize = instance.candidateTextSize
+        }
+
+        if (::mCandidatesMenuAdapter.isInitialized) {
+            mCandidatesMenuAdapter.updateDimensions(menuHeight, menuPadding)
+        }
+
+        if (::mCandidatesAdapter.isInitialized) {
+            mCandidatesAdapter.notifyChanged()
+        }
+    }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val heightMeasure = MeasureSpec.makeMeasureSpec(instance.heightForCandidatesArea, MeasureSpec.EXACTLY)
         val widthMeasure = MeasureSpec.makeMeasureSpec(instance.skbWidth, MeasureSpec.EXACTLY)
+        updateLayoutDimensions()
         super.onMeasure(widthMeasure, heightMeasure)
     }
 
@@ -738,6 +800,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
         if (!::mCandidatesMenuContainer.isInitialized) initMenuView()
         if (!::mCandidatesDataContainer.isInitialized) initCandidateView()
         updateLogoView()
+        updateLayoutDimensions()
 
         val activeTheme = activeTheme
         if (::mCandidatesAdapter.isInitialized) {
@@ -964,8 +1027,9 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
 
     private fun applyCircleBackground(view: ImageView, textColor: Int) {
         view.background = null
-        val p = dp(5)
+        val p = (instance.heightForCandidatesArea * 0.06f).toInt().coerceAtLeast(dp(2))
         view.setPadding(p, p, p, p)
+        view.scaleType = ImageView.ScaleType.FIT_CENTER
     }
 
     private fun decodeSampledBitmapFromFile(path: String): Bitmap? {

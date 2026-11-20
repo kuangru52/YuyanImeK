@@ -31,8 +31,8 @@ import splitties.views.padding
 class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<CandidatesMenuAdapter.SymbolHolder>() {
     private val inflater: LayoutInflater = LayoutInflater.from(context)
     private var mOnItemClickListener: OnRecyclerItemClickListener? = null
-    private var itemHeight: Int = (instance.heightForCandidatesArea * 0.8f).toInt()
-    private var mMenuPadding: Int = (instance.heightForCandidatesArea * 0.05f).toInt()
+    private var itemHeight: Int = (instance.heightForCandidatesArea * 0.88f).toInt().coerceAtLeast(28)
+    private var mMenuPadding: Int = (instance.heightForCandidatesArea * 0.06f).toInt().coerceAtLeast(2)
     private var overrideTheme: Theme? = null
     var activeTheme: Theme
         get() = overrideTheme ?: ThemeManager.activeTheme
@@ -84,10 +84,14 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
 
     override fun onBindViewHolder(holder: SymbolHolder, position: Int) {
         val item = items[position]
-        holder.entranceIconImageView?.padding = mMenuPadding
+        holder.entranceIconImageView?.scaleType = ImageView.ScaleType.FIT_CENTER
+        holder.entranceIconImageView?.setPadding(mMenuPadding, mMenuPadding, mMenuPadding, mMenuPadding)
         val layoutParams = holder.entranceIconImageView?.layoutParams
-        layoutParams?.width = itemHeight
-        layoutParams?.height = itemHeight
+        if (layoutParams != null && (layoutParams.width != itemHeight || layoutParams.height != itemHeight)) {
+            layoutParams.width = itemHeight
+            layoutParams.height = itemHeight
+            holder.entranceIconImageView?.layoutParams = layoutParams
+        }
         holder.entranceIconImageView?.setImageResource(item.funImgResource)
         val color = if (isSettingsMenuSelect(item)) activeTheme.toolbarActiveIconColor else activeTheme.toolbarTextColor
         holder.entranceIconImageView?.drawable?.mutate()?.setTint(color)
@@ -101,6 +105,14 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
             holder.itemView.setOnLongClickListener { v: View? ->
                 mOnItemLongClickListener!!.onItemLongClick(this, v, position)
             }
+        }
+    }
+
+    fun updateDimensions(height: Int, padding: Int) {
+        if (itemHeight != height || mMenuPadding != padding) {
+            itemHeight = height
+            mMenuPadding = padding
+            notifyDataSetChanged()
         }
     }
 

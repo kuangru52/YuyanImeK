@@ -93,8 +93,8 @@ class FloatCandidatesBarAdapter(context: Context?) :
         init {
             textViewIndex.setTextColor(activeTheme.keyTextColor)
             textViewCandidate.setTextColor(activeTheme.keyTextColor)
-            textViewIndex.setTextSize(TypedValue.COMPLEX_UNIT_SP, instance.candidateTextSize * 0.7f)
-            textViewCandidate.setTextSize(TypedValue.COMPLEX_UNIT_SP, instance.candidateTextSize * 0.7f)
+            textViewIndex.setTextSize(TypedValue.COMPLEX_UNIT_SP, instance.candidateTextSize * 0.75f)
+            textViewCandidate.setTextSize(TypedValue.COMPLEX_UNIT_SP, instance.candidateTextSize)
             val customTypeface = com.yuyan.imemodule.data.theme.CustomFontManager.getTypeface(view.context)
             textViewIndex.typeface = customTypeface ?: android.graphics.Typeface.DEFAULT
             textViewCandidate.typeface = customTypeface ?: android.graphics.Typeface.DEFAULT
