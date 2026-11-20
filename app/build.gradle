@@ -7,11 +7,11 @@ android {
     compileSdk 36
     namespace 'com.yuyan'
     defaultConfig {
-        applicationId "com.yuyan.pinyin"
+        applicationId "com.kuangru52"
         minSdk 23
         targetSdk 36
         versionCode Integer.valueOf(versionCodeDate())
-        versionName "K74"
+        versionName "K75"
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         ndk {
@@ -77,7 +77,6 @@ android {
     productFlavors {
         offline {
             dimension "default"
-            applicationIdSuffix  ".offline"
         }
     }
 
@@ -86,7 +85,7 @@ android {
             // 混淆
             minifyEnabled true
             shrinkResources true
-            applicationIdSuffix  ".release"
+            applicationIdSuffix  ".yuyank"
             resValue "string", "app_name", "语燕输入法K"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard.cfg'
             if (signingConfigs.release.storeFile != null) {
@@ -95,7 +94,7 @@ android {
         }
 
         debug {
-            applicationIdSuffix ".debug"
+            applicationIdSuffix ".yuyankt"
             resValue "string", "app_name", "语燕输入法Kt"
             if (signingConfigs.release.storeFile != null) {
                 signingConfig signingConfigs.release
@@ -119,7 +118,7 @@ android {
 }
 
 static def getKVersionCode() {
-    return 74 // K版当前版本号: K74
+    return 75 // K版当前版本号: K75
 }
 
 static def versionCodeDate() {

@@ -1,12 +1,20 @@
 package com.yuyan.imemodule.application
 
 import com.yuyan.imemodule.data.flower.FlowerTypefaceMode
+import java.io.File
 
 /**
  * 用户自定义常量类
  */
 object CustomConstant {
-    var RIME_DICT_PATH = Launcher.instance.context.getExternalFilesDir("rime").toString()
+    val RIME_DICT_PATH: String
+        get() {
+            val ctx = Launcher.instance.context
+            val extDir = runCatching { ctx.getExternalFilesDir("rime") }.getOrNull()
+            val dir = if (extDir != null && (extDir.exists() || extDir.mkdirs())) extDir else File(ctx.filesDir, "rime")
+            if (!dir.exists()) dir.mkdirs()
+            return dir.absolutePath
+        }
     const val SCHEMA_ZH_T9 = "t9_pinyin" // 拼音九键
     const val SCHEMA_ZH_QWERTY = "pinyin" // 拼音全键
     const val SCHEMA_EN = "english"         // 英语方案

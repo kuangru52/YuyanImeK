@@ -30,22 +30,32 @@ class Launcher {
         ClipboardHelper.init()
     }
 
+    @Synchronized
+    fun ensureDictCopied() {
+        try {
+            val dictPath = CustomConstant.RIME_DICT_PATH
+            val dictTableFile = java.io.File(dictPath, "build/pinyin.table.bin")
+            val dataDictVersion = AppPrefs.getInstance().internal.dataDictVersion.getValue()
+            if (!dictTableFile.exists() || dataDictVersion < CustomConstant.CURRENT_RIME_DICT_DATA_VERSIOM) {
+                // rime词库
+                copyFileOrDir(context, "rime", "", dictPath, true)
+                AppPrefs.getInstance().internal.dataDictVersion.setValue(CustomConstant.CURRENT_RIME_DICT_DATA_VERSIOM)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     /**
      * 可以在子线程初始化的操作
      */
     private fun onInitDataChildThread() {
         ThreadPoolUtils.executeSingleton {
             DataBaseKT.instance.sideSymbolDao().getAllSideSymbolPinyin()  // 提前在子线程创建并初始化数据库
-            // 复制词库文件
-            val dataDictVersion = AppPrefs.getInstance().internal.dataDictVersion.getValue()
-            if (dataDictVersion < CustomConstant.CURRENT_RIME_DICT_DATA_VERSIOM) {
-                //rime词库
-                copyFileOrDir(context, "rime", "", CustomConstant.RIME_DICT_PATH, true)
-                AppPrefs.getInstance().internal.dataDictVersion.setValue(CustomConstant.CURRENT_RIME_DICT_DATA_VERSIOM)
-            }
+            ensureDictCopied()
             InputDispatcher.resetIme()  // 解决词库复制慢，导致先调用初始化问题
             YuyanEmojiCompat.init(context)
-            //初始化键盘主题
+            // 初始化键盘主题
             val isFollowSystemDayNight = prefs.followSystemDayNightTheme.getValue()
             if (isFollowSystemDayNight) {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)

@@ -9,8 +9,9 @@ object AssetUtils {
     fun copyFileOrDir(context: Context, parent: String, path: String, destParent: String, overwrite: Boolean) {
         val assetManager = context.assets
         try {
-            val assetPath = File(parent, path).path
-            val assets = assetManager.list(assetPath)
+            val assetPath = if (path.isEmpty()) parent else "$parent/$path"
+            val normalizedAssetPath = assetPath.replace('\\', '/')
+            val assets = assetManager.list(normalizedAssetPath)
             if (assets.isNullOrEmpty()) {
                 // Files
                 copyFile(context, parent, path, destParent, overwrite)
@@ -21,7 +22,7 @@ object AssetUtils {
                     dir.mkdirs()
                 }
                 for (asset in assets) {
-                    val subPath = File(path, asset).path
+                    val subPath = if (path.isEmpty()) asset else "$path/$asset"
                     copyFileOrDir(context, parent, subPath, destParent, overwrite)
                 }
             }
@@ -33,11 +34,12 @@ object AssetUtils {
     private fun copyFile(context: Context, parentAssetPath: String, filename: String, destParent: String, overwrite: Boolean) {
         val assetManager = context.assets
         try {
-            val assetPath = File(parentAssetPath, filename).path
+            val assetPath = if (filename.isEmpty()) parentAssetPath else "$parentAssetPath/$filename"
+            val normalizedAssetPath = assetPath.replace('\\', '/')
             val newFile = File(destParent, filename)
             if (newFile.exists() && !overwrite) return
             newFile.parentFile?.mkdirs()
-            assetManager.open(assetPath).use { input ->
+            assetManager.open(normalizedAssetPath).use { input ->
                 FileOutputStream(newFile).use { out ->
                     input.copyTo(out)
                 }

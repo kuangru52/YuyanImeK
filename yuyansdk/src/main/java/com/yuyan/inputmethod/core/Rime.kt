@@ -26,8 +26,10 @@ class Rime(fullCheck: Boolean) {
             System.loadLibrary("yuyanime")
         }
 
-        fun startup(context: Context, fullCheck: Boolean) {
-            startupRime(context, CustomConstant.RIME_DICT_PATH, CustomConstant.RIME_DICT_PATH, fullCheck)
+        fun startup(context: Context, fullCheck: Boolean = true) {
+            Launcher.instance.ensureDictCopied()
+            val dictPath = CustomConstant.RIME_DICT_PATH
+            startupRime(context, dictPath, dictPath, fullCheck)
             updateStatus()
         }
 

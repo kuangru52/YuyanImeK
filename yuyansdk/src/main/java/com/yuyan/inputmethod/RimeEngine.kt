@@ -33,7 +33,7 @@ object RimeEngine {
     fun selectSchema(mod: String): Boolean {
         keyRecordStack.clear()
         charCase = MASK_CASE_LOWER
-        Rime.startup(Launcher.instance.context, false)
+        Rime.startup(Launcher.instance.context, true)
         return Rime.selectSchema(mod)
     }
 
