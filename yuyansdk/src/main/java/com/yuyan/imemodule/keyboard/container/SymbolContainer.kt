@@ -63,8 +63,10 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
     private lateinit var ivExprLock: ImageView
     private lateinit var ivExprSend: ImageView
     private lateinit var ivExprDelete: ImageView
+    private lateinit var ivSymbolReturn: ImageView
     private lateinit var ivSymbolLock: ImageView
     private lateinit var ivSymbolDelete: ImageView
+    private lateinit var bottomRightSymbolContainer: LinearLayout
 
     var isLockSymbol: Boolean
         get() = AppPrefs.getInstance().internal.lockSymbolEnable.getValue()
@@ -249,29 +251,26 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
             overScrollMode = OVER_SCROLL_NEVER
         }
 
-        // 符号模式左下角精美小锁图标（位于分类列表正下方）
-        ivSymbolLock = ImageView(context).apply {
-            setImageResource(if (isLockSymbol) R.drawable.icon_symbol_lock_pretty else R.drawable.icon_symbol_unlock_pretty)
+        // 符号模式左下角返回主键盘图标（位于分类列表正下方）
+        ivSymbolReturn = ImageView(context).apply {
+            setImageResource(R.drawable.ic_arrow_back_24)
             drawable?.setTint(activeTheme.keyTextColor)
             scaleType = ImageView.ScaleType.FIT_CENTER
-            val sz = dp(26)
+            val sz = dp(24)
             val lp = LinearLayout.LayoutParams(sz, sz).apply {
                 gravity = Gravity.CENTER_HORIZONTAL
-                setMargins(0, dp(2), 0, dp(6))
+                setMargins(0, dp(4), 0, dp(8))
             }
             layoutParams = lp
             setOnClickListener {
                 DevicesUtils.tryPlayKeyDown()
                 DevicesUtils.tryVibrate(this)
-                isLockSymbol = !isLockSymbol
-                setImageResource(if (isLockSymbol) R.drawable.icon_symbol_lock_pretty else R.drawable.icon_symbol_unlock_pretty)
-                drawable?.setTint(activeTheme.keyTextColor)
-                ivSymbolDelete.visibility = if (isLockSymbol) View.VISIBLE else View.GONE
+                KeyboardManager.instance.switchKeyboard()
             }
         }
 
         leftSideContainer.addView(mRVLeftSideTabs)
-        leftSideContainer.addView(ivSymbolLock)
+        leftSideContainer.addView(ivSymbolReturn)
 
         mVPSymbolsView = ViewPager2(context).apply {
             layoutParams = LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1f)
@@ -300,20 +299,48 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
             overScrollMode = OVER_SCROLL_NEVER
         }
 
-        // 4. 符号模式右下角悬浮退格删除图标（位于原锁定图标悬浮位置）
+        // 4. 符号模式右下角容器（包含右下角锁定图标和连续输入时的删除图标）
+        bottomRightSymbolContainer = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            val lp = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT).apply {
+                addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
+                addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+                setMargins(0, 0, dp(14), dp(8))
+            }
+            layoutParams = lp
+        }
+
+        ivSymbolLock = ImageView(context).apply {
+            setImageResource(if (isLockSymbol) R.drawable.icon_symbol_lock_pretty else R.drawable.icon_symbol_unlock_pretty)
+            drawable?.setTint(activeTheme.keyTextColor)
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            val sz = dp(28)
+            val lp = LinearLayout.LayoutParams(sz, sz).apply {
+                setMargins(0, 0, if (isLockSymbol) dp(10) else dp(0), 0)
+            }
+            layoutParams = lp
+            setOnClickListener {
+                DevicesUtils.tryPlayKeyDown()
+                DevicesUtils.tryVibrate(this)
+                isLockSymbol = !isLockSymbol
+                setImageResource(if (isLockSymbol) R.drawable.icon_symbol_lock_pretty else R.drawable.icon_symbol_unlock_pretty)
+                drawable?.setTint(activeTheme.keyTextColor)
+                ivSymbolDelete.visibility = if (isLockSymbol) View.VISIBLE else View.GONE
+                (layoutParams as? LinearLayout.LayoutParams)?.setMargins(0, 0, if (isLockSymbol) dp(10) else dp(0), 0)
+                requestLayout()
+            }
+        }
+
         @SuppressLint("ClickableViewAccessibility")
         ivSymbolDelete = ImageView(context).apply {
             setImageResource(R.drawable.icon_symbol_delete_line)
             drawable?.setTint(activeTheme.keyTextColor)
             scaleType = ImageView.ScaleType.FIT_CENTER
-            val sz = dp(32)
-            val lp = RelativeLayout.LayoutParams(sz, sz).apply {
-                addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
-                addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
-                setMargins(0, 0, dp(14), dp(10))
-            }
+            val sz = dp(28)
+            val lp = LinearLayout.LayoutParams(sz, sz)
             layoutParams = lp
-            visibility = View.GONE
+            visibility = if (isLockSymbol) View.VISIBLE else View.GONE
             setOnTouchListener { v, event ->
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
@@ -335,12 +362,15 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
             }
         }
 
+        bottomRightSymbolContainer.addView(ivSymbolLock)
+        bottomRightSymbolContainer.addView(ivSymbolDelete)
+
         rootLayout.addView(topExprHeader)
         rootLayout.addView(topContentLayout)
         rootLayout.addView(mRVBottomCategoryBar)
 
         rootRelativeLayout.addView(rootLayout)
-        rootRelativeLayout.addView(ivSymbolDelete)
+        rootRelativeLayout.addView(bottomRightSymbolContainer)
 
         val containerLp = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {
             topToTop = LayoutParams.PARENT_ID
@@ -382,7 +412,9 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
         topExprHeader.visibility = View.GONE
         mRVBottomCategoryBar.visibility = View.GONE
         leftSideContainer.visibility = View.VISIBLE
+        bottomRightSymbolContainer.visibility = View.VISIBLE
         ivSymbolDelete.visibility = if (isLockSymbol) View.VISIBLE else View.GONE
+        (ivSymbolLock.layoutParams as? LinearLayout.LayoutParams)?.setMargins(0, 0, if (isLockSymbol) dp(10) else dp(0), 0)
 
         val mSymbolsEmoji = EmojiconData.symbolData
         mVPSymbolsView.adapter = SymbolPagerAdapter(context, mSymbolsEmoji, mShowType) { symbol, _ ->
@@ -405,7 +437,8 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
         topExprHeader.visibility = View.VISIBLE
         mRVBottomCategoryBar.visibility = View.VISIBLE
         leftSideContainer.visibility = View.GONE
-        ivSymbolDelete.visibility = View.GONE
+        bottomRightSymbolContainer.visibility = View.GONE
+        ivExprSend.visibility = if (isLockExpression) View.VISIBLE else View.GONE
         ivExprSend.visibility = if (isLockExpression) View.VISIBLE else View.GONE
         ivExprDelete.visibility = if (isLockExpression) View.VISIBLE else View.GONE
         (ivExprLock.layoutParams as? LinearLayout.LayoutParams)?.setMargins(0, 0, if (isLockExpression) dp(8) else dp(4), 0)

@@ -2,6 +2,7 @@ package com.yuyan.imemodule.candidate
 
 import android.content.Context
 import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.Gravity
@@ -226,6 +227,7 @@ class FloatCandidateBar(context: Context?, attrs: AttributeSet?) : RelativeLayou
         mComposingView.setTextColor(textColor)
         val activeTheme = ThemeManager.activeTheme
         val isBlurEnabled = AppPrefs.getInstance().internal.keyboardBlurEnable.getValue()
+        val isNightMode = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
         val baseColor = activeTheme.keyboardColor
         val backgroundColor = if (isBlurEnabled) {
             val blurAlpha = AppPrefs.getInstance().internal.keyboardBlurAlpha.getValue()
@@ -234,12 +236,56 @@ class FloatCandidateBar(context: Context?, attrs: AttributeSet?) : RelativeLayou
         } else {
             baseColor
         }
-        val drawable = GradientDrawable()
-        drawable.setShape(GradientDrawable.RECTANGLE)
-        drawable.setColor(backgroundColor)
-        val cornerRadiusInPx = 20f
-        drawable.setCornerRadius(cornerRadiusInPx)
-        background = drawable
+
+        val cornerRadiusPx = dp(16).toFloat()
+        val maskDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setColor(backgroundColor)
+            cornerRadius = cornerRadiusPx
+        }
+
+        val finalBackground = if (isBlurEnabled) {
+            val highlightStrokePx = dp(1)
+            val hlAlpha = AppPrefs.getInstance().internal.keyboardBlurHighlightAlpha.getValue()
+            val hlAlpha255 = ((hlAlpha / 100f) * 255).toInt().coerceIn(0, 255)
+            val strokeColor = if (isNightMode) {
+                android.graphics.Color.argb((hlAlpha255 * 0.75f).toInt(), 255, 255, 255)
+            } else {
+                android.graphics.Color.argb(hlAlpha255, 255, 255, 255)
+            }
+            val highlightDrawable = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                setColor(android.graphics.Color.TRANSPARENT)
+                setStroke(highlightStrokePx, strokeColor)
+                cornerRadius = cornerRadiusPx
+            }
+            android.graphics.drawable.LayerDrawable(arrayOf(maskDrawable, highlightDrawable))
+        } else {
+            maskDrawable
+        }
+
+        background = finalBackground
+
+        clipToOutline = true
+        outlineProvider = object : android.view.ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: android.graphics.Outline) {
+                outline.setRoundRect(0, 0, view.width, view.height, cornerRadiusPx)
+            }
+        }
+        invalidateOutline()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (isBlurEnabled) {
+                val radiusDp = AppPrefs.getInstance().internal.keyboardBlurRadius.getValue().toFloat()
+                val radiusPx = dp(radiusDp.toInt()).toFloat().coerceIn(1f, 150f)
+                val blurEffect = android.graphics.RenderEffect.createBlurEffect(
+                    radiusPx, radiusPx, android.graphics.Shader.TileMode.CLAMP
+                )
+                setRenderEffect(blurEffect)
+            } else {
+                setRenderEffect(null)
+            }
+        }
         mCandidatesAdapter.notifyChanged()
     }
 }

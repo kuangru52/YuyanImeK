@@ -200,7 +200,23 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
         val token = windowToken ?: return
         val totalHeight = mLlMainKeyboardCard.height
         if (totalHeight > 0 && mLlMainKeyboardCard.width > 0) {
-            imeGlassBlurWindow?.updateBlurWindow(mLlMainKeyboardCard, totalHeight, token)
+            val env = com.yuyan.imemodule.singleton.EnvironmentSingleton.instance
+            val activeTheme = com.yuyan.imemodule.data.theme.ThemeManager.activeTheme
+            val radiusDp = appPrefs.internal.windowCornerRadiusDp.getValue()
+            val radiusPx = dp(radiusDp).toFloat()
+            val isFloat = env.keyboardModeFloat
+            val isTouchBottom = DevicesUtils.isKeyboardTouchingScreenBottom(mLlMainKeyboardCard)
+            val detectedScreenRadiusPx = if (isTouchBottom) DevicesUtils.getScreenBottomCornerRadiusPx(mLlMainKeyboardCard) else 0f
+            val bottomRadiusPx = if (isFloat) radiusPx else (if (isTouchBottom && detectedScreenRadiusPx > 0f) detectedScreenRadiusPx else 0f)
+            val themeBgColor = activeTheme.keyboardColor
+
+            imeGlassBlurWindow?.updateBlurWindow(
+                anchorView = mLlMainKeyboardCard,
+                totalHeight = totalHeight,
+                windowToken = token,
+                bottomRadiusPx = bottomRadiusPx,
+                customBaseColor = themeBgColor
+            )
         }
     }
 

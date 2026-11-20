@@ -412,7 +412,7 @@ class KeyboardLoaderUtil private constructor() {
                 createQwertyKeys(arrayOf(InputModeSwitcher.USER_KEYCODE_SYMBOL, InputModeSwitcher.USER_KEYCODE_NUMBER, KeyEvent.KEYCODE_SPACE))
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER -> {
-                createT9NumberKeys(arrayOf(InputModeSwitcher.USER_KEYCODE_RETURN, InputModeSwitcher.USER_KEYCODE_SYMBOL, 7, KeyEvent.KEYCODE_SPACE))
+                createT9NumberKeys(arrayOf(InputModeSwitcher.USER_KEYCODE_SYMBOL, InputModeSwitcher.USER_KEYCODE_RETURN, 7, KeyEvent.KEYCODE_SPACE))
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_LX17 -> {
                 val prefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()

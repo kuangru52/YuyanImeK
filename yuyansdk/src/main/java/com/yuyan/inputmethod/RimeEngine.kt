@@ -239,12 +239,19 @@ object RimeEngine {
             }
         }
         val rimeSchema = Rime.getCurrentRimeSchema()
+        val unselectedT9Keys = keyRecordStack.getUnselectedT9Keys()
         pinyins = when (rimeSchema) {
             CustomConstant.SCHEMA_ZH_T9 -> {
-                T9PinYinUtils.t9KeyToPinyin(Regex("[A-Z]+").find(compositionText.replace("'", ""))?.value ?: "")
+                val inputSeq = unselectedT9Keys.ifEmpty {
+                    Regex("[A-Z]+").find(compositionText.replace("'", ""))?.value ?: ""
+                }
+                T9PinYinUtils.t9KeyToPinyin(inputSeq)
             }
             CustomConstant.SCHEMA_ZH_DOUBLE_LX17 -> {
-                LX17PinYinUtils.lx17KeyToPinyin(Regex("[a-zA-Z]+").find(compositionText.replace("'", ""))?.value?.uppercase() ?: "")
+                val inputSeq = unselectedT9Keys.ifEmpty {
+                    Regex("[a-zA-Z]+").find(compositionText.replace("'", ""))?.value?.uppercase() ?: ""
+                }
+                LX17PinYinUtils.lx17KeyToPinyin(inputSeq)
             }
             else -> {
                 emptyArray()

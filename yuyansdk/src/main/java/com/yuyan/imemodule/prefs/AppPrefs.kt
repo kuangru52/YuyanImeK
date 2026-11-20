@@ -365,7 +365,7 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
         val keyboardBlurEnable = switch(
             R.string.keyboard_blur_enable_title,
             "keyboard_blur_enable",
-            true,
+            false,
             R.string.keyboard_blur_enable_summary,
             enableUiOn = {
                 val theme = com.yuyan.imemodule.data.theme.ThemeManager.activeTheme

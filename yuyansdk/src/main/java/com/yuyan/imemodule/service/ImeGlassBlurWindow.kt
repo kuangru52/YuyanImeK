@@ -15,6 +15,7 @@ import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.core.graphics.toColorInt
 
+import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.prefs.behavior.KeyboardBlurStyle
 import com.yuyan.imemodule.utils.DevicesUtils
@@ -47,7 +48,13 @@ class ImeGlassBlurWindow(private val context: Context) {
         val highlightAlphaPercent: Int
     )
 
-    fun updateBlurWindow(anchorView: View, totalHeight: Int, windowToken: IBinder?) {
+    fun updateBlurWindow(
+        anchorView: View,
+        totalHeight: Int,
+        windowToken: IBinder?,
+        bottomRadiusPx: Float = -1f,
+        customBaseColor: Int = 0
+    ) {
         try {
             val appPrefs = AppPrefs.getInstance()
             val blurEnable = appPrefs.internal.keyboardBlurEnable.getValue()
@@ -131,19 +138,32 @@ class ImeGlassBlurWindow(private val context: Context) {
 
             val radiusDp = appPrefs.internal.windowCornerRadiusDp.getValue()
             val radiusPx = DevicesUtils.dip2px(radiusDp).toFloat()
+            val effectiveBottomRadiusPx = if (bottomRadiusPx >= 0f) bottomRadiusPx else radiusPx
 
+            val themeBgColor = customBaseColor.takeIf { it != 0 } ?: ThemeManager.activeTheme.keyboardColor
             val baseColor = try {
-                config.maskColorHex.toColorInt()
+                if (themeBgColor != 0) {
+                    themeBgColor
+                } else {
+                    config.maskColorHex.toColorInt()
+                }
             } catch (_: Throwable) {
                 if (isNightMode) Color.BLACK else Color.WHITE
             }
             val maskAlpha255 = ((config.maskAlphaPercent / 100f) * 255).toInt().coerceIn(0, 255)
             val maskColorArgb = Color.argb(maskAlpha255, Color.red(baseColor), Color.green(baseColor), Color.blue(baseColor))
 
+            val cornerRadiiArray = floatArrayOf(
+                radiusPx, radiusPx,                        // Top-Left
+                radiusPx, radiusPx,                        // Top-Right
+                effectiveBottomRadiusPx, effectiveBottomRadiusPx, // Bottom-Right
+                effectiveBottomRadiusPx, effectiveBottomRadiusPx  // Bottom-Left
+            )
+
             val maskDrawable = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 setColor(maskColorArgb)
-                cornerRadius = radiusPx
+                cornerRadii = cornerRadiiArray
                 setBounds(0, 0, width, height)
             }
 
@@ -159,7 +179,7 @@ class ImeGlassBlurWindow(private val context: Context) {
                     shape = GradientDrawable.RECTANGLE
                     setColor(Color.TRANSPARENT)
                     setStroke(highlightStrokePx, strokeColor)
-                    cornerRadius = radiusPx
+                    cornerRadii = cornerRadiiArray
                     setBounds(0, 0, width, height)
                 }
                 LayerDrawable(arrayOf(maskDrawable, highlightDrawable)).apply {
@@ -223,7 +243,22 @@ class ImeGlassBlurWindow(private val context: Context) {
                 override fun getOutline(view: View, outline: android.graphics.Outline) {
                     val w = if (view.width > 0) view.width else width
                     val h = if (view.height > 0) view.height else height
-                    outline.setRoundRect(0, 0, w, h, radiusPx)
+                    if (effectiveBottomRadiusPx == radiusPx) {
+                        outline.setRoundRect(0, 0, w, h, radiusPx)
+                    } else {
+                        val path = android.graphics.Path().apply {
+                            addRoundRect(
+                                0f, 0f, w.toFloat(), h.toFloat(),
+                                cornerRadiiArray,
+                                android.graphics.Path.Direction.CW
+                            )
+                        }
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            outline.setPath(path)
+                        } else {
+                            outline.setRoundRect(0, 0, w, h, radiusPx)
+                        }
+                    }
                 }
             }
             window.decorView.invalidateOutline()
@@ -236,8 +271,13 @@ class ImeGlassBlurWindow(private val context: Context) {
     private fun applyVendorBlurFlags(window: Window, blurStyle: KeyboardBlurStyle) {
         val lp = window.attributes
         val manufacturer = Build.MANUFACTURER.orEmpty().lowercase()
-        val isXiaomi = manufacturer.contains("xiaomi") || manufacturer.contains("redmi")
+        val brand = Build.BRAND.orEmpty().lowercase()
+
+        val isXiaomi = manufacturer.contains("xiaomi") || manufacturer.contains("redmi") || brand.contains("poco")
         val isOppo = manufacturer.contains("oppo") || manufacturer.contains("oneplus") || manufacturer.contains("realme")
+        val isVivo = manufacturer.contains("vivo") || manufacturer.contains("iqoo")
+        val isSamsung = manufacturer.contains("samsung")
+        val isHuawei = manufacturer.contains("huawei") || manufacturer.contains("honor")
 
         if (isXiaomi || blurStyle == KeyboardBlurStyle.HYPEROS_FROST) {
             try {
@@ -256,6 +296,44 @@ class ImeGlassBlurWindow(private val context: Context) {
                 val extraFlagsField = lp.javaClass.getField("extraFlags")
                 val currentExtraFlags = extraFlagsField.getInt(lp)
                 extraFlagsField.setInt(lp, currentExtraFlags or extraFlagBlur)
+            } catch (_: Throwable) {}
+        }
+
+        if (isVivo) {
+            try {
+                val vivoFlagsClass = Class.forName("com.vivo.view.VivoWindowManager\$LayoutParams")
+                val extraFlagBlur = vivoFlagsClass.getField("EXTRA_FLAG_WINDOW_BLUR").getInt(null)
+                val extraFlagsField = lp.javaClass.getField("extraFlags")
+                val currentExtraFlags = extraFlagsField.getInt(lp)
+                extraFlagsField.setInt(lp, currentExtraFlags or extraFlagBlur)
+            } catch (_: Throwable) {
+                try {
+                    val vivoFlagsClass = Class.forName("android.view.VivoWindowManager\$LayoutParams")
+                    val extraFlagBlur = vivoFlagsClass.getField("EXTRA_FLAG_BLUR").getInt(null)
+                    val extraFlagsField = lp.javaClass.getField("extraFlags")
+                    val currentExtraFlags = extraFlagsField.getInt(lp)
+                    extraFlagsField.setInt(lp, currentExtraFlags or extraFlagBlur)
+                } catch (_: Throwable) {}
+            }
+        }
+
+        if (isSamsung) {
+            try {
+                val semAddExtensionFlagsMethod = lp.javaClass.getMethod("semAddExtensionFlags", Int::class.javaPrimitiveType ?: java.lang.Integer.TYPE)
+                semAddExtensionFlagsMethod.invoke(lp, 1 shl 6) // SEM_EXTENSION_FLAG_BLUR
+            } catch (_: Throwable) {
+                try {
+                    val semWindowBlurMethod = window.javaClass.getMethod("semSetWindowBlurEnabled", Boolean::class.javaPrimitiveType ?: java.lang.Boolean.TYPE)
+                    semWindowBlurMethod.invoke(window, true)
+                } catch (_: Throwable) {}
+            }
+        }
+
+        if (isHuawei) {
+            try {
+                val hwFlagsField = lp.javaClass.getField("hwFlags")
+                val currentHwFlags = hwFlagsField.getInt(lp)
+                hwFlagsField.setInt(lp, currentHwFlags or 0x00008000) // HW_FLAG_BACKGROUND_BLUR
             } catch (_: Throwable) {}
         }
     }

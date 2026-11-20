@@ -11,9 +11,9 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 2026111709,
-      "versionName": "K70",
-      "outputFile": "YuyanImeK-K70_2026111709_release.apk"
+      "versionCode": 2026111912,
+      "versionName": "K72",
+      "outputFile": "YuyanImeK-K72_2026111912_release.apk"
     }
   ],
   "elementType": "File",
@@ -22,14 +22,14 @@
       "minApi": 28,
       "maxApi": 30,
       "baselineProfiles": [
-        "baselineProfiles/1/YuyanImeK-K70_2026111709_release.dm"
+        "baselineProfiles/1/YuyanImeK-K72_2026111912_release.dm"
       ]
     },
     {
       "minApi": 31,
       "maxApi": 2147483647,
       "baselineProfiles": [
-        "baselineProfiles/0/YuyanImeK-K70_2026111709_release.dm"
+        "baselineProfiles/0/YuyanImeK-K72_2026111912_release.dm"
       ]
     }
   ],

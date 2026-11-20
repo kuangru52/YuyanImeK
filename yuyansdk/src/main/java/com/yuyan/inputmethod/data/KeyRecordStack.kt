@@ -17,6 +17,16 @@ class KeyRecordStack {
 
     fun isEmpty() = keyRecords.isEmpty()
 
+    fun getUnselectedT9Keys(): String {
+        val sb = StringBuilder()
+        for (key in keyRecords) {
+            if (key is InputKey.T9Key && !key.consumed) {
+                sb.append(key.toString())
+            }
+        }
+        return sb.toString()
+    }
+
     fun forEachReversed(action: (InputKey) -> Unit) {
         for (i in keyRecords.indices.reversed()) {
             action(keyRecords[i])

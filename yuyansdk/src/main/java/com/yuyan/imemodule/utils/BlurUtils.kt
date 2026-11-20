@@ -1,11 +1,77 @@
 package com.yuyan.imemodule.utils
 
 import android.graphics.Bitmap
+import android.graphics.ColorSpace
+import android.graphics.HardwareRenderer
+import android.graphics.PixelFormat
+import android.graphics.RenderEffect
+import android.graphics.RenderNode
+import android.graphics.Shader
+import android.hardware.HardwareBuffer
+import android.media.ImageReader
+import android.os.Build
+import androidx.annotation.RequiresApi
 
 object BlurUtils {
 
     fun blurBitmap(src: Bitmap, blurPercent: Int): Bitmap {
         if (blurPercent <= 0 || src.width < 2 || src.height < 2 || src.isRecycled) return src
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val hwResult = runCatching { blurBitmapHardware(src, blurPercent) }.getOrNull()
+            if (hwResult != null && hwResult != src && !hwResult.isRecycled) {
+                return hwResult
+            }
+        }
+
+        return blurBitmapCpu(src, blurPercent)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun blurBitmapHardware(src: Bitmap, blurPercent: Int): Bitmap {
+        val radius = ((blurPercent / 100f) * 25f).coerceIn(1f, 25f)
+        val width = src.width
+        val height = src.height
+
+        val renderNode = RenderNode("BlurEffectNode")
+        renderNode.setPosition(0, 0, width, height)
+        val renderEffect = RenderEffect.createBlurEffect(
+            radius, radius, Shader.TileMode.CLAMP
+        )
+        renderNode.setRenderEffect(renderEffect)
+
+        val canvas = renderNode.beginRecording(width, height)
+        canvas.drawBitmap(src, 0f, 0f, null)
+        renderNode.endRecording()
+
+        val imageReader = ImageReader.newInstance(
+            width, height,
+            PixelFormat.RGBA_8888, 1,
+            HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE or HardwareBuffer.USAGE_GPU_COLOR_OUTPUT
+        )
+        val hardwareRenderer = HardwareRenderer()
+        hardwareRenderer.setSurface(imageReader.surface)
+        hardwareRenderer.setContentRoot(renderNode)
+
+        val renderRequest = hardwareRenderer.createRenderRequest()
+        renderRequest.syncAndDraw()
+
+        val image = imageReader.acquireNextImage()
+        val hardwareBuffer = image?.hardwareBuffer
+        val resultBitmap = if (hardwareBuffer != null) {
+            Bitmap.wrapHardwareBuffer(hardwareBuffer, ColorSpace.get(ColorSpace.Named.SRGB))
+                ?.copy(Bitmap.Config.ARGB_8888, false) ?: src
+        } else {
+            src
+        }
+        image?.close()
+        hardwareBuffer?.close()
+        imageReader.close()
+        hardwareRenderer.destroy()
+        return resultBitmap
+    }
+
+    private fun blurBitmapCpu(src: Bitmap, blurPercent: Int): Bitmap {
         val radius = ((blurPercent / 100f) * 25f).toInt().coerceIn(1, 25)
         val width = src.width
         val height = src.height

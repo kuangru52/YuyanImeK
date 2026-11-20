@@ -653,53 +653,60 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
         var keyIcon = if(softKey.code == KeyEvent.KEYCODE_SPACE) {
             ContextCompat.getDrawable(context, R.drawable.sdk_skb_key_space_icon)
         } else softKey.keyIcon
-        val weightHeigth = softKey.height() / 4f
-        if(softKey.code == KeyEvent.KEYCODE_SHIFT_LEFT && InputModeSwitcher.isChinese && !InputDispatcher.isFinish){
-            keyLabel = com.yuyan.imemodule.entity.keyboard.convertFunctionKeyToEnglish("分词")
-            keyIcon = null
-        }
+
+        val effectiveBottom = if (isKeyBorder && isKeyShadow) bottom - shadowDepth else bottom
+        val cx = (left + right) / 2.0f
+        val cy = (top + effectiveBottom) / 2.0f
+
         if (keyboardSymbol && !TextUtils.isEmpty(keyLabelSmall)) {
             mPaint.color = smallSymbolColor
             applyFontWeightToPaint(mPaint, keyboardFontWeight)
             mPaint.textSize = mNormalKeyTextSizeSmall.toFloat()
-            val x = softKey.mLeft + (softKey.width() - mPaint.measureText(keyLabelSmall)) / 2.0f
-            val y = softKey.mTop + weightHeigth * 1.1f
+            val smallMetrics = mPaint.fontMetrics
+            val smallCy = top + (effectiveBottom - top) * 0.22f
+            val x = cx - mPaint.measureText(keyLabelSmall) / 2.0f
+            val y = smallCy - (smallMetrics.ascent + smallMetrics.descent) / 2.0f
             canvas.drawText(keyLabelSmall, x, y, mPaint)
         }
         if (null != keyIcon) {
-            var  intrinsicWidth = keyIcon.intrinsicWidth
-            var  intrinsicHeight = keyIcon.intrinsicHeight
-            while(softKey.width() < intrinsicWidth || softKey.height() < intrinsicHeight){
-                intrinsicWidth /= 2
-                intrinsicHeight /= 2
-            }
-            val marginLeft = (softKey.width() - intrinsicWidth) / 2
-            val marginRight = softKey.width() - intrinsicWidth - marginLeft
-            val marginTop = if (softKey.code == KeyEvent.KEYCODE_SPACE) {
-                ((softKey.height() - intrinsicHeight) / 2 + softKey.height() * 0.12f).toInt()
-            } else {
-                (softKey.height() - intrinsicHeight) / 2
-            }
-            val marginBottom = softKey.height() - intrinsicHeight - marginTop
+            val rawW = if (keyIcon.intrinsicWidth > 0) keyIcon.intrinsicWidth else dp(24f).toInt()
+            val rawH = if (keyIcon.intrinsicHeight > 0) keyIcon.intrinsicHeight else dp(24f).toInt()
+            val cardW = right - left
+            val cardH = effectiveBottom - top
+            val maxW = (cardW * 0.48f).toInt().coerceAtLeast(dp(14f).toInt())
+            val maxH = (cardH * 0.48f).toInt().coerceAtLeast(dp(14f).toInt())
+            val scale = minOf(1f, maxW.toFloat() / rawW, maxH.toFloat() / rawH)
+            val iconW = (rawW * scale).toInt()
+            val iconH = (rawH * scale).toInt()
+
+            val iconLeft = (cx - iconW / 2.0f).toInt()
+            val iconTop = (cy - iconH / 2.0f).toInt()
+
             keyIcon.setTint(textColor)
-            keyIcon.setBounds(softKey.mLeft + marginLeft, softKey.mTop + marginTop, softKey.mRight - marginRight, softKey.mBottom - marginBottom)
+            keyIcon.setBounds(iconLeft, iconTop, iconLeft + iconW, iconTop + iconH)
             keyIcon.draw(canvas)
-        } else if (!TextUtils.isEmpty(keyLabel)) { //Label位于中间
+        } else if (!TextUtils.isEmpty(keyLabel)) { // Label在可见按键表面严格上下左右居中
             mPaint.color = textColor
             applyFontWeightToPaint(mPaint, keyboardFontWeight)
-            mPaint.textSize =  mNormalKeyTextSize.toFloat()
-            val x = softKey.mLeft + (softKey.width() - mPaint.measureText(keyLabel)) / 2.0f
-            val fontHeight = mFmi.bottom - mFmi.top
-            val y = if(keyLabelSmall.isEmpty()) (softKey.mTop + softKey.mBottom) / 2.0f + fontHeight
-            else  (softKey.mTop + softKey.mBottom) / 2.0f + fontHeight *1.5f
+            mPaint.textSize = mNormalKeyTextSize.toFloat()
+            val fontMetrics = mPaint.fontMetrics
+            val labelCy = if (keyboardSymbol && !TextUtils.isEmpty(keyLabelSmall)) {
+                top + (effectiveBottom - top) * 0.60f
+            } else {
+                cy
+            }
+            val x = cx - mPaint.measureText(keyLabel) / 2.0f
+            val y = labelCy - (fontMetrics.ascent + fontMetrics.descent) / 2.0f
             canvas.drawText(keyLabel, x, y, mPaint)
         }
-        if (keyboardMnemonic && !TextUtils.isEmpty(keyMnemonic)) {  //助记符位于中下方
+        if (keyboardMnemonic && !TextUtils.isEmpty(keyMnemonic)) {  // 助记符位于按键下方
             mPaint.color = textColor
             applyFontWeightToPaint(mPaint, keyboardFontWeight)
             mPaint.textSize = mNormalKeyTextSizeSmall.toFloat() * 0.7f
-            val x = softKey.mLeft + (softKey.width() - mPaint.measureText(keyMnemonic)) / 2.0f
-            val y = softKey.mTop + weightHeigth * 3 + weightHeigth / 2.0f
+            val mnemonicMetrics = mPaint.fontMetrics
+            val mnemonicCy = top + (effectiveBottom - top) * 0.82f
+            val x = cx - mPaint.measureText(keyMnemonic) / 2.0f
+            val y = mnemonicCy - (mnemonicMetrics.ascent + mnemonicMetrics.descent) / 2.0f
             canvas.drawText(keyMnemonic, x, y, mPaint)
         }
     }
