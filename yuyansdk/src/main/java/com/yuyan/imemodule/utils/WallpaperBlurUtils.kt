@@ -1,86 +1,46 @@
 package com.yuyan.imemodule.utils
 
 import android.graphics.Bitmap
-import android.graphics.ColorSpace
-import android.graphics.HardwareRenderer
-import android.graphics.PixelFormat
-import android.graphics.RenderEffect
-import android.graphics.RenderNode
-import android.graphics.Shader
-import android.hardware.HardwareBuffer
-import android.media.ImageReader
 import android.os.Build
-import androidx.annotation.RequiresApi
 
-object BlurUtils {
+/**
+ * 专用于【壁纸图片高斯模糊】处理类
+ * 与系统键盘窗口实时高斯模糊 (ImeGlassBlurWindow) 完全独立隔离
+ */
+object WallpaperBlurUtils {
 
-    fun blurBitmap(src: Bitmap, blurPercent: Int): Bitmap {
+    /**
+     * 对壁纸 Bitmap 进行线性高斯/StackBlur 模糊处理
+     * @param src 原始壁纸 Bitmap
+     * @param blurPercent 模糊百分比 (0 ~ 100)
+     */
+    fun blurWallpaperBitmap(src: Bitmap, blurPercent: Int): Bitmap {
         if (blurPercent <= 0 || src.width < 2 || src.height < 2 || src.isRecycled) return src
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val hwResult = runCatching { blurBitmapHardware(src, blurPercent) }.getOrNull()
-            if (hwResult != null && hwResult != src && !hwResult.isRecycled) {
-                return hwResult
+        return runCatching {
+            val softwareBitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && src.config == Bitmap.Config.HARDWARE) {
+                src.copy(Bitmap.Config.ARGB_8888, false)
+            } else {
+                src
             }
-        }
-
-        return blurBitmapCpu(src, blurPercent)
+            blurBitmapLinear(softwareBitmap, blurPercent)
+        }.getOrDefault(src)
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
-    private fun blurBitmapHardware(src: Bitmap, blurPercent: Int): Bitmap {
-        val radius = ((blurPercent / 100f) * 25f).coerceIn(1f, 25f)
+    private fun blurBitmapLinear(src: Bitmap, blurPercent: Int): Bitmap {
+        val percent = blurPercent.coerceIn(1, 100) / 100f
         val width = src.width
         val height = src.height
 
-        val renderNode = RenderNode("BlurEffectNode")
-        renderNode.setPosition(0, 0, width, height)
-        val renderEffect = RenderEffect.createBlurEffect(
-            radius, radius, Shader.TileMode.CLAMP
-        )
-        renderNode.setRenderEffect(renderEffect)
+        // 降采样到 240px 宽度的超高速小图进行 StackBlur
+        val maxSmallW = 240
+        val scale = (maxSmallW.toFloat() / width.toFloat()).coerceAtMost(0.5f)
+        val smallW = (width * scale).toInt().coerceAtLeast(4)
+        val smallH = (height * scale).toInt().coerceAtLeast(4)
 
-        val canvas = renderNode.beginRecording(width, height)
-        canvas.drawBitmap(src, 0f, 0f, null)
-        renderNode.endRecording()
+        // 严格 1% ~ 100% 线性映射 StackBlur 半径 1 ~ 30
+        val radius = (1 + percent * 29f).toInt().coerceIn(1, 30)
 
-        val imageReader = ImageReader.newInstance(
-            width, height,
-            PixelFormat.RGBA_8888, 1,
-            HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE or HardwareBuffer.USAGE_GPU_COLOR_OUTPUT
-        )
-        val hardwareRenderer = HardwareRenderer()
-        hardwareRenderer.setSurface(imageReader.surface)
-        hardwareRenderer.setContentRoot(renderNode)
-
-        val renderRequest = hardwareRenderer.createRenderRequest()
-        renderRequest.syncAndDraw()
-
-        val image = imageReader.acquireNextImage()
-        val hardwareBuffer = image?.hardwareBuffer
-        val resultBitmap = if (hardwareBuffer != null) {
-            Bitmap.wrapHardwareBuffer(hardwareBuffer, ColorSpace.get(ColorSpace.Named.SRGB))
-                ?.copy(Bitmap.Config.ARGB_8888, false) ?: src
-        } else {
-            src
-        }
-        image?.close()
-        hardwareBuffer?.close()
-        imageReader.close()
-        hardwareRenderer.destroy()
-        return resultBitmap
-    }
-
-    private fun blurBitmapCpu(src: Bitmap, blurPercent: Int): Bitmap {
-        val radius = ((blurPercent / 100f) * 25f).toInt().coerceIn(1, 25)
-        val width = src.width
-        val height = src.height
-
-        val scale = 0.5f
-        val smallW = (width * scale).toInt().coerceAtLeast(1)
-        val smallH = (height * scale).toInt().coerceAtLeast(1)
         val inputBmp = Bitmap.createScaledBitmap(src, smallW, smallH, true)
-
         val pixels = IntArray(smallW * smallH)
         inputBmp.getPixels(pixels, 0, smallW, 0, 0, smallW, smallH)
         if (inputBmp != src && !inputBmp.isRecycled) {
@@ -106,9 +66,11 @@ object BlurUtils {
         val r = IntArray(wh)
         val g = IntArray(wh)
         val b = IntArray(wh)
+        val a = IntArray(wh)
         var rsum: Int
         var gsum: Int
         var bsum: Int
+        var asum: Int
         var x: Int
         var y: Int
         var i: Int
@@ -128,9 +90,9 @@ object BlurUtils {
         }
 
         yi = 0
-        yw = yi
+        yw = 0
 
-        val stack = Array(div) { IntArray(3) }
+        val stack = Array(div) { IntArray(4) }
         var stackpointer: Int
         var stackstart: Int
         var sir: IntArray
@@ -139,21 +101,26 @@ object BlurUtils {
         var routsum: Int
         var goutsum: Int
         var boutsum: Int
+        var aoutsum: Int
         var rinsum: Int
         var ginsum: Int
         var binsum: Int
+        var ainsum: Int
 
         y = 0
         while (y < h) {
+            asum = 0
             bsum = 0
-            gsum = bsum
-            rsum = gsum
-            boutsum = rsum
-            goutsum = boutsum
-            routsum = goutsum
-            binsum = routsum
-            ginsum = binsum
-            rinsum = ginsum
+            gsum = 0
+            rsum = 0
+            aoutsum = 0
+            boutsum = 0
+            goutsum = 0
+            routsum = 0
+            ainsum = 0
+            binsum = 0
+            ginsum = 0
+            rinsum = 0
             i = -radius
             while (i <= radius) {
                 p = pix[yi + Math.min(wm, Math.max(i, 0))]
@@ -161,18 +128,22 @@ object BlurUtils {
                 sir[0] = (p and 0xff0000) shr 16
                 sir[1] = (p and 0x00ff00) shr 8
                 sir[2] = p and 0x0000ff
+                sir[3] = (p ushr 24) and 0xff
                 rbs = r1 - Math.abs(i)
                 rsum += sir[0] * rbs
                 gsum += sir[1] * rbs
                 bsum += sir[2] * rbs
+                asum += sir[3] * rbs
                 if (i > 0) {
                     rinsum += sir[0]
                     ginsum += sir[1]
                     binsum += sir[2]
+                    ainsum += sir[3]
                 } else {
                     routsum += sir[0]
                     goutsum += sir[1]
                     boutsum += sir[2]
+                    aoutsum += sir[3]
                 }
                 i++
             }
@@ -183,10 +154,12 @@ object BlurUtils {
                 r[yi] = dv[rsum]
                 g[yi] = dv[gsum]
                 b[yi] = dv[bsum]
+                a[yi] = dv[asum]
 
                 rsum -= routsum
                 gsum -= goutsum
                 bsum -= boutsum
+                asum -= aoutsum
 
                 stackstart = stackpointer - radius + div
                 sir = stack[stackstart % div]
@@ -194,6 +167,7 @@ object BlurUtils {
                 routsum -= sir[0]
                 goutsum -= sir[1]
                 boutsum -= sir[2]
+                aoutsum -= sir[3]
 
                 if (y == 0) {
                     vmin[x] = Math.min(x + radius + 1, wm)
@@ -203,14 +177,17 @@ object BlurUtils {
                 sir[0] = (p and 0xff0000) shr 16
                 sir[1] = (p and 0x00ff00) shr 8
                 sir[2] = p and 0x0000ff
+                sir[3] = (p ushr 24) and 0xff
 
                 rinsum += sir[0]
                 ginsum += sir[1]
                 binsum += sir[2]
+                ainsum += sir[3]
 
                 rsum += rinsum
                 gsum += ginsum
                 bsum += binsum
+                asum += ainsum
 
                 stackpointer = (stackpointer + 1) % div
                 sir = stack[stackpointer % div]
@@ -218,10 +195,12 @@ object BlurUtils {
                 routsum += sir[0]
                 goutsum += sir[1]
                 boutsum += sir[2]
+                aoutsum += sir[3]
 
                 rinsum -= sir[0]
                 ginsum -= sir[1]
                 binsum -= sir[2]
+                ainsum -= sir[3]
 
                 yi++
                 x++
@@ -232,15 +211,18 @@ object BlurUtils {
 
         x = 0
         while (x < w) {
+            asum = 0
             bsum = 0
-            gsum = bsum
-            rsum = gsum
-            boutsum = rsum
-            goutsum = boutsum
-            routsum = goutsum
-            binsum = routsum
-            ginsum = binsum
-            rinsum = ginsum
+            gsum = 0
+            rsum = 0
+            aoutsum = 0
+            boutsum = 0
+            goutsum = 0
+            routsum = 0
+            ainsum = 0
+            binsum = 0
+            ginsum = 0
+            rinsum = 0
             yp = -radius * w
             i = -radius
             while (i <= radius) {
@@ -249,18 +231,22 @@ object BlurUtils {
                 sir[0] = r[yi]
                 sir[1] = g[yi]
                 sir[2] = b[yi]
+                sir[3] = a[yi]
                 rbs = r1 - Math.abs(i)
                 rsum += r[yi] * rbs
-                gsum += r[yi] * rbs
+                gsum += g[yi] * rbs
                 bsum += b[yi] * rbs
+                asum += a[yi] * rbs
                 if (i > 0) {
                     rinsum += sir[0]
                     ginsum += sir[1]
                     binsum += sir[2]
+                    ainsum += sir[3]
                 } else {
                     routsum += sir[0]
                     goutsum += sir[1]
                     boutsum += sir[2]
+                    aoutsum += sir[3]
                 }
                 if (i < hm) {
                     yp += w
@@ -271,10 +257,11 @@ object BlurUtils {
             stackpointer = radius
             y = 0
             while (y < h) {
-                pix[yi] = (-0x1000000 and pix[yi]) or (dv[rsum] shl 16) or (dv[gsum] shl 8) or dv[bsum]
+                pix[yi] = (dv[asum] shl 24) or (dv[rsum] shl 16) or (dv[gsum] shl 8) or dv[bsum]
                 rsum -= routsum
                 gsum -= goutsum
                 bsum -= boutsum
+                asum -= aoutsum
 
                 stackstart = stackpointer - radius + div
                 sir = stack[stackstart % div]
@@ -282,6 +269,7 @@ object BlurUtils {
                 routsum -= sir[0]
                 goutsum -= sir[1]
                 boutsum -= sir[2]
+                aoutsum -= sir[3]
 
                 if (x == 0) {
                     vmin[y] = Math.min(y + r1, hm) * w
@@ -291,14 +279,17 @@ object BlurUtils {
                 sir[0] = r[p]
                 sir[1] = g[p]
                 sir[2] = b[p]
+                sir[3] = a[p]
 
                 rinsum += sir[0]
                 ginsum += sir[1]
                 binsum += sir[2]
+                ainsum += sir[3]
 
                 rsum += rinsum
                 gsum += ginsum
                 bsum += binsum
+                asum += ainsum
 
                 stackpointer = (stackpointer + 1) % div
                 sir = stack[stackpointer % div]
@@ -306,10 +297,12 @@ object BlurUtils {
                 routsum += sir[0]
                 goutsum += sir[1]
                 boutsum += sir[2]
+                aoutsum += sir[3]
 
                 rinsum -= sir[0]
                 ginsum -= sir[1]
                 binsum -= sir[2]
+                ainsum -= sir[3]
 
                 yi += w
                 y++

@@ -123,6 +123,7 @@ class PrefixAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is SettingHolder) {
+            holder.ivSetting.drawable?.setTint(activeTheme.keyTextColor)
             holder.ivSetting.setOnClickListener { onSettingClick?.invoke() }
             return
         }
@@ -138,6 +139,7 @@ class PrefixAdapter(
             }
             val label = mDatas[position]
             holder.tvSymbolType.setText(sbc2dbcCase(label))
+            holder.tvSymbolType.setTextColor(if (isPrefixs) activeTheme.keyTextColor else activeTheme.sideSymbolKeyTextColor)
             holder.tvSymbolType.typeface = android.graphics.Typeface.DEFAULT
             holder.tvSymbolType.setBackgroundColor(android.graphics.Color.TRANSPARENT)
         }

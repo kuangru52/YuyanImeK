@@ -59,6 +59,8 @@ class SymbolAdapter(context: Context?, val viewType: SymbolMode, private val pag
             setColor(activeTheme.keyBackgroundColor)
         }
         holder.itemView.background = bg
+        holder.textView.setTextColor(activeTheme.keyTextColor)
+        holder.tVSdb.setTextColor(activeTheme.keyTextColor)
 
         holder.textView.setOnClickListener { _: View? ->
             onClickSymbol(mDatas!![position], position)

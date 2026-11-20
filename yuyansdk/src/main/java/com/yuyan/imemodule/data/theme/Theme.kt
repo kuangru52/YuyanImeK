@@ -216,50 +216,60 @@ sealed class Theme : Parcelable {
                     }
                 }
 
-                var bitmap: Bitmap? = null
-                try {
-                    val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                    BitmapFactory.decodeFile(src.absolutePath, options)
-                    val targetW = if (reqWidth > 0) reqWidth else 1080
-                    val targetH = if (reqHeight > 0) reqHeight else 1920
-                    options.inSampleSize = calculateInSampleSize(options, targetW, targetH)
-                    options.inJustDecodeBounds = false
+                val baseKey = "$srcFilePath|${cropRect?.left},${cropRect?.top},${cropRect?.right},${cropRect?.bottom}|$reqWidth|$reqHeight"
+                var bitmap = baseBitmapCache.get(baseKey)
+                if (bitmap == null) {
+                    try {
+                        val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                        BitmapFactory.decodeFile(src.absolutePath, options)
+                        val targetW = if (reqWidth > 0) reqWidth else 1080
+                        val targetH = if (reqHeight > 0) reqHeight else 1920
+                        options.inSampleSize = calculateInSampleSize(options, targetW, targetH)
+                        options.inJustDecodeBounds = false
 
-                    val srcBmp = BitmapFactory.decodeFile(src.absolutePath, options)
-                    if (srcBmp != null) {
-                        if (cropRect != null && cropRect.width() > 0 && cropRect.height() > 0) {
-                            val scale = 1.0f / options.inSampleSize
-                            val scaledLeft = (cropRect.left * scale).toInt().coerceIn(0, srcBmp.width - 1)
-                            val scaledTop = (cropRect.top * scale).toInt().coerceIn(0, srcBmp.height - 1)
-                            val scaledRight = (cropRect.right * scale).toInt().coerceIn(scaledLeft + 1, srcBmp.width)
-                            val scaledBottom = (cropRect.bottom * scale).toInt().coerceIn(scaledTop + 1, srcBmp.height)
-                            val validRect = Rect(scaledLeft, scaledTop, scaledRight, scaledBottom)
-                            if (validRect.width() > 0 && validRect.height() > 0) {
-                                bitmap = Bitmap.createBitmap(srcBmp, validRect.left, validRect.top, validRect.width(), validRect.height())
+                        val srcBmp = BitmapFactory.decodeFile(src.absolutePath, options)
+                        if (srcBmp != null) {
+                            if (cropRect != null && cropRect.width() > 0 && cropRect.height() > 0) {
+                                val scale = 1.0f / options.inSampleSize
+                                val scaledLeft = (cropRect.left * scale).toInt().coerceIn(0, srcBmp.width - 1)
+                                val scaledTop = (cropRect.top * scale).toInt().coerceIn(0, srcBmp.height - 1)
+                                val scaledRight = (cropRect.right * scale).toInt().coerceIn(scaledLeft + 1, srcBmp.width)
+                                val scaledBottom = (cropRect.bottom * scale).toInt().coerceIn(scaledTop + 1, srcBmp.height)
+                                val validRect = Rect(scaledLeft, scaledTop, scaledRight, scaledBottom)
+                                if (validRect.width() > 0 && validRect.height() > 0) {
+                                    bitmap = Bitmap.createBitmap(srcBmp, validRect.left, validRect.top, validRect.width(), validRect.height())
+                                } else {
+                                    bitmap = srcBmp
+                                }
                             } else {
                                 bitmap = srcBmp
                             }
-                        } else {
-                            bitmap = srcBmp
                         }
+                    } catch (_: Exception) {}
+                    if (bitmap != null) {
+                        baseBitmapCache.put(baseKey, bitmap)
                     }
-                } catch (_: Exception) {}
+                }
 
                 if (bitmap == null) return null
-                if (blurRadius > 0) {
-                    bitmap = com.yuyan.imemodule.utils.BlurUtils.blurBitmap(bitmap, blurRadius)
+                val finalBitmap = if (blurRadius > 0) {
+                    com.yuyan.imemodule.utils.WallpaperBlurUtils.blurWallpaperBitmap(bitmap, blurRadius)
+                } else {
+                    bitmap
                 }
-                bitmapCache.put(cacheKey, bitmap)
-                return BitmapDrawable(Launcher.instance.context.resources, bitmap).apply {
+                bitmapCache.put(cacheKey, finalBitmap)
+                return BitmapDrawable(Launcher.instance.context.resources, finalBitmap).apply {
                     colorFilter = DarkenColorFilter(100 - brightness)
                 }
             }
 
             companion object {
-                private val bitmapCache = android.util.LruCache<String, Bitmap>(10)
+                private val bitmapCache = android.util.LruCache<String, Bitmap>(15)
+                private val baseBitmapCache = android.util.LruCache<String, Bitmap>(5)
 
                 fun clearCache() {
                     bitmapCache.evictAll()
+                    baseBitmapCache.evictAll()
                 }
 
                 private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {

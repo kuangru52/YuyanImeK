@@ -809,7 +809,7 @@ class CustomThemeActivity : AppCompatActivity() {
             setOnProgressChangedListener(object : SignSeekBar.OnProgressChangedListener {
                 override fun onProgressChanged(signSeekBar: SignSeekBar?, progress: Int, progressFloat: Float, fromUser: Boolean) {
                     if (fromUser) {
-                        updateColorTheme { it.copy(backgroundBlurRadius = progress) }
+                        updateBackgroundTheme { it.copy(backgroundBlurRadius = progress) }
                     }
                 }
                 override fun getProgressOnActionUp(signSeekBar: SignSeekBar?, progress: Int, progressFloat: Float) {}
@@ -1408,7 +1408,7 @@ class CustomThemeActivity : AppCompatActivity() {
                 override fun onProgressChanged(signSeekBar: SignSeekBar?, progress: Int, progressFloat: Float, fromUser: Boolean) {
                     if (fromUser) {
                         brightnessValue.text = "$progress%"
-                        updateColorTheme {
+                        updateBackgroundTheme {
                             it.copy(
                                 backgroundImage = it.backgroundImage?.copy(brightness = progress)
                             )
@@ -1632,6 +1632,13 @@ class CustomThemeActivity : AppCompatActivity() {
         customTheme = updateBlock(theme)
         val drawable = getInitialBackgroundDrawable()
         previewUi.setTheme(theme, drawable)
+    }
+
+    private fun updateBackgroundTheme(updateBlock: (Theme.Custom) -> Theme.Custom) {
+        pushThemeHistory()
+        customTheme = updateBlock(theme)
+        val drawable = getInitialBackgroundDrawable()
+        previewUi.updateBackgroundOnly(theme, drawable)
     }
 
     private var activeExpandRow: View? = null

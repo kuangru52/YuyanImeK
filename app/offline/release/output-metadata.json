@@ -11,9 +11,9 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 2026112014,
-      "versionName": "K75",
-      "outputFile": "YuyanImeK-K75_2026112014_release.apk"
+      "versionCode": 2026112016,
+      "versionName": "K76",
+      "outputFile": "YuyanImeK-K76_2026112016_release.apk"
     }
   ],
   "elementType": "File",
@@ -22,14 +22,14 @@
       "minApi": 28,
       "maxApi": 30,
       "baselineProfiles": [
-        "baselineProfiles/1/YuyanImeK-K75_2026112014_release.dm"
+        "baselineProfiles/1/YuyanImeK-K76_2026112016_release.dm"
       ]
     },
     {
       "minApi": 31,
       "maxApi": 2147483647,
       "baselineProfiles": [
-        "baselineProfiles/0/YuyanImeK-K75_2026112014_release.dm"
+        "baselineProfiles/0/YuyanImeK-K76_2026112016_release.dm"
       ]
     }
   ],

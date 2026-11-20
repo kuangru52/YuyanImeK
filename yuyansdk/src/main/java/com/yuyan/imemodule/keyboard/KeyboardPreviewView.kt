@@ -131,6 +131,21 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
         reloadKeyboardLayout(theme)
     }
 
+    fun updateBackgroundOnly(theme: Theme, backgroundDrawable: Drawable) {
+        currentTheme = theme
+        val hasWallpaper = (theme.backgroundImage != null) || (theme.keyboardResources != 0)
+        if (hasWallpaper) {
+            backgroundLayer?.background = getScaledBackgroundDrawable(theme)
+        } else {
+            backgroundLayer?.background = backgroundDrawable
+        }
+        val customBg = theme.backgroundImage as? Theme.Custom.CustomBackground
+        val brightness = customBg?.brightness ?: 100
+        setBrightness(brightness)
+        applyWindowTopCornerRadius()
+        invalidate()
+    }
+
     fun setTheme(theme: Theme) {
         currentTheme = theme
         val customBg = theme.backgroundImage as? Theme.Custom.CustomBackground
@@ -204,10 +219,12 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
     }
 
     private fun getScaledBackgroundDrawable(theme: Theme): Drawable {
-        val rawDrawable = theme.backgroundDrawable()
-        val targetWidth = instance.skbWidth
+        val targetWidth = if (width > 0) width else instance.skbWidth
         val extraBottom = dp(12)
-        val targetHeight = instance.skbHeight + instance.heightForCandidatesArea + extraBottom
+        val targetHeight = if (height > 0) height else (instance.skbHeight + instance.heightForCandidatesArea + extraBottom)
+        val customTheme = theme as? Theme.Custom
+        val rawDrawable = customTheme?.backgroundImage?.toDrawable(theme.backgroundBlurRadius, reqWidth = targetWidth, reqHeight = targetHeight)
+            ?: theme.backgroundDrawable()
         if (targetWidth <= 0 || targetHeight <= 0) return rawDrawable
 
         if (rawDrawable is BitmapDrawable) {
@@ -304,10 +321,13 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
 
         when (currentMode) {
             PreviewMode.MAIN_ZH, PreviewMode.MAIN_EN -> {
-                val layoutMode = if (currentMode == PreviewMode.MAIN_EN) {
+                var layoutMode = if (currentMode == PreviewMode.MAIN_EN) {
                     InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC
                 } else {
                     customSkbLayoutMode ?: (AppPrefs.getInstance().internal.inputDefaultMode.getValue() and InputModeSwitcher.MASK_SKB_LAYOUT)
+                }
+                if (layoutMode == InputModeSwitcher.MASK_SKB_LAYOUT_VOICE || layoutMode == InputModeSwitcher.MASK_SKB_LAYOUT_TEXTEDIT || layoutMode <= 0) {
+                    layoutMode = InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN
                 }
 
                 val tk = TextKeyboard(context).apply {
