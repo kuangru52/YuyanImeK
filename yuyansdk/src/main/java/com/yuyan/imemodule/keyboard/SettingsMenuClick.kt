@@ -129,7 +129,7 @@ fun onSettingsMenuClick(inputView: InputView, skbMenuMode: SkbMenuMode) {
             KeyboardManager.instance.switchKeyboard()
         }
         SkbMenuMode.FlowerTypeface -> {
-            CustomConstant.flowerTypeface = if(CustomConstant.flowerTypeface == FlowerTypefaceMode.Disabled) FlowerTypefaceMode.Mars else FlowerTypefaceMode.Disabled
+            CustomConstant.flowerTypeface = if(CustomConstant.flowerTypeface == FlowerTypefaceMode.Disabled) FlowerTypefaceMode.Strikethrough else FlowerTypefaceMode.Disabled
             inputView.mSkbCandidatesBarView.showFlowerTypeface()
             KeyboardManager.instance.switchKeyboard()
         }

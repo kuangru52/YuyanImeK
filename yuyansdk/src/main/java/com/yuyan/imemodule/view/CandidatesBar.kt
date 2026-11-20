@@ -300,30 +300,41 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                 setTextColor(ThemeManager.activeTheme.keyTextColor)
                 setPadding(dp(10), 0, 0, 0)
             }
-            val flowerTypefaces = arrayOf(FlowerTypefaceMode.Mars, FlowerTypefaceMode.FlowerVine, FlowerTypefaceMode.Messy, FlowerTypefaceMode.Germinate,
-                FlowerTypefaceMode.Fog,FlowerTypefaceMode.ProhibitAccess, FlowerTypefaceMode.Grass, FlowerTypefaceMode.Wind, FlowerTypefaceMode.Disabled)
+            val flowerTypefaces = arrayOf(
+                FlowerTypefaceMode.Strikethrough,
+                FlowerTypefaceMode.SlashStrikethrough,
+                FlowerTypefaceMode.Underline,
+                FlowerTypefaceMode.Mars,
+                FlowerTypefaceMode.Disabled
+            )
             val flowerTypefacesName = resources.getStringArray(R.array.FlowerTypeface)
             if (CustomConstant.flowerTypeface == FlowerTypefaceMode.Disabled) {
                 mLlContainer.visibility = GONE
             } else {
-                mFlowerType.text =
-                    flowerTypefacesName[flowerTypefaces.indexOf(CustomConstant.flowerTypeface)]
+                val index = flowerTypefaces.indexOf(CustomConstant.flowerTypeface).coerceAtLeast(0)
+                mFlowerType.text = flowerTypefacesName[index]
             }
             mFlowerType.setOnClickListener { _: View ->
                 val popupMenu = PopupMenu(context, mLlContainer).apply {
                     menuInflater.inflate(R.menu.flower_typeface_menu, menu)
                     setOnMenuItemClickListener { menuItem ->
-                        val ids = listOf(R.id.flower_type_mars, R.id.flower_type_flowervine, R.id.flower_type_messy, R.id.flower_type_grminate,
-                            R.id.flower_type_fog, R.id.flower_type_prohibitaccess, R.id.flower_type_grass, R.id.flower_type_wind, R.id.flower_type_disabled
+                        val ids = listOf(
+                            R.id.flower_type_strikethrough,
+                            R.id.flower_type_slash_strikethrough,
+                            R.id.flower_type_underline,
+                            R.id.flower_type_mars,
+                            R.id.flower_type_disabled
                         )
                         val position = ids.indexOf(menuItem.itemId)
-                        val select = flowerTypefaces[position]
-                        mFlowerType.text = flowerTypefacesName[position]
-                        CustomConstant.flowerTypeface = select
-                        if (select == FlowerTypefaceMode.Disabled) {
-                            mLlContainer.visibility = GONE
+                        if (position != -1) {
+                            val select = flowerTypefaces[position]
+                            mFlowerType.text = flowerTypefacesName[position]
+                            CustomConstant.flowerTypeface = select
+                            if (select == FlowerTypefaceMode.Disabled) {
+                                mLlContainer.visibility = GONE
+                            }
+                            mCandidatesMenuAdapter.notifyChanged()// 刷新菜单栏
                         }
-                        mCandidatesMenuAdapter.notifyChanged()// 刷新菜单栏
                         false
                     }
                 }
@@ -708,11 +719,19 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
      * 选择花漾字
      */
     fun showFlowerTypeface() {
-        if(CustomConstant.flowerTypeface == FlowerTypefaceMode.Disabled) {
+        if (CustomConstant.flowerTypeface == FlowerTypefaceMode.Disabled) {
             mLlContainer.visibility = GONE
         } else {
-            CustomConstant.flowerTypeface = FlowerTypefaceMode.Mars
-            mFlowerType.text = "焱暒妏"
+            val flowerTypefaces = arrayOf(
+                FlowerTypefaceMode.Strikethrough,
+                FlowerTypefaceMode.SlashStrikethrough,
+                FlowerTypefaceMode.Underline,
+                FlowerTypefaceMode.Mars,
+                FlowerTypefaceMode.Disabled
+            )
+            val flowerTypefacesName = resources.getStringArray(R.array.FlowerTypeface)
+            val index = flowerTypefaces.indexOf(CustomConstant.flowerTypeface).coerceAtLeast(0)
+            mFlowerType.text = flowerTypefacesName[index]
             mLlContainer.visibility = VISIBLE
         }
     }

@@ -86,33 +86,21 @@ object StringUtils {
      * 字符串转花漾字
      */
     fun converted2FlowerTypeface(src: String): String {
-         return  when(CustomConstant.flowerTypeface) {
-             FlowerTypefaceMode.Disabled -> {
-                 src
-             }
-            FlowerTypefaceMode.Mars -> {  //焱暒妏
-                 src.map { simplified2HotPreset[it]?:it }.joinToString("")
+        return when (CustomConstant.flowerTypeface) {
+            FlowerTypefaceMode.Disabled -> {
+                src
             }
-            FlowerTypefaceMode.FlowerVine -> {   // ζั͡花ั͡藤ั͡字ั͡✾
-                "ζั͡" + src.map { it }.joinToString("ั͡").plus("ั͡✾")
+            FlowerTypefaceMode.Mars -> {  // 焱暒妏
+                src.map { simplified2HotPreset[it] ?: it }.joinToString("")
             }
-            FlowerTypefaceMode.Messy -> {  //"҉҉҉凌҉҉҉乱҉҉҉字҉҉҉"
-                "҉҉҉" + src.map { it }.joinToString("҉҉҉").plus("҉҉҉")
+            FlowerTypefaceMode.Strikethrough -> {  // 删除线 (\u0336 连续中划线)
+                src.map { "$it\u0336" }.joinToString("")
             }
-            FlowerTypefaceMode.Germinate -> {  //ོ发ོ芽ོ字ོ
-                "ོ" + src.map { it }.joinToString("ོ").plus("ོ")
+            FlowerTypefaceMode.SlashStrikethrough -> {  // 斜删除 (双重 \u0338 加粗斜删除线)
+                src.map { "$it\u0338\u0338" }.joinToString("")
             }
-            FlowerTypefaceMode.Fog -> {  //"҈҈҈҈雾҈҈҈҈霾҈҈҈҈字҈҈҈҈"
-                "҈҈҈҈" + src.map { it }.joinToString( "҈҈҈҈").plus("҈҈҈҈")
-            }
-            FlowerTypefaceMode.ProhibitAccess -> {  //禁⃠止⃠查⃠看
-               src.map { it }.joinToString( "⃠").plus("⃠")
-            }
-            FlowerTypefaceMode.Grass -> {  // 长҉҉҈草҉҉҈字҉҉҈
-                "҈҈҈" + src.map { it }.joinToString( "҈҈҈").plus("҈҈҈")
-            }
-            FlowerTypefaceMode.Wind -> {  // =͟͟起=͟风͟͞͞=͟了͟͞͞͞͞
-             "=͟͟͞͞" + src.map { it }.joinToString( "=͟͟͞͞")
+            FlowerTypefaceMode.Underline -> {  // 下划线 (\u0320 避免微信将 \u0332 渲染成三条线 ≡)
+                src.map { "$it\u0320" }.joinToString("")
             }
         }
     }
