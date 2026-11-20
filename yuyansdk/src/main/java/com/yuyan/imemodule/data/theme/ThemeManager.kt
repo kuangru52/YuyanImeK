@@ -152,8 +152,10 @@ object ThemeManager {
     }
 
     fun onSystemDarkModeChange(isDark: Boolean) {
-        isDarkMode = isDark
-        activeTheme = evaluateActiveTheme()
+        if (isDarkMode != isDark) {
+            isDarkMode = isDark
+            activeTheme = evaluateActiveTheme()
+        }
     }
 
 }

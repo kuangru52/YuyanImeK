@@ -177,6 +177,7 @@ class ImeService : InputMethodService(), LifecycleOwner, SavedStateRegistryOwner
         android.util.Log.w("ImeLifecycle", "onStartInputView restarting=$restarting")
         val start = SystemClock.elapsedRealtime()
         try {
+            onSystemDarkModeChange(resources.configuration.isDarkMode())
             lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
             lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
             if (!::mInputView.isInitialized) {
@@ -346,6 +347,7 @@ class ImeService : InputMethodService(), LifecycleOwner, SavedStateRegistryOwner
      */
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        onSystemDarkModeChange(newConfig.isDarkMode())
         handleHardwareKeyboard(newConfig)
         EnvironmentSingleton.instance.initData(this, newConfig)
         KeyboardLoaderUtil.instance.clearKeyboardMap()
@@ -356,7 +358,9 @@ class ImeService : InputMethodService(), LifecycleOwner, SavedStateRegistryOwner
         if (::mInputView.isInitialized && mInputView !== inputView) {
             mInputView.setConfiguration(newConfig)
         }
-        onSystemDarkModeChange(newConfig.isDarkMode())
+        if (::mInputView.isInitialized) {
+            mInputView.updateTheme()
+        }
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {

@@ -327,4 +327,9 @@ class ClipBoardContainer(context: Context, inputView: InputView) : BaseContainer
     }
 
     fun getMenuMode(): SkbMenuMode = itemMode
+
+    override fun updateSkbLayout() {
+        super.updateSkbLayout()
+        showClipBoardView(getMenuMode())
+    }
 }

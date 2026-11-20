@@ -34,6 +34,7 @@ import com.yuyan.imemodule.callback.CandidateViewListener
 import com.yuyan.imemodule.callback.IKeyboardView
 import com.yuyan.imemodule.callback.IResponseKeyEvent
 import com.yuyan.imemodule.data.emojicon.EmojiconData.SymbolPreset
+import com.yuyan.imemodule.data.theme.Theme
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.database.DataBaseKT
 import com.yuyan.imemodule.database.entry.Clipboard
@@ -741,13 +742,23 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
         mAddPhrasesLayout.updateTheme(activeTheme)
         updateComposingTagTheme()
 
+        com.yuyan.imemodule.utils.KeyboardLoaderUtil.instance.clearKeyboardMap()
         KeyboardManager.instance.currentContainer?.updateSkbLayout()
-        (mSkbRoot.findViewById<View>(R.id.skb_input_keyboard_view) as? ViewGroup)?.let { container ->
-            for (i in 0 until container.childCount) {
-                (container.getChildAt(i) as? TextKeyboard)?.setTheme(activeTheme)
-            }
+        val skbContainer = mSkbRoot.findViewById<View>(R.id.skb_input_keyboard_view)
+        if (skbContainer != null) {
+            updateChildThemes(skbContainer, activeTheme)
         }
         applyTopWindowCornerRadius(background)
+    }
+
+    private fun updateChildThemes(view: View, theme: Theme) {
+        if (view is TextKeyboard) {
+            view.setTheme(theme)
+        } else if (view is ViewGroup) {
+            for (i in 0 until view.childCount) {
+                updateChildThemes(view.getChildAt(i), theme)
+            }
+        }
     }
 
     fun updateOneHandButtonsTheme() {

@@ -293,4 +293,20 @@ open class InputBaseContainer(context: Context?, inputView: InputView) : BaseCon
     open fun updateStates() {
         mMajorView?.updateStates()
     }
+
+    override fun updateSkbLayout() {
+        super.updateSkbLayout()
+        val theme = ThemeManager.activeTheme
+        mMajorView?.setTheme(theme)
+        mDeleteButton?.let { btn ->
+            val keyRadius = ThemeManager.prefs.keyRadius.getValue()
+            btn.background = android.graphics.drawable.GradientDrawable().apply {
+                color = android.content.res.ColorStateList.valueOf(theme.deleteKeyBackgroundColor)
+                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                cornerRadius = keyRadius.toFloat()
+            }
+            btn.drawable?.setTint(theme.deleteKeyTextColor)
+        }
+        mCandidatesAdapter?.notifyDataSetChanged()
+    }
 }

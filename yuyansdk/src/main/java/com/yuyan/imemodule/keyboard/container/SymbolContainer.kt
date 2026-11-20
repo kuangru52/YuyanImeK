@@ -587,4 +587,21 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
 
         override fun getItemCount(): Int = categories.size
     }
+
+    override fun updateSkbLayout() {
+        super.updateSkbLayout()
+        val theme = activeTheme
+        val keyTextColor = theme.keyTextColor
+        if (::ivExprSend.isInitialized) ivExprSend.drawable?.setTint(keyTextColor)
+        if (::ivExprLock.isInitialized) ivExprLock.drawable?.setTint(keyTextColor)
+        if (::ivExprDelete.isInitialized) ivExprDelete.drawable?.setTint(keyTextColor)
+        if (::ivSymbolReturn.isInitialized) ivSymbolReturn.drawable?.setTint(keyTextColor)
+        if (::ivSymbolLock.isInitialized) ivSymbolLock.drawable?.setTint(keyTextColor)
+        if (::ivSymbolDelete.isInitialized) ivSymbolDelete.drawable?.setTint(keyTextColor)
+        tabEmoji.setTextColor(if (mExprSubTab == 0) theme.accentKeyBackgroundColor else keyTextColor)
+        tabKaomoji.setTextColor(if (mExprSubTab == 1) theme.accentKeyBackgroundColor else keyTextColor)
+        mSideTabAdapter?.notifyDataSetChanged()
+        mBottomTabAdapter?.notifyDataSetChanged()
+        mVPSymbolsView.adapter?.notifyDataSetChanged()
+    }
 }
