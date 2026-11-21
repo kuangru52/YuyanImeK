@@ -23,6 +23,7 @@ import androidx.core.content.ContextCompat
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.data.theme.Theme
 import com.yuyan.imemodule.data.theme.ThemeManager.activeTheme
+import com.yuyan.imemodule.manager.SingleKeyColorManager
 import com.yuyan.imemodule.singleton.EnvironmentSingleton
 import com.yuyan.imemodule.data.theme.ThemeManager.prefs
 import com.yuyan.imemodule.entity.keyboard.SoftKey
@@ -179,8 +180,11 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
      *
      * @param softSkb 键盘
      */
+    var skbLayoutMode: Int = 0
+
     override fun setSoftKeyboard(softSkb: SoftKeyboard) {
         super.setSoftKeyboard(softSkb)
+        this.skbLayoutMode = softSkb.skbLayoutMode
         isKeyBorder = prefs.keyBorder.getValue()
         isKeyShadow = prefs.keyShadow.getValue()
         keyRadius = prefs.keyRadius.getValue()
@@ -509,12 +513,15 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
 
         val keyUniqueKey = softKey.label.ifEmpty { softKey.code.toString() }
         val customColor = customKeyColorMap[keyUniqueKey]
+        val currentSkbLayout = if (skbLayoutMode > 0) skbLayoutMode else InputModeSwitcher.skbLayout
+        val singleKeyCustomColor = SingleKeyColorManager.getEffectiveCustomColor(currentSkbLayout, softKey.code)
 
         val override = mActiveTheme.keyCustomOverrides[softKey.label]
             ?: mActiveTheme.keyCustomOverrides[softKey.keyLabel]
             ?: mActiveTheme.keyCustomOverrides[softKey.code.toString()]
 
         val background = applyKeyAlpha(when {
+            singleKeyCustomColor != null -> singleKeyCustomColor
             override?.bgInt() != null -> override.bgInt()!!
             customColor != null -> customColor
             isEnterKey(softKey) -> mActiveTheme.accentKeyBackgroundColor

@@ -175,10 +175,10 @@ class ImeSettingsFragment : CsPreferenceFragment() {
                     R.id.action_settingsFragment_to_keyboardBlurFragment,
                 )
                 addDestinationPreference(
-                    "上滑符号设置",
-                    "自定义各键盘按键的上滑快捷符号",
+                    "按键客制化",
+                    "单个按键上滑符号、手势与外观独立定制",
                     R.drawable.ic_menu_keyboard,
-                    R.id.action_settingsFragment_to_slideUpSymbolSettingsFragment,
+                    R.id.action_settingsFragment_to_keyCustomizationFragment,
                 )
             }
 

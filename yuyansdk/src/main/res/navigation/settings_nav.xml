@@ -50,8 +50,8 @@
             android:id="@+id/action_settingsFragment_to_phrasesSettingsFragment"
             app:destination="@id/phrasesSettingsFragment" />
         <action
-            android:id="@+id/action_settingsFragment_to_slideUpSymbolSettingsFragment"
-            app:destination="@id/slideUpSymbolSettingsFragment" />
+            android:id="@+id/action_settingsFragment_to_keyCustomizationFragment"
+            app:destination="@id/keyCustomizationFragment" />
     </fragment>
     <fragment
         android:id="@+id/sidebarSymbolFragment"
@@ -110,9 +110,9 @@
         android:name="com.yuyan.imemodule.ui.fragment.PhrasesSettingsFragment"
         android:label="个性化短语" />
     <fragment
-        android:id="@+id/slideUpSymbolSettingsFragment"
-        android:name="com.yuyan.imemodule.ui.fragment.SlideUpSymbolSettingsFragment"
-        android:label="上滑符号设置" />
+        android:id="@+id/keyCustomizationFragment"
+        android:name="com.yuyan.imemodule.ui.fragment.KeyCustomizationFragment"
+        android:label="按键客制化" />
     <activity
         android:id="@+id/setupActivity"
         android:name="com.yuyan.imemodule.ui.setup.SetupActivity"

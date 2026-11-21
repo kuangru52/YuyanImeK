@@ -16,6 +16,8 @@ import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.entity.keyboard.SoftKey
 import com.yuyan.imemodule.entity.keyboard.SoftKeyboard
 import com.yuyan.imemodule.manager.InputModeSwitcher
+import com.yuyan.imemodule.manager.SlideDownActionManager
+import com.yuyan.imemodule.manager.SlideDownAction
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.prefs.behavior.KeyboardSymbolSlideUpMod
 import com.yuyan.imemodule.prefs.behavior.PopupMenuMode
@@ -292,26 +294,38 @@ open class BaseKeyboardView(mContext: Context?) : View(mContext) {
                 }
                 result = true
             }
-        } else if (keyLableSmall?.isNotBlank() == true) {
+        } else {
+            val currentSkbLayout = mSoftKeyboard?.skbLayoutMode?.takeIf { it > 0 } ?: InputModeSwitcher.skbLayout
+            val slideDownAction = mCurrentKey?.let { SlideDownActionManager.getEffectiveAction(currentSkbLayout, it.code) } ?: SlideDownAction.NONE
             val threshold = symbolSlideUp.toFloat()
-            if (isVertical && distanceY > 0 && relDiffY > threshold && AppPrefs.getInstance().keyboardSetting.keyboardSymbol.getValue()) {   // 向上滑动
-                lastEventX = currentX
-                lastEventY = currentY
-                lastEventActionIndex = currentEvent.actionIndex
-                mLongPressKey = true
-                removeMessages()
-                mService?.responseLongKeyEvent(Pair(PopupMenuMode.Text, keyLableSmall))
-                result = true
-            }
-        } else {  // 菜单
-            if (isVertical && relDiffY > symbolSlideUp * 2) {   // 向上滑动
-                lastEventX = currentX
-                lastEventY = currentY
-                lastEventActionIndex = currentEvent.actionIndex
-                mLongPressKey = true
-                popupComponent.onGestureEvent(distanceY)
-            } else {
-                if(downEvent != null) popupComponent.changeFocus(currentEvent.x - downEvent.x, currentEvent.y - downEvent.y)
+            if (isVertical && relDiffY > threshold) {
+                if (distanceY > 0 && keyLableSmall?.isNotBlank() == true && AppPrefs.getInstance().keyboardSetting.keyboardSymbol.getValue()) {   // 向上滑动
+                    lastEventX = currentX
+                    lastEventY = currentY
+                    lastEventActionIndex = currentEvent.actionIndex
+                    mLongPressKey = true
+                    removeMessages()
+                    mService?.responseLongKeyEvent(Pair(PopupMenuMode.Text, keyLableSmall))
+                    result = true
+                } else if (distanceY < 0 && slideDownAction != SlideDownAction.NONE) {   // 向下滑动触发自定义功能
+                    lastEventX = currentX
+                    lastEventY = currentY
+                    lastEventActionIndex = currentEvent.actionIndex
+                    mLongPressKey = true
+                    removeMessages()
+                    mService?.executeSlideDownAction(slideDownAction)
+                    result = true
+                }
+            } else {  // 菜单
+                if (isVertical && relDiffY > symbolSlideUp * 2) {   // 向上滑动
+                    lastEventX = currentX
+                    lastEventY = currentY
+                    lastEventActionIndex = currentEvent.actionIndex
+                    mLongPressKey = true
+                    popupComponent.onGestureEvent(distanceY)
+                } else {
+                    if(downEvent != null) popupComponent.changeFocus(currentEvent.x - downEvent.x, currentEvent.y - downEvent.y)
+                }
             }
         }
         return result

@@ -20,7 +20,7 @@ object SlideUpSymbolManager {
         }
     }
 
-    private fun getPrefKey(layoutKey: String, code: Int): String = "${layoutKey}_${code}"
+    private fun getPrefKey(layoutKey: String, code: Int): String = "${layoutKey}_$code"
 
     fun getCustomSymbol(context: Context, layoutKey: String, code: Int): String? {
         val sp = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)

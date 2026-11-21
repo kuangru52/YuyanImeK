@@ -490,6 +490,7 @@ class KeyboardLoaderUtil private constructor() {
         if (softKeyboard == null) {
             softKeyboard = loadBaseSkb(skbValue)
         }
+        softKeyboard.skbLayoutMode = skbValue
         return softKeyboard
     }
 

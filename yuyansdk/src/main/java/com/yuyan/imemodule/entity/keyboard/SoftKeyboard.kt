@@ -9,6 +9,7 @@ import com.yuyan.imemodule.singleton.EnvironmentSingleton
  * The height of the soft keyboard. 键盘的高度
  */
 class SoftKeyboard(var mKeyRows: List<List<SoftKey>>) {
+    var skbLayoutMode: Int = 0
     // 按键左右间隔距离
     val keyXMargin = EnvironmentSingleton.instance.keyXMargin
     // 按键上下间隔距离

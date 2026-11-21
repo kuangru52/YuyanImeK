@@ -863,6 +863,21 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
         if (mode == PopupMenuMode.Clear) resetToIdleState()
     }
 
+    fun executeSlideDownAction(action: com.yuyan.imemodule.manager.SlideDownAction) {
+        val actionId = action.actionId ?: return
+        if (action == com.yuyan.imemodule.manager.SlideDownAction.SELECT_ALL) {
+            val ic = service.currentInputConnection
+            if (ic != null) {
+                val textBefore = ic.getTextBeforeCursor(100000, 0)?.toString() ?: ""
+                val textAfter = ic.getTextAfterCursor(100000, 0)?.toString() ?: ""
+                val totalLen = textBefore.length + textAfter.length
+                ic.setSelection(0, totalLen)
+            }
+        } else {
+            service.commitTextEditMenu(actionId)
+        }
+    }
+
     override fun responseKeyEvent(sKey: SoftKey) {
         val keyCode = sKey.code
         if (keyCode == KeyEvent.KEYCODE_SPACE || sKey.label == "cn" || sKey.label == "En" || sKey.labelSmall == "cn" || sKey.labelSmall == "En") {

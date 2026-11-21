@@ -336,6 +336,7 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
                     setTheme(theme)
                     selectSingleMode = this@KeyboardPreviewView.selectSingleMode
                     val softKeyboard = KeyboardLoaderUtil.instance.getSoftKeyboard(layoutMode)
+                    this.skbLayoutMode = layoutMode
                     setSoftKeyboard(softKeyboard)
                     setupTouchInteraction(this, softKeyboard)
                     selectedKey = prevSelectedKey
