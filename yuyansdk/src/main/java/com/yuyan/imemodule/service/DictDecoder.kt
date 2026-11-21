@@ -29,6 +29,8 @@ object DictDecoder {
         }
     }
 
+    var activeStrokeFilter: Int = 0  // 当前汉字首笔筛选 (0:全, 1:一, 2:丨, 3:丿, 4:丶, 5:乛)
+
     /**
      * 重置候选词
      */
@@ -38,8 +40,32 @@ object DictDecoder {
         sessionCommittedText = ""
         activeCandidate = 0
         activeCandidateBar = 0
+        activeStrokeFilter = 0
         RimeEngine.reset()
         updateCandidatesValue(emptyList())
+    }
+
+    /**
+     * 设置笔画首笔筛选
+     */
+    fun setStrokeFilter(strokeCode: Int) {
+        activeStrokeFilter = if (activeStrokeFilter == strokeCode) 0 else strokeCode
+        activeCandidate = 0
+        activeCandidateBar = 0
+        val filtered = filterCandidatesByStroke(RimeEngine.showCandidates, activeStrokeFilter)
+        updateCandidatesValue(filtered)
+    }
+
+    /**
+     * 根据首笔筛选过滤候选词（严格仅匹配首笔）
+     */
+    fun filterCandidatesByStroke(list: List<CandidateListItem>, strokeFilter: Int): List<CandidateListItem> {
+        if (strokeFilter == CharFirstStrokeMap.STROKE_ALL || list.isEmpty()) return list
+        return list.filter { item ->
+            val firstChineseChar = item.text.firstOrNull { it.code in 0x4E00..0x9FA5 } ?: item.text.firstOrNull() ?: return@filter false
+            val stroke = CharFirstStrokeMap.getFirstStroke(firstChineseChar)
+            stroke == strokeFilter
+        }
     }
 
     val isCandidatesEmpty: Boolean
@@ -59,6 +85,7 @@ object DictDecoder {
         activeCandidateBar = 0
         isAssociate = false
         sessionCommittedText = ""
+        activeStrokeFilter = 0
     }
 
     /**
@@ -79,6 +106,7 @@ object DictDecoder {
         activeCandidate = 0
         activeCandidateBar = 0
         sessionCommittedText = ""
+        activeStrokeFilter = 0
     }
 
     val composingStrForDisplay: String   //获取显示的拼音字符串
@@ -194,7 +222,8 @@ object DictDecoder {
                 }
             }
         }
-        updateCandidatesValue(rimeCandidates)
+        val filteredList = filterCandidatesByStroke(rimeCandidates, activeStrokeFilter)
+        updateCandidatesValue(filteredList)
     }
 
     /**

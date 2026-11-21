@@ -104,6 +104,9 @@ class ImeService : InputMethodService(), LifecycleOwner, SavedStateRegistryOwner
         handleHardwareKeyboard()
         DictDecoder.candidatesLiveData.observe(this, candidatesObserver)
         InputDispatcher.initImeSchema(getInstance().internal.pinyinModeRime.getValue(), force = true)
+        com.yuyan.imemodule.utils.thread.ThreadPoolUtils.executeSingleton {
+            CharFirstStrokeMap.init()
+        }
     }
 
     override fun onConfigureWindow(win: android.view.Window, isFullscreen: Boolean, isCandidatesOnly: Boolean) {

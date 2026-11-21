@@ -244,17 +244,36 @@ class CandidatesContainer(context: Context, inputView: InputView) : BaseContaine
         }
     }
 
-    //更新左侧拼音选择显示
+    //更新左侧拼音/笔画选择显示
     private fun updatePrefixsView() {
-        var prefixs = DictDecoder.prefixs
-        val isPrefixs = prefixs.isNotEmpty()
+        val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.strokeFilterEnable.getValue()
+        val hasRimePrefixs = DictDecoder.prefixs.isNotEmpty()
+        val isPrefixs = hasRimePrefixs || DictDecoder.activeStrokeFilter != 0
 
-        if (!isPrefixs) { // 无候选拼音显示中文符号
+        val prefixs: Array<String>
+        val selectedIdx: Int
+
+        if (hasRimePrefixs && isStrokeFilterEnabled) {
+            prefixs = com.yuyan.imemodule.service.CharFirstStrokeMap.STROKE_LABELS
+            selectedIdx = if (DictDecoder.activeStrokeFilter > 0) DictDecoder.activeStrokeFilter - 1 else -1
+        } else if (hasRimePrefixs) {
+            prefixs = DictDecoder.prefixs
+            selectedIdx = -1
+        } else {
             prefixs = mSideSymbolsPinyin.map { (symbolKey) -> symbolKey }.toTypedArray()
+            selectedIdx = -1
         }
 
         mRVLeftPrefix.setOnItemClickListener { _: View?, position: Int ->
-            if (isPrefixs) {
+            if (hasRimePrefixs && isStrokeFilterEnabled) {
+                if (position in com.yuyan.imemodule.service.CharFirstStrokeMap.STROKE_CODES.indices) {
+                    DevicesUtils.tryPlayKeyDown()
+                    DevicesUtils.tryVibrate(this)
+                    val strokeCode = com.yuyan.imemodule.service.CharFirstStrokeMap.STROKE_CODES[position]
+                    DictDecoder.setStrokeFilter(strokeCode)
+                    showCandidatesView()
+                }
+            } else if (hasRimePrefixs) {
                 if (position in prefixs.indices) inputView.selectPrefix(position)
             } else {
                 if (position in mSideSymbolsPinyin.indices) {
@@ -268,13 +287,14 @@ class CandidatesContainer(context: Context, inputView: InputView) : BaseContaine
 
         val existingAdapter = mRVLeftPrefix.originAdapter as? PrefixAdapter
         if (existingAdapter != null) {
-            existingAdapter.updateData(prefixs, isPrefixs)
+            existingAdapter.updateData(prefixs, isPrefixs, selectedIdx)
         } else {
             val adapter = PrefixAdapter(context, prefixs, isPrefixs) {
                 val arguments = Bundle()
                 arguments.putInt("type", 0)
                 AppUtil.launchSettingsToPrefix(context, arguments)
             }
+            adapter.selectedIndex = selectedIdx
             mRVLeftPrefix.setAdapter(adapter)
         }
     }

@@ -262,6 +262,12 @@ object RimeEngine {
         return null
     }
 
+    fun applyStrokeFilter() {
+        val strokeFilter = com.yuyan.imemodule.service.DictDecoder.activeStrokeFilter
+        val filtered = com.yuyan.imemodule.service.DictDecoder.filterCandidatesByStroke(showCandidates, strokeFilter)
+        com.yuyan.imemodule.service.DictDecoder.cacheCandidates(filtered.toTypedArray(), com.yuyan.imemodule.service.DictDecoder.isAssociate)
+    }
+
     /**
      * 拿到候选词拼音组合
      */

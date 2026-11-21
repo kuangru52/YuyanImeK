@@ -277,6 +277,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
             }
         }
         (KeyboardManager.instance.currentContainer as? CandidatesContainer)?.showCandidatesView()
+        (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
     }
 
     @Suppress("DiscouragedApi", "InternalInsetResource", "RedundantQualifierName")

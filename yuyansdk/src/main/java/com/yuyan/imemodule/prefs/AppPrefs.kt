@@ -201,6 +201,8 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
 
         val categoryLayout = category(R.string.category_layout_habit)
 
+        val strokeFilterEnable = switch(R.string.stroke_filter_enable_title, "stroke_filter_enable", true)
+
         val composingDisplayMode = list(
             R.string.composing_display_mode,
             "composing_display_mode",

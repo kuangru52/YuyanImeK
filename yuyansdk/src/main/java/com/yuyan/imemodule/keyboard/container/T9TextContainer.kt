@@ -164,16 +164,40 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
         updateSymbolListView()
     }
 
-    //更新符号显示,九宫格左侧符号栏
+    //更新符号/笔画显示,九宫格左侧符号/笔画栏
     fun updateSymbolListView() {
-        var prefixs = DictDecoder.prefixs
-        val isPrefixs = prefixs.isNotEmpty()
-        if (!isPrefixs) { // 无候选拼音显示中文符号
+        val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.strokeFilterEnable.getValue()
+        val hasRimePrefixs = DictDecoder.prefixs.isNotEmpty()
+        val isPrefixs = hasRimePrefixs || DictDecoder.activeStrokeFilter != 0
+
+        val prefixs: Array<String>
+        val selectedIdx: Int
+
+        if (hasRimePrefixs && isStrokeFilterEnabled) {
+            prefixs = com.yuyan.imemodule.service.CharFirstStrokeMap.STROKE_LABELS
+            selectedIdx = if (DictDecoder.activeStrokeFilter > 0) DictDecoder.activeStrokeFilter - 1 else -1
+        } else if (hasRimePrefixs) {
+            prefixs = DictDecoder.prefixs
+            selectedIdx = -1
+        } else {
             prefixs = mSideSymbolsPinyin.map { it.symbolKey }.toTypedArray()
+            selectedIdx = -1
         }
 
         mRVLeftPrefix.setOnItemClickListener { _: View?, position: Int ->
-            if (!isPrefixs) {
+            if (hasRimePrefixs && isStrokeFilterEnabled) {
+                if (position in com.yuyan.imemodule.service.CharFirstStrokeMap.STROKE_CODES.indices) {
+                    DevicesUtils.tryPlayKeyDown()
+                    DevicesUtils.tryVibrate(this)
+                    val strokeCode = com.yuyan.imemodule.service.CharFirstStrokeMap.STROKE_CODES[position]
+                    DictDecoder.setStrokeFilter(strokeCode)
+                    updateSymbolListView()
+                }
+            } else if (hasRimePrefixs) {
+                if (position in prefixs.indices) {
+                    inputView.selectPrefix(position)
+                }
+            } else {
                 if (position in mSideSymbolsPinyin.indices) {
                     val symbol = mSideSymbolsPinyin[position].symbolValue
                     val softKey = SoftKey(label = symbol)
@@ -182,22 +206,19 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
                     DevicesUtils.tryVibrate(this)
                     inputView.responseKeyEvent(softKey)
                 }
-            } else {
-                if (position in prefixs.indices) {
-                    inputView.selectPrefix(position)
-                }
             }
         }
 
         val existingAdapter = mRVLeftPrefix.originAdapter as? PrefixAdapter
         if (existingAdapter != null) {
-            existingAdapter.updateData(prefixs, isPrefixs)
+            existingAdapter.updateData(prefixs, isPrefixs, selectedIdx)
         } else {
             val adapter = PrefixAdapter(context, prefixs, isPrefixs) {
                 val arguments = Bundle()
                 arguments.putInt("type", if (mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER) 1 else 0)
                 AppUtil.launchSettingsToPrefix(context, arguments)
             }
+            adapter.selectedIndex = selectedIdx
             mRVLeftPrefix.setAdapter(adapter)
         }
     }

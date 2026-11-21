@@ -23,6 +23,8 @@ class PrefixAdapter(
     var onSettingClick: (() -> Unit)? = null
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
+    var selectedIndex: Int = -1
+
     companion object {
         private const val TYPE_SYMBOL = 0
         private const val TYPE_SETTING = 1
@@ -52,9 +54,21 @@ class PrefixAdapter(
         return availableWidth / visibleCount
     }
 
-    fun updateData(newDatas: Array<String>, isPrefixs: Boolean = false) {
+    private fun getItemHeight(recyclerView: RecyclerView): Int {
+        val totalHeight = recyclerView.height.takeIf { it > 0 }
+            ?: recyclerView.layoutParams?.height?.takeIf { it > 0 }
+            ?: (recyclerView.context.resources.displayMetrics.heightPixels * 0.28f).toInt()
+        val paddingTop = recyclerView.paddingTop
+        val paddingBottom = recyclerView.paddingBottom
+        val availableHeight = (totalHeight - paddingTop - paddingBottom).coerceAtLeast(1)
+        val itemCount = mDatas.size.coerceAtLeast(1)
+        return availableHeight / itemCount
+    }
+
+    fun updateData(newDatas: Array<String>, isPrefixs: Boolean = false, selectedIdx: Int = -1) {
         this.mDatas = newDatas
         this.isPrefixs = isPrefixs
+        this.selectedIndex = selectedIdx
         notifyDataSetChanged()
     }
 
@@ -129,18 +143,37 @@ class PrefixAdapter(
         }
         if (holder is SymbolTypeHolder && position in mDatas.indices) {
             val recyclerView = mRecyclerView ?: (holder.itemView.parent as? RecyclerView)
-            if (recyclerView?.layoutManager?.canScrollHorizontally() == true) {
+            val isHorizontal = recyclerView?.layoutManager?.canScrollHorizontally() == true
+            if (isHorizontal) {
                 val itemWidth = getItemWidth(recyclerView)
                 if (holder.itemView.layoutParams.width != itemWidth) {
                     holder.itemView.layoutParams = holder.itemView.layoutParams.apply {
                         width = itemWidth
                     }
                 }
+            } else if (isPrefixs && mDatas.size > 0 && recyclerView != null) {
+                val itemHeight = getItemHeight(recyclerView)
+                if (itemHeight > 0) {
+                    holder.itemView.layoutParams = holder.itemView.layoutParams.apply {
+                        height = itemHeight
+                    }
+                    val density = holder.itemView.context.resources.displayMetrics.density
+                    val paddingPx = (2 * density).toInt()
+                    holder.tvSymbolType.setPadding(0, paddingPx, 0, paddingPx)
+                }
             }
             val label = mDatas[position]
             holder.tvSymbolType.setText(sbc2dbcCase(label))
-            holder.tvSymbolType.setTextColor(if (isPrefixs) activeTheme.keyTextColor else activeTheme.sideSymbolKeyTextColor)
-            holder.tvSymbolType.typeface = android.graphics.Typeface.DEFAULT
+            val isSelected = position == selectedIndex
+            val textColor = if (isSelected) {
+                activeTheme.accentKeyBackgroundColor
+            } else if (isPrefixs) {
+                activeTheme.keyTextColor
+            } else {
+                activeTheme.sideSymbolKeyTextColor
+            }
+            holder.tvSymbolType.setTextColor(textColor)
+            holder.tvSymbolType.typeface = if (isSelected) android.graphics.Typeface.DEFAULT_BOLD else android.graphics.Typeface.DEFAULT
             holder.tvSymbolType.setBackgroundColor(android.graphics.Color.TRANSPARENT)
         }
     }
