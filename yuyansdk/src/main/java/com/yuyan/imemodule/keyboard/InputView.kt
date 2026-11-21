@@ -864,17 +864,49 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
     }
 
     fun executeSlideDownAction(action: com.yuyan.imemodule.manager.SlideDownAction) {
-        val actionId = action.actionId ?: return
-        if (action == com.yuyan.imemodule.manager.SlideDownAction.SELECT_ALL) {
-            val ic = service.currentInputConnection
-            if (ic != null) {
-                val textBefore = ic.getTextBeforeCursor(100000, 0)?.toString() ?: ""
-                val textAfter = ic.getTextAfterCursor(100000, 0)?.toString() ?: ""
-                val totalLen = textBefore.length + textAfter.length
-                ic.setSelection(0, totalLen)
+        when (action) {
+            com.yuyan.imemodule.manager.SlideDownAction.SELECT_ALL -> {
+                val ic = service.currentInputConnection
+                if (ic != null) {
+                    val textBefore = ic.getTextBeforeCursor(100000, 0)?.toString() ?: ""
+                    val textAfter = ic.getTextAfterCursor(100000, 0)?.toString() ?: ""
+                    val totalLen = textBefore.length + textAfter.length
+                    ic.setSelection(0, totalLen)
+                }
             }
-        } else {
-            service.commitTextEditMenu(actionId)
+            com.yuyan.imemodule.manager.SlideDownAction.PASTE -> {
+                var pasteText: String? = null
+                try {
+                    val clipManager = context.clipboardManager
+                    if (clipManager.hasPrimaryClip()) {
+                        val clipData = clipManager.primaryClip
+                        if (clipData != null && clipData.itemCount > 0) {
+                            pasteText = clipData.getItemAt(0)?.coerceToText(context)?.toString()
+                        }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("InputView", "Failed to get clipboard text: ${e.message}")
+                }
+                if (pasteText.isNullOrEmpty()) {
+                    try {
+                        val latestClip = DataBaseKT.instance.clipboardDao().getAll().firstOrNull()
+                        pasteText = latestClip?.content
+                    } catch (_: Exception) {}
+                }
+
+                if (!pasteText.isNullOrEmpty()) {
+                    commitDecInfoText(pasteText)
+                } else {
+                    service.commitTextEditMenu(android.R.id.paste)
+                }
+            }
+            com.yuyan.imemodule.manager.SlideDownAction.COPY -> {
+                service.commitTextEditMenu(android.R.id.copy)
+            }
+            com.yuyan.imemodule.manager.SlideDownAction.CUT -> {
+                service.commitTextEditMenu(android.R.id.cut)
+            }
+            else -> {}
         }
     }
 
