@@ -9,6 +9,7 @@ import com.yuyan.imemodule.entity.keyboard.ToggleState
 import com.yuyan.imemodule.keyboard.KeyPreset
 import com.yuyan.imemodule.keyboard.KeyboardData
 import com.yuyan.imemodule.manager.InputModeSwitcher
+import com.yuyan.imemodule.manager.SlideUpSymbolManager
 import com.yuyan.imemodule.keyboard.KeyboardManager
 import com.yuyan.imemodule.keyboard.container.InputBaseContainer
 import com.yuyan.imemodule.prefs.AppPrefs
@@ -530,7 +531,9 @@ class KeyboardLoaderUtil private constructor() {
         val keyPreset =  if(mSkbValue == 0x7000) KeyPreset.strokeKeyPreset else KeyPreset.t9PYKeyPreset
         for(code in codes){
             val labels = keyPreset[code]
-            softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = labels?.getOrNull(1)?: "").apply {
+            val defaultSmall = labels?.getOrNull(1) ?: ""
+            val small = SlideUpSymbolManager.getEffectiveLabelSmall(mSkbValue, code, defaultSmall)
+            softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = small).apply {
                 widthF = 0.21f
             })
         }
@@ -572,7 +575,9 @@ class KeyboardLoaderUtil private constructor() {
                     mainLabel = mainLabel.lowercase()
                 }
             }
-            softKeys.add(SoftKey(code = code, label = mainLabel, labelSmall = labels?.getOrNull(1) ?: "", keyMnemonic = keyMnemonicPreset[code] ?: "").apply {
+            val defaultSmall = labels?.getOrNull(1) ?: ""
+            val small = SlideUpSymbolManager.getEffectiveLabelSmall(mSkbValue, code, defaultSmall)
+            softKeys.add(SoftKey(code = code, label = mainLabel, labelSmall = small, keyMnemonic = keyMnemonicPreset[code] ?: "").apply {
                 widthF = 0.099f
             })
         }
@@ -584,7 +589,9 @@ class KeyboardLoaderUtil private constructor() {
         val keyPreset = if(numberLine)KeyPreset.qwertyKeyPreset else KeyPreset.qwertyKeyNumberPreset
         for(code in codes){
             val labels = keyPreset[code]
-            softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = labels?.getOrNull(1) ?: "", keyMnemonic = labels?.getOrNull(2) ?: "").apply {
+            val defaultSmall = labels?.getOrNull(1) ?: ""
+            val small = SlideUpSymbolManager.getEffectiveLabelSmall(mSkbValue, code, defaultSmall)
+            softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = small, keyMnemonic = labels?.getOrNull(2) ?: "").apply {
                 widthF = 0.099f
             })
         }
@@ -610,7 +617,9 @@ class KeyboardLoaderUtil private constructor() {
         val keyPreset = if(numberLine)KeyPreset.lx17PYKeyPreset else KeyPreset.lx17PYKeyNumberPreset
         for(code in codes){
             val labels = keyPreset[code]
-            softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = labels?.getOrNull(1) ?: "", keyMnemonic= lx17MnemonicPreset[code] ?: "").apply {
+            val defaultSmall = labels?.getOrNull(1) ?: ""
+            val small = SlideUpSymbolManager.getEffectiveLabelSmall(mSkbValue, code, defaultSmall)
+            softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = small, keyMnemonic= lx17MnemonicPreset[code] ?: "").apply {
                 widthF = width
             })
         }

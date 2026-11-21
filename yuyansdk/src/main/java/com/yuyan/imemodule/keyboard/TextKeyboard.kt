@@ -928,6 +928,9 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
     }
 
     private fun getSelectedRegionKeys(selected: SoftKey): List<SoftKey> {
+        if (selectSingleMode) {
+            return listOf(selected)
+        }
         if (selected.code == InputModeSwitcher.USER_KEYCODE_LX17_SPLIT_NUM_SYM ||
             isShiftKey(selected) || isDeleteKey(selected) || isClearKey(selected) ||
             isReturnKey(selected) || isAtKey(selected) || isDotKey(selected) ||

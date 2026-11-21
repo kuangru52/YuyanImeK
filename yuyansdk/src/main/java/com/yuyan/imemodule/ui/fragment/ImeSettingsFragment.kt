@@ -174,6 +174,12 @@ class ImeSettingsFragment : CsPreferenceFragment() {
                     R.drawable.ic_menu_theme,
                     R.id.action_settingsFragment_to_keyboardBlurFragment,
                 )
+                addDestinationPreference(
+                    "上滑符号设置",
+                    "自定义各键盘按键的上滑快捷符号",
+                    R.drawable.ic_menu_keyboard,
+                    R.id.action_settingsFragment_to_slideUpSymbolSettingsFragment,
+                )
             }
 
             // 3. 方案与数据 (新设大分类)

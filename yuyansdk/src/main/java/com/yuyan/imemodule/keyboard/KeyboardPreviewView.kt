@@ -50,6 +50,11 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
     }
 
     var isInteractiveMode: Boolean = true // true: 预览互动打字模式, false: 编辑选框模式
+    var selectSingleMode: Boolean = false // true: 仅选圈当前单个按键
+        set(value) {
+            field = value
+            textKeyboard?.selectSingleMode = value
+        }
     var onKeySelectedListener: ((SoftKey) -> Unit)? = null
     var onToolbarSelectedListener: (() -> Unit)? = null
 
@@ -259,11 +264,6 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
         textKeyboard?.invalidate()
     }
 
-    fun setSelectSingleMode(singleMode: Boolean) {
-        textKeyboard?.selectSingleMode = singleMode
-        textKeyboard?.invalidate()
-    }
-
     private fun refreshPreviewLayout() {
         val container = previewContainer ?: return
         val prevSelectedKey = textKeyboard?.selectedKey
@@ -300,10 +300,12 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
             if (!isInteractiveMode) {
                 setOnTouchListener { _, event ->
                     if (event.action == MotionEvent.ACTION_UP) {
-                        selectToolbarArea()
-                        onToolbarSelectedListener?.invoke()
-                        DevicesUtils.tryPlayKeyDown()
-                        DevicesUtils.tryVibrate(this)
+                        if (!selectSingleMode) {
+                            selectToolbarArea()
+                            onToolbarSelectedListener?.invoke()
+                            DevicesUtils.tryPlayKeyDown()
+                            DevicesUtils.tryVibrate(this)
+                        }
                     }
                     true
                 }
@@ -332,6 +334,7 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
 
                 val tk = TextKeyboard(context).apply {
                     setTheme(theme)
+                    selectSingleMode = this@KeyboardPreviewView.selectSingleMode
                     val softKeyboard = KeyboardLoaderUtil.instance.getSoftKeyboard(layoutMode)
                     setSoftKeyboard(softKeyboard)
                     setupTouchInteraction(this, softKeyboard)
@@ -344,6 +347,7 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
             PreviewMode.MAIN_EN -> {
                 val tk = TextKeyboard(context).apply {
                     setTheme(theme)
+                    selectSingleMode = this@KeyboardPreviewView.selectSingleMode
                     val softKeyboard = KeyboardLoaderUtil.instance.getSoftKeyboard(InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC)
                     setSoftKeyboard(softKeyboard)
                     setupTouchInteraction(this, softKeyboard)
@@ -363,6 +367,7 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
             PreviewMode.NUMBER -> {
                 val tk = TextKeyboard(context).apply {
                     setTheme(theme)
+                    selectSingleMode = this@KeyboardPreviewView.selectSingleMode
                     val softKeyboard = KeyboardLoaderUtil.instance.getSoftKeyboard(InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER)
                     setSoftKeyboard(softKeyboard)
                     setupTouchInteraction(this, softKeyboard)
@@ -380,6 +385,7 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
     fun setSelectedKey(key: SoftKey?) {
         candidatesBarView?.selectedArea = CandidatesBar.SelectionArea.None
         candidatesBarView?.invalidate()
+        textKeyboard?.selectSingleMode = selectSingleMode
         textKeyboard?.selectedKey = key
         textKeyboard?.invalidate()
     }
@@ -421,6 +427,37 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
         }
     }
 
+    private fun isInputKeyForSlideUpSymbol(key: SoftKey): Boolean {
+        if (key.code == android.view.KeyEvent.KEYCODE_DEL ||
+            key.code == android.view.KeyEvent.KEYCODE_SPACE ||
+            key.code == android.view.KeyEvent.KEYCODE_ENTER ||
+            key.code == android.view.KeyEvent.KEYCODE_SHIFT_LEFT ||
+            key.code == android.view.KeyEvent.KEYCODE_SHIFT_RIGHT ||
+            key.code == android.view.KeyEvent.KEYCODE_CLEAR ||
+            key.code == InputModeSwitcher.USER_KEYCODE_SYMBOL ||
+            key.code == InputModeSwitcher.USER_KEYCODE_NUMBER ||
+            key.code == InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL ||
+            key.code == InputModeSwitcher.USER_KEYCODE_LX17_SPLIT_NUM_SYM ||
+            key.code == InputModeSwitcher.USER_KEYCODE_CURSOR_DIRECTION ||
+            key.code == InputModeSwitcher.USER_KEYCODE_RETURN
+        ) {
+            return false
+        }
+        val label = key.label.trim()
+        val keyLabel = key.keyLabel.trim()
+        if (label == "符号" || keyLabel == "Sym" ||
+            label.contains("123") ||
+            label == "空格" || label == "En" || label == "cn" || key.labelSmall == "En" || key.labelSmall == "cn" ||
+            label == "回车" || label == "发送" || label == "Enter" || keyLabel == "Send" || label == "Go" || label == "Search" || label == "Done" ||
+            label == "重输" || label == "返回" || label == "分词" || label == "Clear" || label == "Back" ||
+            label == "⌫" || label == "删除" ||
+            label.lowercase().contains("shift") || label.lowercase().contains("caps") || label == "⇧" || label == "⇪"
+        ) {
+            return false
+        }
+        return true
+    }
+
     private fun setupTouchInteraction(keyboardView: TextKeyboard, softKeyboard: SoftKeyboard) {
         keyboardView.setOnTouchListener { view, event ->
             val x = event.x.toInt()
@@ -429,7 +466,7 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
             if (!isInteractiveMode) {
                 if (event.action == MotionEvent.ACTION_UP) {
                     val clickedKey = softKeyboard.mapToKey(x, y)
-                    if (clickedKey != null) {
+                    if (clickedKey != null && (!selectSingleMode || isInputKeyForSlideUpSymbol(clickedKey))) {
                         keyboardView.selectedKey = clickedKey
                         keyboardView.invalidate()
                         candidatesBarView?.selectedArea = CandidatesBar.SelectionArea.None
