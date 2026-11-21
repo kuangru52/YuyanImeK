@@ -664,8 +664,11 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
             mPaint.textSize = mNormalKeyTextSizeSmall.toFloat()
             val smallMetrics = mPaint.fontMetrics
             val smallCy = top + (effectiveBottom - top) * 0.22f
-            val x = cx - mPaint.measureText(keyLabelSmall) / 2.0f
-            val y = smallCy - (smallMetrics.ascent + smallMetrics.descent) / 2.0f
+            var x = cx - mPaint.measureText(keyLabelSmall) / 2.0f
+            var y = smallCy - (smallMetrics.ascent + smallMetrics.descent) / 2.0f
+            if (keyLabelSmall == "。" || keyLabelSmall == ".") {
+                x += mPaint.textSize * 0.14f
+            }
             canvas.drawText(keyLabelSmall, x, y, mPaint)
         }
         if (null != keyIcon) {
@@ -695,8 +698,16 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
             } else {
                 cy
             }
-            val x = cx - mPaint.measureText(keyLabel) / 2.0f
-            val y = labelCy - (fontMetrics.ascent + fontMetrics.descent) / 2.0f
+            var x = cx - mPaint.measureText(keyLabel) / 2.0f
+            var y = labelCy - (fontMetrics.ascent + fontMetrics.descent) / 2.0f
+            if (keyLabel == "，" || keyLabel == ",") {
+                x += mPaint.textSize * 0.14f
+                if (keyboardSymbol && !TextUtils.isEmpty(keyLabelSmall)) {
+                    y -= mPaint.textSize * 0.05f
+                } else {
+                    y -= mPaint.textSize * 0.08f
+                }
+            }
             canvas.drawText(keyLabel, x, y, mPaint)
         }
         if (keyboardMnemonic && !TextUtils.isEmpty(keyMnemonic)) {  // 助记符位于按键下方

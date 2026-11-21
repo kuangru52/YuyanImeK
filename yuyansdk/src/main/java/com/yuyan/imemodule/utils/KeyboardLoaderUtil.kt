@@ -422,8 +422,19 @@ class KeyboardLoaderUtil private constructor() {
                         KeyEvent.KEYCODE_SPACE,
                         InputModeSwitcher.USER_KEYCODE_LX17_SPLIT_NUM_SYM
                     ))
+                } else if (prefixMode == Lx17PrefixMode.None) {
+                    createLX17Keys(arrayOf(
+                        InputModeSwitcher.USER_KEYCODE_SYMBOL,
+                        InputModeSwitcher.USER_KEYCODE_NUMBER,
+                        KeyEvent.KEYCODE_SPACE,
+                        InputModeSwitcher.USER_KEYCODE_LEFT_COMMA
+                    ))
                 } else {
-                    createLX17Keys(arrayOf(InputModeSwitcher.USER_KEYCODE_SYMBOL, InputModeSwitcher.USER_KEYCODE_NUMBER, KeyEvent.KEYCODE_SPACE))
+                    createLX17Keys(arrayOf(
+                        InputModeSwitcher.USER_KEYCODE_SYMBOL,
+                        InputModeSwitcher.USER_KEYCODE_NUMBER,
+                        KeyEvent.KEYCODE_SPACE
+                    ))
                 }
             }
             else -> { //0x1000 InputModeSwitcherManager.MASK_SKB_LAYOUT_QWERTY_PINYIN
@@ -431,11 +442,18 @@ class KeyboardLoaderUtil private constructor() {
                         InputModeSwitcher.USER_KEYCODE_LEFT_COMMA, KeyEvent.KEYCODE_SPACE))
             }
         }
-        if (skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_LX17 && AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue() == Lx17PrefixMode.Bottom) {
+        val lx17PrefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
+        if (skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_LX17 && lx17PrefixMode == Lx17PrefixMode.Bottom) {
             t9Keys[0].apply { mLeftF = 0.005f; widthF = 0.330f }
             t9Keys[1].apply { mLeftF = 0.335f; widthF = 0.330f }
             t9Keys[2].apply { mLeftF = 0.665f; widthF = 0.125f }
             softKeyToggle.apply { mLeftF = 0.795f; widthF = 0.200f }
+        } else if (skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_LX17 && lx17PrefixMode == Lx17PrefixMode.None) {
+            t9Keys[0].apply { mLeftF = 0.005f; widthF = 0.155f }
+            t9Keys[1].apply { mLeftF = 0.160f; widthF = 0.140f }
+            t9Keys[2].apply { mLeftF = 0.300f; widthF = 0.320f }
+            t9Keys[3].apply { mLeftF = 0.623f; widthF = 0.140f }
+            softKeyToggle.apply { mLeftF = 0.766f; widthF = 0.229f }
         } else if (t9Keys.size == 3) {
             t9Keys[0].apply { mLeftF = 0.005f; widthF = 0.140f }
             t9Keys[1].apply { mLeftF = 0.145f; widthF = 0.1416667f }
