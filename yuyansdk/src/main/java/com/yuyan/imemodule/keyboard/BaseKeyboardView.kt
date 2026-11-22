@@ -75,8 +75,14 @@ open class BaseKeyboardView(mContext: Context?) : View(mContext) {
         if (mGestureDetector == null) {
             mGestureDetector = GestureDetector(context, object : SimpleOnGestureListener() {
                 override fun onScroll(downEvent: MotionEvent?, currentEvent: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
-                    if (downEvent != null && mLongPressKey && mCurrentKey?.getkeyLabel()?.isNotBlank() == true) {
+                    if (downEvent != null) {
+                        currentDistanceX = currentEvent.x - downEvent.x
+                        currentDistanceY = currentEvent.y - downEvent.y
+                    }
+                    if (downEvent != null && mLongPressKey) {
+                        val deltaY = downEvent.y - currentEvent.y
                         popupComponent.changeFocus(currentEvent.x - downEvent.x, currentEvent.y - downEvent.y)
+                        popupComponent.onGestureEvent(deltaY)
                     } else {
                         dispatchGestureEvent(downEvent, currentEvent, distanceX, distanceY)
                     }
@@ -334,21 +340,17 @@ open class BaseKeyboardView(mContext: Context?) : View(mContext) {
 
     private fun repeatKey(): Boolean {
         if (mCurrentKey != null && mCurrentKey!!.repeatable()) {
-            if(mCurrentKey!!.code == KeyEvent.KEYCODE_DEL && mLongPressKey) {
-                    if (currentDistanceX.absoluteValue >= currentDistanceY.absoluteValue ) {
-                        if (currentDistanceX >= -2) {
-                            mService?.responseKeyEvent(SoftKey(KeyEvent.KEYCODE_DEL))
-                        } else {
-                            mService?.responseLongKeyEvent(Pair(PopupMenuMode.Revertl,  ""))
-                        }
-                    } else {
-                        if (currentDistanceY > 0) {
-                            mService?.responseKeyEvent(SoftKey(KeyEvent.KEYCODE_DEL))
-                        } else if (currentDistanceY < 0) {
-                            mService?.responseLongKeyEvent(Pair(PopupMenuMode.Revertl,  ""))
-                        }
-                    }
+            if (mCurrentKey!!.code == KeyEvent.KEYCODE_DEL && mLongPressKey) {
+                if (currentDistanceX < -10f) { // 长按向左滑动：按顺序恢复被删除的文字 (Undo Delete)
+                    mService?.responseLongKeyEvent(Pair(PopupMenuMode.Revertl, ""))
+                } else {
+                    DevicesUtils.tryPlayKeyDown(KeyEvent.KEYCODE_DEL)
+                    DevicesUtils.tryVibrate(this)
+                    mService?.responseKeyEvent(SoftKey(KeyEvent.KEYCODE_DEL))
+                }
             } else {
+                DevicesUtils.tryPlayKeyDown(mCurrentKey!!.code)
+                DevicesUtils.tryVibrate(this)
                 mService?.responseKeyEvent(
                     if (mCurrentKey!!.code == InputModeSwitcher.USER_KEYCODE_CURSOR_DIRECTION) {
                         SoftKey(

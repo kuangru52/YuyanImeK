@@ -51,6 +51,8 @@ open class InputBaseContainer(context: Context?, inputView: InputView) : BaseCon
                 }
                 return
             }
+            DevicesUtils.tryPlayKeyDown(KeyEvent.KEYCODE_DEL)
+            DevicesUtils.tryVibrate(this@InputBaseContainer)
             inputView.responseKeyEvent(SoftKey(KeyEvent.KEYCODE_DEL))
             mDeleteHandler?.postDelayed(this, 50)
         }

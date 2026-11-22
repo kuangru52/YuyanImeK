@@ -113,6 +113,8 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
     }
 
     private fun repeatKey(): Boolean {
+        DevicesUtils.tryPlayKeyDown(KeyEvent.KEYCODE_DEL)
+        DevicesUtils.tryVibrate(this)
         inputView?.responseKeyEvent(SoftKey(KeyEvent.KEYCODE_DEL))
         return true
     }
