@@ -498,7 +498,7 @@ class KeyboardLoaderUtil private constructor() {
     private fun getSoftKeyboard(rows: List<List<SoftKey>>, isNumberRow: Boolean, skbValue: Int = 0): SoftKeyboard {
         val lx17PrefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
         val isTopMode = (skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_LX17) && (lx17PrefixMode == Lx17PrefixMode.Top)
-        val topBarHeight = if (isTopMode) DevicesUtils.dip2px(36f) else 0
+        val topBarHeight = if (isTopMode) DevicesUtils.dip2px(30f) else 0
         val targetSkbHeight = EnvironmentSingleton.instance.skbHeight - topBarHeight
 
         var lastKeyBottom = 0f

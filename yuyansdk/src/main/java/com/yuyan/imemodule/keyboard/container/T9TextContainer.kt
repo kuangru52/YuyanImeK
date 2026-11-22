@@ -104,7 +104,7 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
         val skbHeight = EnvironmentSingleton.instance.skbHeight
         val softKeySymbolHolder = softKeyboard.getKeyByCode(InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL)
 
-        val topBarHeight = DevicesUtils.dip2px(36f)
+        val topBarHeight = DevicesUtils.dip2px(30f)
 
         if (topSymbol) {
             mMajorView?.layoutParams = lParams(matchParent, 0).apply {

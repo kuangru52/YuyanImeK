@@ -173,7 +173,7 @@ open class InputBaseContainer(context: Context?, inputView: InputView) : BaseCon
             val softKeySymbolHolder = softKeyboard?.getKeyByCode(InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL)
             val lastRowFirstKey = softKeyboard?.mKeyRows?.lastOrNull()?.firstOrNull()
 
-            val topBarHeight = if (isTopMode) DevicesUtils.dip2px(36f) else 0
+            val topBarHeight = if (isTopMode) DevicesUtils.dip2px(30f) else 0
 
             val leftOffset = if (isStroke) {
                 0
