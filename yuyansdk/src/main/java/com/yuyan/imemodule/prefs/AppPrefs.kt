@@ -15,6 +15,7 @@ import com.yuyan.imemodule.prefs.behavior.ChineseAssociationMode
 import com.yuyan.imemodule.prefs.behavior.ChineseCharFilterMode
 import com.yuyan.imemodule.prefs.behavior.ComposingDisplayMode
 import com.yuyan.imemodule.prefs.behavior.DoublePinyinSchemaMode
+import com.yuyan.imemodule.prefs.behavior.FilterMode
 import com.yuyan.imemodule.prefs.behavior.FullDisplayCenterMode
 import com.yuyan.imemodule.prefs.behavior.FullDisplayKeyMode
 import com.yuyan.imemodule.prefs.behavior.HalfWidthSymbolsMode
@@ -221,7 +222,20 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
 
         val categoryLayout = category(R.string.category_layout_habit)
 
-        val strokeFilterEnable = switch(R.string.stroke_filter_enable_title, "stroke_filter_enable", true)
+        val filterMode = list(
+            R.string.filter_mode_title,
+            "filter_mode",
+            FilterMode.PINYIN,
+            FilterMode,
+            listOf(
+                FilterMode.PINYIN,
+                FilterMode.STROKE
+            ),
+            listOf(
+                R.string.filter_mode_pinyin,
+                R.string.filter_mode_stroke
+            )
+        )
 
         val composingDisplayMode = list(
             R.string.composing_display_mode,

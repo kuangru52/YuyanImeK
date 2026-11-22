@@ -246,7 +246,7 @@ class CandidatesContainer(context: Context, inputView: InputView) : BaseContaine
 
     //更新左侧拼音/笔画选择显示
     private fun updatePrefixsView() {
-        val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.strokeFilterEnable.getValue()
+        val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.filterMode.getValue() == com.yuyan.imemodule.prefs.behavior.FilterMode.STROKE
         val hasRimePrefixs = if (isStrokeFilterEnabled) !DictDecoder.isCandidatesEmpty else DictDecoder.prefixs.isNotEmpty()
         val isPrefixs = hasRimePrefixs || DictDecoder.activeStrokeFilter != 0
 

@@ -26,6 +26,9 @@ import com.yuyan.imemodule.entity.keyboard.SoftKeyboard
 import com.yuyan.imemodule.keyboard.container.SymbolContainer
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
+import com.yuyan.imemodule.adapter.PrefixAdapter
+import com.yuyan.imemodule.libs.recyclerview.SwipeRecyclerView
+import com.yuyan.imemodule.prefs.behavior.Lx17PrefixMode
 import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
 import com.yuyan.imemodule.service.DictDecoder
 import com.yuyan.imemodule.service.ImeService
@@ -72,6 +75,7 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
     private var backgroundLayer: View? = null
     private var previewContainer: RelativeLayout? = null
     private var popupWindowView: FrameLayout? = null
+    private var prefixRecyclerView: SwipeRecyclerView? = null
 
     private var composingPinyin = ""
     private var downX = 0f
@@ -332,17 +336,131 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
                     layoutMode = InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN
                 }
 
+                val softKeyboard = KeyboardLoaderUtil.instance.getSoftKeyboard(layoutMode)
+
+                val isLx17 = layoutMode == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
+                val isT9 = layoutMode == InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN
+                val isStroke = layoutMode == InputModeSwitcher.MASK_SKB_LAYOUT_STROKE
+                val prefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
+
+                val showPrefix = (isLx17 && prefixMode != Lx17PrefixMode.None) || isT9 || isStroke
+                val topSymbol = isLx17 && prefixMode == Lx17PrefixMode.Top
+                val centerSymbol = isLx17 && prefixMode == Lx17PrefixMode.Center
+                val bottomSymbol = isLx17 && prefixMode == Lx17PrefixMode.Bottom
+
+                val topBarHeight = dp(30)
+
+                val tkLp = if (topSymbol) {
+                    LayoutParams(LayoutParams.MATCH_PARENT, instance.skbHeight - topBarHeight).apply {
+                        addRule(BELOW, candidatesBarView!!.id)
+                    }
+                } else {
+                    skbContainerLayoutParams
+                }
+
                 val tk = TextKeyboard(context).apply {
                     setTheme(theme)
                     selectSingleMode = this@KeyboardPreviewView.selectSingleMode
-                    val softKeyboard = KeyboardLoaderUtil.instance.getSoftKeyboard(layoutMode)
                     this.skbLayoutMode = layoutMode
                     setSoftKeyboard(softKeyboard)
                     setupTouchInteraction(this, softKeyboard)
                     selectedKey = prevSelectedKey
                 }
                 textKeyboard = tk
-                container.addView(tk, skbContainerLayoutParams)
+
+                if (topSymbol) {
+                    val mRVLeftPrefix = (LayoutInflater.from(context).inflate(R.layout.sdk_view_rv_prefix, container, false) as SwipeRecyclerView).apply {
+                        id = View.generateViewId()
+                        isHorizontalScrollBarEnabled = false
+                        isVerticalScrollBarEnabled = false
+                        overScrollMode = View.OVER_SCROLL_NEVER
+                    }
+                    prefixRecyclerView = mRVLeftPrefix
+
+                    val prefixLp = LayoutParams(LayoutParams.MATCH_PARENT, topBarHeight).apply {
+                        addRule(BELOW, candidatesBarView!!.id)
+                    }
+                    tkLp.removeRule(BELOW)
+                    tkLp.addRule(BELOW, mRVLeftPrefix.id)
+
+                    val keyXMargin = softKeyboard.keyXMargin
+                    mRVLeftPrefix.setPadding(keyXMargin, dp(2), keyXMargin, dp(2))
+                    mRVLeftPrefix.clipToPadding = true
+                    mRVLeftPrefix.clipChildren = true
+
+                    mRVLeftPrefix.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false)
+                    val symbolKeys = arrayOf("，", "。", "？", "！", "～")
+                    val prefixAdapter = PrefixAdapter(context, symbolKeys, isPrefixs = false)
+                    mRVLeftPrefix.adapter = prefixAdapter
+
+                    setupPrefixTouchInteraction(mRVLeftPrefix, softKeyboard)
+
+                    container.addView(mRVLeftPrefix, prefixLp)
+                    container.addView(tk, tkLp)
+                } else if (showPrefix) {
+                    val mRVLeftPrefix = (LayoutInflater.from(context).inflate(R.layout.sdk_view_rv_prefix, container, false) as SwipeRecyclerView).apply {
+                        id = View.generateViewId()
+                        isHorizontalScrollBarEnabled = false
+                        isVerticalScrollBarEnabled = false
+                        overScrollMode = View.OVER_SCROLL_NEVER
+                    }
+                    prefixRecyclerView = mRVLeftPrefix
+
+                    val softKeySymbolHolder = softKeyboard.getKeyByCode(InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL)
+                    val prefixLp = if (centerSymbol) {
+                        val colWidth = (instance.skbWidth / 7.0f).toInt()
+                        val leftX = (instance.skbWidth * (3.0f / 7.0f)).toInt()
+                        val bottomMargin = softKeyboard.keyYMargin
+                        LayoutParams(colWidth, instance.skbHeight - softKeyboard.keyYMargin - bottomMargin).apply {
+                            addRule(BELOW, candidatesBarView!!.id)
+                            leftMargin = leftX
+                            topMargin = softKeyboard.keyYMargin
+                        }
+                    } else if (bottomSymbol) {
+                        val widthRaw = softKeySymbolHolder?.let { it.mRight - it.mLeft } ?: 0
+                        val heightRaw = softKeySymbolHolder?.let { it.mBottom - it.mTop } ?: 0
+                        val width = if (widthRaw > 0) widthRaw else (instance.skbWidth * 0.33f).toInt()
+                        val height = if (heightRaw > 0) heightRaw else (instance.skbHeight * 0.25f).toInt()
+                        val topY = if (heightRaw > 0) softKeySymbolHolder!!.mTop else (instance.skbHeight * 0.75f).toInt()
+                        val leftX = if (widthRaw > 0) softKeySymbolHolder!!.mLeft else 0
+                        LayoutParams(width, height).apply {
+                            addRule(BELOW, candidatesBarView!!.id)
+                            leftMargin = leftX
+                            topMargin = topY
+                        }
+                    } else {
+                        val colWidth = softKeySymbolHolder?.mRight ?: (instance.skbWidth * 0.18).toInt()
+                        val bottomMargin = if (softKeySymbolHolder != null) {
+                            instance.skbHeight - softKeySymbolHolder.mBottom + softKeyboard.keyYMargin
+                        } else {
+                            softKeyboard.keyYMargin
+                        }
+                        LayoutParams(colWidth, instance.skbHeight - softKeyboard.keyYMargin - bottomMargin).apply {
+                            addRule(BELOW, candidatesBarView!!.id)
+                            leftMargin = 0
+                            topMargin = softKeyboard.keyYMargin
+                        }
+                    }
+
+                    val prefixLayoutManager = if (bottomSymbol) {
+                        androidx.recyclerview.widget.LinearLayoutManager(context, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false)
+                    } else {
+                        androidx.recyclerview.widget.LinearLayoutManager(context, androidx.recyclerview.widget.LinearLayoutManager.VERTICAL, false)
+                    }
+                    mRVLeftPrefix.layoutManager = prefixLayoutManager
+
+                    val symbolKeys = arrayOf("，", "。", "？", "！", "～", "：", "；", ".")
+                    val prefixAdapter = PrefixAdapter(context, symbolKeys, isPrefixs = false)
+                    mRVLeftPrefix.adapter = prefixAdapter
+
+                    setupPrefixTouchInteraction(mRVLeftPrefix, softKeyboard)
+
+                    container.addView(tk, tkLp)
+                    container.addView(mRVLeftPrefix, prefixLp)
+                    mRVLeftPrefix.bringToFront()
+                } else {
+                    container.addView(tk, tkLp)
+                }
             }
 
             PreviewMode.MAIN_EN -> {
@@ -389,6 +507,75 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
         textKeyboard?.selectSingleMode = selectSingleMode
         textKeyboard?.selectedKey = key
         textKeyboard?.invalidate()
+        invalidate()
+    }
+
+    override fun dispatchDraw(canvas: android.graphics.Canvas) {
+        super.dispatchDraw(canvas)
+        val key = textKeyboard?.selectedKey
+        if (key != null && isSideSymbolKey(key)) {
+            val rv = prefixRecyclerView
+            if (rv != null && rv.visibility == View.VISIBLE && rv.childCount > 0) {
+                drawPrefixMarqueeBox(canvas, rv)
+            }
+        }
+    }
+
+    private fun isSideSymbolKey(key: SoftKey): Boolean {
+        val sideLabels = arrayOf("，", "。", "？", "！", "～", "、", "；", "：", ",")
+        val label = key.label
+        return (key.heightF > 0.5f || (label in sideLabels) || key.code == InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL) &&
+                key.code != android.view.KeyEvent.KEYCODE_DEL &&
+                key.code != android.view.KeyEvent.KEYCODE_SPACE &&
+                key.code != android.view.KeyEvent.KEYCODE_ENTER &&
+                key.code != android.view.KeyEvent.KEYCODE_SHIFT_LEFT &&
+                key.code != android.view.KeyEvent.KEYCODE_SHIFT_RIGHT &&
+                key.code != android.view.KeyEvent.KEYCODE_AT &&
+                key.code != android.view.KeyEvent.KEYCODE_PERIOD
+    }
+
+    private fun drawPrefixMarqueeBox(canvas: android.graphics.Canvas, rv: androidx.recyclerview.widget.RecyclerView) {
+        val strokeHalfWidth = dp(1.5f)
+        val rect = android.graphics.Rect(0, 0, rv.width, rv.height)
+        try {
+            offsetDescendantRectToMyCoords(rv, rect)
+        } catch (_: Throwable) {
+            rect.set(rv.left, rv.top, rv.right, rv.bottom)
+        }
+
+        val r = dp(8f)
+        val rectF = android.graphics.RectF(
+            rect.left.toFloat() + strokeHalfWidth,
+            rect.top.toFloat() + strokeHalfWidth,
+            rect.right.toFloat() - strokeHalfWidth,
+            rect.bottom.toFloat() - strokeHalfWidth
+        )
+
+        val marqueePath = android.graphics.Path().apply {
+            addRoundRect(rectF, r, r, android.graphics.Path.Direction.CW)
+        }
+
+        val dashWidth = dp(5f)
+        val dashGap = dp(5f)
+
+        val blackPaint = android.graphics.Paint().apply {
+            style = android.graphics.Paint.Style.STROKE
+            strokeWidth = dp(2.5f)
+            color = android.graphics.Color.BLACK
+            pathEffect = android.graphics.DashPathEffect(floatArrayOf(dashWidth, dashGap), 0f)
+            isAntiAlias = true
+        }
+
+        val whitePaint = android.graphics.Paint().apply {
+            style = android.graphics.Paint.Style.STROKE
+            strokeWidth = dp(2.5f)
+            color = android.graphics.Color.WHITE
+            pathEffect = android.graphics.DashPathEffect(floatArrayOf(dashWidth, dashGap), dashWidth)
+            isAntiAlias = true
+        }
+
+        canvas.drawPath(marqueePath, blackPaint)
+        canvas.drawPath(marqueePath, whitePaint)
     }
 
     fun selectToolbarArea() {
@@ -537,6 +724,28 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
                 }
             }
             true
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setupPrefixTouchInteraction(rv: View, softKeyboard: SoftKeyboard) {
+        val sideSymbolKey = softKeyboard.getKeyByCode(InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL)
+            ?: SoftKey(code = InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL, label = "，")
+
+        rv.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                if (!isInteractiveMode) {
+                    candidatesBarView?.selectedArea = CandidatesBar.SelectionArea.None
+                    candidatesBarView?.invalidate()
+                    textKeyboard?.selectSingleMode = selectSingleMode
+                    textKeyboard?.selectedKey = sideSymbolKey
+                    textKeyboard?.invalidate()
+                    onKeySelectedListener?.invoke(sideSymbolKey)
+                    DevicesUtils.tryPlayKeyDown()
+                    DevicesUtils.tryVibrate(rv)
+                }
+            }
+            !isInteractiveMode
         }
     }
 

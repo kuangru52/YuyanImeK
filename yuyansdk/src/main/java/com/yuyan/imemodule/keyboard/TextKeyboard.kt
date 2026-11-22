@@ -1,7 +1,6 @@
 package com.yuyan.imemodule.keyboard
 
 import android.content.Context
-import com.yuyan.imemodule.prefs.behavior.Lx17PrefixMode
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -504,14 +503,13 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
         val isLeftEdge = kotlin.math.abs(softKey.mLeft - minLeft) <= 15
         val isRightEdge = kotlin.math.abs(softKey.mRight - maxRight) <= 15
 
-        // 外侧按键安全内缩边距，防止贴紧屏幕最边缘或最底部
+        // 外侧按键安全内缩边距，防止贴紧屏幕最边缘
         val outerXPadding = dp(6)
-        val outerBottomPadding = dp(6)
 
         val left = softKey.mLeft + keyXMargin + (if (isLeftEdge) outerXPadding else 0)
         val top = softKey.mTop + keyYMargin
         val right = softKey.mRight - keyXMargin - (if (isRightEdge) outerXPadding else 0)
-        val bottom = softKey.mBottom - keyYMargin - (if (isBottomRow) outerBottomPadding else 0)
+        val bottom = softKey.mBottom - keyYMargin
 
         val keyUniqueKey = softKey.label.ifEmpty { softKey.code.toString() }
         val customColor = customKeyColorMap[keyUniqueKey]
@@ -667,9 +665,7 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
         val cx = (left + right) / 2.0f
         val cy = (top + effectiveBottom) / 2.0f
 
-        val isLx17 = mSoftKeyboard?.skbLayoutMode == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
-        val isLx17Top = isLx17 && AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue() == Lx17PrefixMode.Top
-        val showSmallSymbol = keyboardSymbol && !isLx17Top && !TextUtils.isEmpty(keyLabelSmall)
+        val showSmallSymbol = keyboardSymbol && !TextUtils.isEmpty(keyLabelSmall)
 
         if (showSmallSymbol) {
             mPaint.color = smallSymbolColor
@@ -955,6 +951,9 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
         val skb = mSoftKeyboard ?: return keys
         val selectedIsAlpha = isAlphaInputKey(selected)
         val selectedIsSide = isSideSymbolKey(selected)
+        if (selectedIsSide) {
+            return emptyList()
+        }
         val selectedIsDel = isDeleteKey(selected)
         val selectedIsClear = isClearKey(selected)
         val selectedIsShift = isShiftKey(selected)
@@ -970,7 +969,6 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
             for (key in row) {
                 val isMatch = when {
                     selectedIsAlpha -> isAlphaInputKey(key)
-                    selectedIsSide -> isSideSymbolKey(key)
                     selectedIsDel -> isDeleteKey(key)
                     selectedIsClear -> isClearKey(key)
                     selectedIsShift -> isShiftKey(key)

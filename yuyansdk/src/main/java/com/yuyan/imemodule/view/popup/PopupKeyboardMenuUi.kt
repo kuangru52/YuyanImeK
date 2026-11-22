@@ -133,10 +133,12 @@ class PopupKeyboardMenuUi(bounds: Rect, onDismissSelf: PopupContainerUi.() -> Un
 
     override fun onGestureEvent(distance: Float) {
         isSelect = distance > 5
-        if(isSelect)markFocus(0) else markInactive()
+        if (isSelect) markFocus(0) else markInactive()
     }
     override fun onChangeFocus(x: Float, y: Float): Boolean {
-        return false
+        isSelect = y < -10f || (x * x + y * y > 100f && y < 0)
+        if (isSelect) markFocus(0) else markInactive()
+        return isSelect
     }
 
     override fun onTrigger(): Pair<PopupMenuMode, String> {

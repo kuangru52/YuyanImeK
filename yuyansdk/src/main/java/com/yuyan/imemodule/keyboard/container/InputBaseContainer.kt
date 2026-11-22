@@ -193,11 +193,7 @@ open class InputBaseContainer(context: Context?, inputView: InputView) : BaseCon
                 0
             }
 
-            val bottomMargin = if (isStroke || isT9) {
-                0
-            } else if (isLx17 && lx17PrefixMode == Lx17PrefixMode.None) {
-                0
-            } else if (isLx17 && lx17PrefixMode == Lx17PrefixMode.Bottom && softKeySymbolHolder != null) {
+            val bottomMargin = if (isLx17 && lx17PrefixMode == Lx17PrefixMode.Bottom && softKeySymbolHolder != null) {
                 val holderHeight = softKeySymbolHolder.mBottom - softKeySymbolHolder.mTop
                 if (holderHeight > 0) (EnvironmentSingleton.instance.skbHeight - softKeySymbolHolder.mTop).coerceAtLeast(0)
                 else (EnvironmentSingleton.instance.skbHeight * 0.25f).toInt()

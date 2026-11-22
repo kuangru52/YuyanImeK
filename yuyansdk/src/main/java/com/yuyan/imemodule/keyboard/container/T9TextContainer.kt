@@ -44,6 +44,9 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
 
     init {
         mSkbValue = skbValue
+        mRVLeftPrefix.isHorizontalScrollBarEnabled = false
+        mRVLeftPrefix.isVerticalScrollBarEnabled = false
+        mRVLeftPrefix.overScrollMode = View.OVER_SCROLL_NEVER
         val rawSymbols = if (skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER) DataBaseKT.getSideSymbolsNumber()
         else DataBaseKT.getSideSymbolsPinyin()
         val defaultSymbols = if (skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER) {
@@ -197,7 +200,7 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
 
     //更新符号/笔画显示,九宫格左侧与顶栏符号/笔画栏
     fun updateSymbolListView() {
-        val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.strokeFilterEnable.getValue()
+        val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.filterMode.getValue() == com.yuyan.imemodule.prefs.behavior.FilterMode.STROKE
         val hasRimePrefixs = if (isStrokeFilterEnabled) !DictDecoder.isCandidatesEmpty else DictDecoder.prefixs.isNotEmpty()
         val isLx17 = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
         val prefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
@@ -213,11 +216,27 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
             selectedIdx = if (DictDecoder.activeStrokeFilter > 0) DictDecoder.activeStrokeFilter - 1 else -1
         } else if (hasRimePrefixs) {
             val rimePrefixs = DictDecoder.prefixs
-            prefixs = if (isTopMode && rimePrefixs.size > 5) rimePrefixs.take(5).toTypedArray() else rimePrefixs
+            prefixs = if (isTopMode) {
+                val padded = Array(5) { "" }
+                for (i in rimePrefixs.indices) {
+                    if (i < 5) padded[i] = rimePrefixs[i]
+                }
+                padded
+            } else {
+                rimePrefixs
+            }
             selectedIdx = -1
         } else {
             val symbolKeys = mSideSymbolsPinyin.map { it.symbolKey }.toTypedArray()
-            prefixs = if (isTopMode && symbolKeys.size > 5) symbolKeys.take(5).toTypedArray() else symbolKeys
+            prefixs = if (isTopMode) {
+                val padded = Array(5) { "" }
+                for (i in symbolKeys.indices) {
+                    if (i < 5) padded[i] = symbolKeys[i]
+                }
+                padded
+            } else {
+                symbolKeys
+            }
             selectedIdx = -1
         }
 

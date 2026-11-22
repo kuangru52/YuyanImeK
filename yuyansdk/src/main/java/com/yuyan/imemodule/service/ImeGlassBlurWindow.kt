@@ -138,7 +138,6 @@ class ImeGlassBlurWindow(private val context: Context) {
 
             val radiusDp = appPrefs.internal.windowCornerRadiusDp.getValue()
             val radiusPx = DevicesUtils.dip2px(radiusDp).toFloat()
-            val effectiveBottomRadiusPx = if (bottomRadiusPx >= 0f) bottomRadiusPx else radiusPx
 
             val themeBgColor = customBaseColor.takeIf { it != 0 } ?: ThemeManager.activeTheme.keyboardColor
             val baseColor = try {
@@ -153,17 +152,10 @@ class ImeGlassBlurWindow(private val context: Context) {
             val maskAlpha255 = ((config.maskAlphaPercent / 100f) * 255).toInt().coerceIn(0, 255)
             val maskColorArgb = Color.argb(maskAlpha255, Color.red(baseColor), Color.green(baseColor), Color.blue(baseColor))
 
-            val cornerRadiiArray = floatArrayOf(
-                radiusPx, radiusPx,                        // Top-Left
-                radiusPx, radiusPx,                        // Top-Right
-                effectiveBottomRadiusPx, effectiveBottomRadiusPx, // Bottom-Right
-                effectiveBottomRadiusPx, effectiveBottomRadiusPx  // Bottom-Left
-            )
-
             val maskDrawable = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 setColor(maskColorArgb)
-                cornerRadii = cornerRadiiArray
+                cornerRadius = radiusPx
                 setBounds(0, 0, width, height)
             }
 
@@ -179,7 +171,7 @@ class ImeGlassBlurWindow(private val context: Context) {
                     shape = GradientDrawable.RECTANGLE
                     setColor(Color.TRANSPARENT)
                     setStroke(highlightStrokePx, strokeColor)
-                    cornerRadii = cornerRadiiArray
+                    cornerRadius = radiusPx
                     setBounds(0, 0, width, height)
                 }
                 LayerDrawable(arrayOf(maskDrawable, highlightDrawable)).apply {
@@ -239,26 +231,12 @@ class ImeGlassBlurWindow(private val context: Context) {
             }
 
             window.decorView.clipToOutline = true
+            window.decorView.setPadding(0, 0, 0, 0)
             window.decorView.outlineProvider = object : android.view.ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: android.graphics.Outline) {
                     val w = if (view.width > 0) view.width else width
                     val h = if (view.height > 0) view.height else height
-                    if (effectiveBottomRadiusPx == radiusPx) {
-                        outline.setRoundRect(0, 0, w, h, radiusPx)
-                    } else {
-                        val path = android.graphics.Path().apply {
-                            addRoundRect(
-                                0f, 0f, w.toFloat(), h.toFloat(),
-                                cornerRadiiArray,
-                                android.graphics.Path.Direction.CW
-                            )
-                        }
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                            outline.setPath(path)
-                        } else {
-                            outline.setRoundRect(0, 0, w, h, radiusPx)
-                        }
-                    }
+                    outline.setRoundRect(0, 0, w, h, radiusPx)
                 }
             }
             window.decorView.invalidateOutline()

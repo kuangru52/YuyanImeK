@@ -235,6 +235,9 @@
 
     <!-- 键盘设置分类标题 -->
     <string name="category_layout_habit">布局与习惯</string>
+    <string name="filter_mode_title">筛选方式</string>
+    <string name="filter_mode_pinyin">拼音</string>
+    <string name="filter_mode_stroke">首笔画</string>
     <string name="stroke_filter_enable_title">侧边栏笔画首笔筛选</string>
     <string name="stroke_filter_enable_summary">拼音输入时在侧边栏显示【一丨丿丶乛】按首笔快速过滤候选词</string>
     <string name="composing_display_mode">编码显示</string>

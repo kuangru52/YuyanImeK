@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 import android.os.Build
 import android.util.TypedValue
 import android.view.KeyEvent
@@ -523,23 +524,10 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
                 actualCustomBg
             }
         } else {
-            val isTouchBottom = DevicesUtils.isKeyboardTouchingScreenBottom(this)
-            val detectedScreenRadiusPx = if (isTouchBottom) DevicesUtils.getScreenBottomCornerRadiusPx(this) else 0f
-            val bottomRadiusPx = if (isFloat) radiusPx else (if (isTouchBottom && detectedScreenRadiusPx > 0f) detectedScreenRadiusPx else 0f)
-
             val maskDrawable = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 setColor(if (isBlurEnabled) maskColorArgb else ((baseColor and 0x00FFFFFF) or (alpha255 shl 24)))
-                if (isFloat) {
-                    cornerRadius = radiusPx
-                } else {
-                    cornerRadii = floatArrayOf(
-                        radiusPx, radiusPx,        // Top-Left
-                        radiusPx, radiusPx,        // Top-Right
-                        bottomRadiusPx, bottomRadiusPx,  // Bottom-Right
-                        bottomRadiusPx, bottomRadiusPx   // Bottom-Left
-                    )
-                }
+                cornerRadius = radiusPx
             }
 
             if (isBlurEnabled && config.highlightEnable && config.highlightAlphaPercent > 0) {
@@ -554,16 +542,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
                     shape = GradientDrawable.RECTANGLE
                     setColor(Color.TRANSPARENT)
                     setStroke(highlightStrokePx, strokeColor)
-                    if (isFloat) {
-                        cornerRadius = radiusPx
-                    } else {
-                        cornerRadii = floatArrayOf(
-                            radiusPx, radiusPx,        // Top-Left
-                            radiusPx, radiusPx,        // Top-Right
-                            bottomRadiusPx, bottomRadiusPx,  // Bottom-Right
-                            bottomRadiusPx, bottomRadiusPx   // Bottom-Left
-                        )
-                    }
+                    cornerRadius = radiusPx
                 }
                 android.graphics.drawable.LayerDrawable(arrayOf(maskDrawable, highlightDrawable))
             } else {
@@ -574,28 +553,21 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
         val vBackgroundBlur: View = mSkbRoot.findViewById(R.id.v_background_blur)
         vBackgroundBlur.background = bg
 
-        if (hasWallpaper) {
-            val cardOutlineProvider = object : android.view.ViewOutlineProvider() {
-                override fun getOutline(view: View, outline: android.graphics.Outline) {
-                    val w = if (view.width > 0) view.width else (if (env.skbWidth > 0) env.skbWidth else dp(1080))
-                    val h = if (view.height > 0) view.height else (if (env.skbHeight > 0) env.skbHeight else dp(800))
-                    outline.setRoundRect(0, 0, w, h, radiusPx)
-                }
+        val cardOutlineProvider = object : android.view.ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: android.graphics.Outline) {
+                val w = if (view.width > 0) view.width else (if (env.skbWidth > 0) env.skbWidth else dp(1080))
+                val h = if (view.height > 0) view.height else (if (env.skbHeight > 0) env.skbHeight else dp(800))
+                outline.setRoundRect(0, 0, w, h, radiusPx)
             }
-            vBackgroundBlur.clipToOutline = true
-            vBackgroundBlur.outlineProvider = cardOutlineProvider
-            vBackgroundBlur.invalidateOutline()
-
-            mLlMainKeyboardCard.clipToOutline = true
-            mLlMainKeyboardCard.outlineProvider = cardOutlineProvider
-            mLlMainKeyboardCard.invalidateOutline()
-        } else {
-            vBackgroundBlur.clipToOutline = false
-            vBackgroundBlur.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
-
-            mLlMainKeyboardCard.clipToOutline = false
-            mLlMainKeyboardCard.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
         }
+        val shouldClip = radiusPx > 0f
+        vBackgroundBlur.clipToOutline = shouldClip
+        vBackgroundBlur.outlineProvider = if (shouldClip) cardOutlineProvider else android.view.ViewOutlineProvider.BACKGROUND
+        if (shouldClip) vBackgroundBlur.invalidateOutline()
+
+        mLlMainKeyboardCard.clipToOutline = shouldClip
+        mLlMainKeyboardCard.outlineProvider = if (shouldClip) cardOutlineProvider else android.view.ViewOutlineProvider.BACKGROUND
+        if (shouldClip) mLlMainKeyboardCard.invalidateOutline()
         vBackgroundBlur.invalidate()
 
         mLlMainKeyboardCard.background = null
@@ -616,6 +588,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
             }
         }
         mSkbRoot.background = null
+        updateOneHandButtonsTheme()
         updateBlurWindow()
     }
 
@@ -764,6 +737,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
 
     fun updateOneHandButtonsTheme() {
         if (!::mOnehandHoderLayout.isInitialized) return
+        mOnehandHoderLayout.background = null
         val activeTheme = ThemeManager.activeTheme
         val isDark = activeTheme.isDark
         val keyTextColor = activeTheme.keyTextColor
@@ -780,6 +754,9 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
                 }
             }
             btn.background = btnBg
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                btn.setRenderEffect(null)
+            }
             btn.drawable?.mutate()?.setTint(keyTextColor)
             val btnSize = dp(42)
             val p = dp(9)
