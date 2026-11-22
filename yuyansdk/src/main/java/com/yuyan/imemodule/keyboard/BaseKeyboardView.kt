@@ -110,12 +110,13 @@ open class BaseKeyboardView(mContext: Context?) : View(mContext) {
                     return
                 }
             }
+            val viewTop = this.top
             val keyboardSymbol = AppPrefs.getInstance().keyboardSetting.keyboardSymbol.getValue()
             if (softKey.getkeyLabel().isNotBlank() && softKey.code != InputModeSwitcher.USER_KEYCODE_COMMA_EMOJI ) {
                 val keyLabel = if (InputModeSwitcher.isLower) softKey.keyLabel.lowercase() else softKey.keyLabel
                 val designPreset = setOf("，", "。", ",", ".")
                 val smallLabel = if(designPreset.any { it == keyLabel } || !keyboardSymbol) "" else softKey.getmKeyLabelSmall()
-                val bounds = Rect(softKey.mLeft, softKey.mTop, softKey.mRight, softKey.mBottom)
+                val bounds = Rect(softKey.mLeft, softKey.mTop + viewTop, softKey.mRight, softKey.mBottom + viewTop)
                 popupComponent.showKeyboard(keyLabel, smallLabel, bounds)
                 mLongPressKey = true
             } else if (softKey.code == InputModeSwitcher.USER_KEYCODE_LANG ||
@@ -123,7 +124,7 @@ open class BaseKeyboardView(mContext: Context?) : View(mContext) {
                     softKey.code == KeyEvent.KEYCODE_SHIFT_LEFT ||
                 softKey.code == InputModeSwitcher.USER_KEYCODE_CURSOR_DIRECTION ||
                 softKey.code == KeyEvent.KEYCODE_DEL || softKey.code == KeyEvent.KEYCODE_ENTER){
-                val bounds = Rect(softKey.mLeft, softKey.mTop, softKey.mRight, softKey.mBottom)
+                val bounds = Rect(softKey.mLeft, softKey.mTop + viewTop, softKey.mRight, softKey.mBottom + viewTop)
                 popupComponent.showKeyboardMenu(softKey, bounds, currentDistanceY)
                 mLongPressKey = true
             } else {
