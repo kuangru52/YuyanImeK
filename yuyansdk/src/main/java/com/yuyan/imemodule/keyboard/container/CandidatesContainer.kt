@@ -226,7 +226,7 @@ class CandidatesContainer(context: Context, inputView: InputView) : BaseContaine
             val isLx17 = InputModeSwitcher.skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
             val prefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
             val showPrefix = !isStroke && (InputModeSwitcher.isChineseT9 ||
-                (isLx17 && prefixMode != Lx17PrefixMode.None))
+                (isLx17 && prefixMode != Lx17PrefixMode.None && prefixMode != Lx17PrefixMode.Top))
             if (showPrefix) {
                 mRVLeftPrefix.visibility = VISIBLE
                 (mRVSymbolsView.layoutParams as? LayoutParams)?.apply {
@@ -247,7 +247,7 @@ class CandidatesContainer(context: Context, inputView: InputView) : BaseContaine
     //更新左侧拼音/笔画选择显示
     private fun updatePrefixsView() {
         val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.strokeFilterEnable.getValue()
-        val hasRimePrefixs = DictDecoder.prefixs.isNotEmpty()
+        val hasRimePrefixs = if (isStrokeFilterEnabled) !DictDecoder.isCandidatesEmpty else DictDecoder.prefixs.isNotEmpty()
         val isPrefixs = hasRimePrefixs || DictDecoder.activeStrokeFilter != 0
 
         val prefixs: Array<String>

@@ -19,9 +19,8 @@ import com.yuyan.imemodule.prefs.behavior.Lx17PrefixMode
 import com.yuyan.imemodule.utils.AppUtil
 import com.yuyan.imemodule.utils.DevicesUtils
 import com.yuyan.imemodule.utils.KeyboardLoaderUtil.Companion.instance
-import splitties.views.dsl.constraintlayout.bottomOfParent
-import splitties.views.dsl.constraintlayout.leftOfParent
-import splitties.views.dsl.constraintlayout.topOfParent
+import splitties.views.dsl.constraintlayout.*
+import splitties.views.dsl.core.*
 import com.yuyan.imemodule.keyboard.InputView
 import com.yuyan.imemodule.keyboard.TextKeyboard
 import com.yuyan.imemodule.libs.recyclerview.SwipeRecyclerView
@@ -88,17 +87,48 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
                 (mRVLeftPrefix.parent as ViewGroup).removeView(mRVLeftPrefix)
             }
             mRVLeftPrefix.visibility = GONE
+            mMajorView?.layoutParams = lParams(matchParent, matchParent).apply {
+                topOfParent(0)
+                bottomOfParent(0)
+                leftOfParent(0)
+                rightOfParent(0)
+            }
             return
         }
         mRVLeftPrefix.visibility = VISIBLE
 
+        val topSymbol = isLx17 && prefixMode == Lx17PrefixMode.Top
         val centerSymbol = isLx17 && !mIsExpanded && prefixMode == Lx17PrefixMode.Center
         val bottomSymbol = isLx17 && prefixMode == Lx17PrefixMode.Bottom
         val skbWidth = EnvironmentSingleton.instance.skbWidth
         val skbHeight = EnvironmentSingleton.instance.skbHeight
         val softKeySymbolHolder = softKeyboard.getKeyByCode(InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL)
 
-        val prefixLayoutParams = if (centerSymbol) {
+        val topBarHeight = DevicesUtils.dip2px(36f)
+
+        if (topSymbol) {
+            mMajorView?.layoutParams = lParams(matchParent, 0).apply {
+                topToBottomOf(mRVLeftPrefix)
+                bottomOfParent(0)
+                leftOfParent(0)
+                rightOfParent(0)
+            }
+        } else {
+            mMajorView?.layoutParams = lParams(matchParent, matchParent).apply {
+                topOfParent(0)
+                bottomOfParent(0)
+                leftOfParent(0)
+                rightOfParent(0)
+            }
+        }
+
+        val prefixLayoutParams = if (topSymbol) {
+            lParams(matchParent, topBarHeight).apply {
+                topOfParent(0)
+                leftOfParent(0)
+                rightOfParent(0)
+            }
+        } else if (centerSymbol) {
             val bottomMargin = if (softKeySymbolHolder != null) {
                 skbHeight - softKeySymbolHolder.mBottom + softKeyboard.keyYMargin
             } else {
@@ -135,16 +165,16 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
                 bottomOfParent(bottomMargin)
             }
         }
-        val prefixLayoutManager = if (bottomSymbol) {
+        val prefixLayoutManager = if (topSymbol || bottomSymbol) {
             LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         } else {
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         }
         mRVLeftPrefix.layoutManager = prefixLayoutManager
-        if (bottomSymbol) {
+        if (topSymbol || bottomSymbol) {
             val keyXMargin = softKeyboard.keyXMargin
-            val horizontalPadding = keyXMargin + DevicesUtils.dip2px(14f)
-            val verticalPadding = softKeyboard.keyYMargin
+            val horizontalPadding = keyXMargin
+            val verticalPadding = DevicesUtils.dip2px(2f)
             mRVLeftPrefix.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
             mRVLeftPrefix.clipToPadding = true
             mRVLeftPrefix.clipChildren = true
@@ -161,13 +191,18 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
         } else {
             mRVLeftPrefix.layoutParams = prefixLayoutParams
         }
+        mRVLeftPrefix.bringToFront()
         updateSymbolListView()
     }
 
-    //更新符号/笔画显示,九宫格左侧符号/笔画栏
+    //更新符号/笔画显示,九宫格左侧与顶栏符号/笔画栏
     fun updateSymbolListView() {
         val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.strokeFilterEnable.getValue()
-        val hasRimePrefixs = DictDecoder.prefixs.isNotEmpty()
+        val hasRimePrefixs = if (isStrokeFilterEnabled) !DictDecoder.isCandidatesEmpty else DictDecoder.prefixs.isNotEmpty()
+        val isLx17 = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
+        val prefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
+        val isTopMode = isLx17 && prefixMode == Lx17PrefixMode.Top
+
         val isPrefixs = hasRimePrefixs || DictDecoder.activeStrokeFilter != 0
 
         val prefixs: Array<String>
@@ -177,10 +212,12 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
             prefixs = com.yuyan.imemodule.service.CharFirstStrokeMap.STROKE_LABELS
             selectedIdx = if (DictDecoder.activeStrokeFilter > 0) DictDecoder.activeStrokeFilter - 1 else -1
         } else if (hasRimePrefixs) {
-            prefixs = DictDecoder.prefixs
+            val rimePrefixs = DictDecoder.prefixs
+            prefixs = if (isTopMode && rimePrefixs.size > 5) rimePrefixs.take(5).toTypedArray() else rimePrefixs
             selectedIdx = -1
         } else {
-            prefixs = mSideSymbolsPinyin.map { it.symbolKey }.toTypedArray()
+            val symbolKeys = mSideSymbolsPinyin.map { it.symbolKey }.toTypedArray()
+            prefixs = if (isTopMode && symbolKeys.size > 5) symbolKeys.take(5).toTypedArray() else symbolKeys
             selectedIdx = -1
         }
 

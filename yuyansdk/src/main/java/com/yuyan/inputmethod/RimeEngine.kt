@@ -188,7 +188,9 @@ object RimeEngine {
 
     private fun updateCandidatesOrCommitText(): String? {
         val rimeCommit = Rime.getRimeCommit()
-        if (rimeCommit != null) {
+        val currentComposition = Rime.compositionText
+
+        if (rimeCommit != null && currentComposition.isBlank()) {
             keyRecordStack.clear()
             preCommitText = rimeCommit.commitText
             preCommitText = if (charCase == KeyEvent.META_SHIFT_ON) {
@@ -201,6 +203,15 @@ object RimeEngine {
             showComposition = ""
             showCandidates = emptyList()
             return preCommitText
+        } else if (rimeCommit != null) {
+            preCommitText = rimeCommit.commitText
+            preCommitText = if (charCase == KeyEvent.META_SHIFT_ON) {
+                preCommitText.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+            } else if (charCase == KeyEvent.META_CAPS_LOCK_ON) {
+                preCommitText.uppercase()
+            } else {
+                preCommitText.lowercase()
+            }
         }
         val candidates = Rime.getRimeContext()?.candidates?.asList() ?: emptyList()
         customPhraseSize = 0
@@ -260,12 +271,6 @@ object RimeEngine {
         showComposition = composition
         preCommitText = ""
         return null
-    }
-
-    fun applyStrokeFilter() {
-        val strokeFilter = com.yuyan.imemodule.service.DictDecoder.activeStrokeFilter
-        val filtered = com.yuyan.imemodule.service.DictDecoder.filterCandidatesByStroke(showCandidates, strokeFilter)
-        com.yuyan.imemodule.service.DictDecoder.cacheCandidates(filtered.toTypedArray(), com.yuyan.imemodule.service.DictDecoder.isAssociate)
     }
 
     /**

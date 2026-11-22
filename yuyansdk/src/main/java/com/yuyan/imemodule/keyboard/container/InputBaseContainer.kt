@@ -97,55 +97,6 @@ open class InputBaseContainer(context: Context?, inputView: InputView) : BaseCon
                     setBackgroundColor(android.graphics.Color.TRANSPARENT)
                 }
 
-                val isStroke = InputModeSwitcher.skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_STROKE
-                val isT9 = InputModeSwitcher.isChineseT9
-                val isLx17 = InputModeSwitcher.skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
-                val lx17PrefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
-                val softKeyboard = mMajorView?.getSoftKeyboard()
-                val softKeySymbolHolder = softKeyboard?.getKeyByCode(InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL)
-                val lastRowFirstKey = softKeyboard?.mKeyRows?.lastOrNull()?.firstOrNull()
-
-                val leftOffset = if (isStroke) {
-                    0
-                } else if (isLx17 && (lx17PrefixMode == Lx17PrefixMode.None || lx17PrefixMode == Lx17PrefixMode.Bottom)) {
-                    0
-                } else if (isT9 || isLx17) {
-                    if (softKeySymbolHolder != null && softKeySymbolHolder.mLeft == 0 && softKeySymbolHolder.mTop == 0) {
-                        softKeySymbolHolder.mRight + softKeyboard.keyXMargin
-                    } else if (isT9) {
-                        (EnvironmentSingleton.instance.skbWidth * 0.185f).toInt()
-                    } else {
-                        (EnvironmentSingleton.instance.skbWidth * 0.145f).toInt()
-                    }
-                } else {
-                    0
-                }
-
-                val bottomMargin = if (isStroke || isT9) {
-                    0
-                } else if (isLx17 && lx17PrefixMode == Lx17PrefixMode.Bottom && softKeySymbolHolder != null) {
-                    val holderHeight = softKeySymbolHolder.mBottom - softKeySymbolHolder.mTop
-                    if (holderHeight > 0) (EnvironmentSingleton.instance.skbHeight - softKeySymbolHolder.mTop).coerceAtLeast(0)
-                    else (EnvironmentSingleton.instance.skbHeight * 0.25f).toInt()
-                } else if (lastRowFirstKey != null && lastRowFirstKey.mTop > 0) {
-                    (EnvironmentSingleton.instance.skbHeight - lastRowFirstKey.mTop).coerceAtLeast(0)
-                } else {
-                    0
-                }
-
-                val params = LayoutParams(0, matchParent).apply {
-                    leftOfParent(leftOffset)
-                    rightOfParent(0)
-                    topOfParent(0)
-                    bottomOfParent(bottomMargin)
-                }
-                if (mCandidatesGridOverlay?.parent == null) {
-                    addView(mCandidatesGridOverlay, params)
-                } else if (mCandidatesGridOverlay?.parent !== this) {
-                    (mCandidatesGridOverlay?.parent as? ViewGroup)?.removeView(mCandidatesGridOverlay)
-                    addView(mCandidatesGridOverlay, params)
-                }
-
                 mCandidatesAdapter = CandidatesAdapter(context).apply {
                     setOnItemClickLitener { _, _, position ->
                         DevicesUtils.tryPlayKeyDown()
@@ -189,7 +140,6 @@ open class InputBaseContainer(context: Context?, inputView: InputView) : BaseCon
                                     return@setOnTouchListener true
                                 }
                                 mDeleteHandler?.removeCallbacks(mDeleteRunnable)
-                                // 仅在按下时播放单次音效与震动
                                 DevicesUtils.tryPlayKeyDown(KeyEvent.KEYCODE_DEL)
                                 DevicesUtils.tryVibrate(this@InputBaseContainer)
                                 inputView.responseKeyEvent(SoftKey(KeyEvent.KEYCODE_DEL))
@@ -212,33 +162,26 @@ open class InputBaseContainer(context: Context?, inputView: InputView) : BaseCon
                         true
                     }
                 }
-                val delParams = LayoutParams(wrapContent, wrapContent).apply {
-                    bottomOfParent(bottomMargin + DevicesUtils.dip2px(10f))
-                    rightOfParent(DevicesUtils.dip2px(10f))
-                }
-                if (mDeleteButton?.parent == null) {
-                    addView(mDeleteButton, delParams)
-                } else if (mDeleteButton?.parent !== this) {
-                    (mDeleteButton?.parent as? ViewGroup)?.removeView(mDeleteButton)
-                    addView(mDeleteButton, delParams)
-                }
             }
 
             val isStroke = InputModeSwitcher.skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_STROKE
             val isT9 = InputModeSwitcher.isChineseT9
             val isLx17 = InputModeSwitcher.skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
             val lx17PrefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
+            val isTopMode = isLx17 && lx17PrefixMode == Lx17PrefixMode.Top
             val softKeyboard = mMajorView?.getSoftKeyboard()
             val softKeySymbolHolder = softKeyboard?.getKeyByCode(InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL)
             val lastRowFirstKey = softKeyboard?.mKeyRows?.lastOrNull()?.firstOrNull()
 
+            val topBarHeight = if (isTopMode) DevicesUtils.dip2px(36f) else 0
+
             val leftOffset = if (isStroke) {
                 0
-            } else if (isLx17 && (lx17PrefixMode == Lx17PrefixMode.None || lx17PrefixMode == Lx17PrefixMode.Bottom)) {
+            } else if (isLx17 && (lx17PrefixMode == Lx17PrefixMode.None || lx17PrefixMode == Lx17PrefixMode.Bottom || lx17PrefixMode == Lx17PrefixMode.Top)) {
                 0
             } else if (isT9 || isLx17) {
                 if (softKeySymbolHolder != null && softKeySymbolHolder.mLeft == 0 && softKeySymbolHolder.mTop == 0) {
-                    softKeySymbolHolder.mRight + (softKeyboard.keyXMargin)
+                    softKeySymbolHolder.mRight + softKeyboard.keyXMargin
                 } else if (isT9) {
                     (EnvironmentSingleton.instance.skbWidth * 0.185f).toInt()
                 } else {
@@ -250,27 +193,47 @@ open class InputBaseContainer(context: Context?, inputView: InputView) : BaseCon
 
             val bottomMargin = if (isStroke || isT9) {
                 0
+            } else if (isLx17 && lx17PrefixMode == Lx17PrefixMode.None) {
+                0
             } else if (isLx17 && lx17PrefixMode == Lx17PrefixMode.Bottom && softKeySymbolHolder != null) {
                 val holderHeight = softKeySymbolHolder.mBottom - softKeySymbolHolder.mTop
                 if (holderHeight > 0) (EnvironmentSingleton.instance.skbHeight - softKeySymbolHolder.mTop).coerceAtLeast(0)
                 else (EnvironmentSingleton.instance.skbHeight * 0.25f).toInt()
+            } else if (isTopMode && lastRowFirstKey != null && lastRowFirstKey.mTop > 0) {
+                (EnvironmentSingleton.instance.skbHeight - (topBarHeight + lastRowFirstKey.mTop)).coerceAtLeast(0)
             } else if (lastRowFirstKey != null && lastRowFirstKey.mTop > 0) {
                 (EnvironmentSingleton.instance.skbHeight - lastRowFirstKey.mTop).coerceAtLeast(0)
             } else {
                 0
             }
 
-            val overlayParams = (mCandidatesGridOverlay?.layoutParams as? LayoutParams)
-            if (overlayParams != null) {
-                overlayParams.leftMargin = leftOffset
-                overlayParams.bottomMargin = bottomMargin
-                mCandidatesGridOverlay?.layoutParams = overlayParams
+            val params = LayoutParams(0, 0).apply {
+                leftOfParent(leftOffset)
+                rightOfParent(0)
+                topOfParent(topBarHeight)
+                bottomOfParent(bottomMargin)
             }
 
-            val delParams = (mDeleteButton?.layoutParams as? LayoutParams)
-            if (delParams != null) {
-                delParams.bottomMargin = bottomMargin + DevicesUtils.dip2px(10f)
-                delParams.rightMargin = DevicesUtils.dip2px(10f)
+            if (mCandidatesGridOverlay?.parent == null) {
+                addView(mCandidatesGridOverlay, params)
+            } else if (mCandidatesGridOverlay?.parent !== this) {
+                (mCandidatesGridOverlay?.parent as? ViewGroup)?.removeView(mCandidatesGridOverlay)
+                addView(mCandidatesGridOverlay, params)
+            } else {
+                mCandidatesGridOverlay?.layoutParams = params
+            }
+
+            val delParams = LayoutParams(wrapContent, wrapContent).apply {
+                bottomOfParent(bottomMargin + DevicesUtils.dip2px(10f))
+                rightOfParent(DevicesUtils.dip2px(10f))
+            }
+
+            if (mDeleteButton?.parent == null) {
+                addView(mDeleteButton, delParams)
+            } else if (mDeleteButton?.parent !== this) {
+                (mDeleteButton?.parent as? ViewGroup)?.removeView(mDeleteButton)
+                addView(mDeleteButton, delParams)
+            } else {
                 mDeleteButton?.layoutParams = delParams
             }
 

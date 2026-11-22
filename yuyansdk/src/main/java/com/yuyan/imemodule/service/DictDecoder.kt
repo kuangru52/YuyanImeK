@@ -52,20 +52,89 @@ object DictDecoder {
         activeStrokeFilter = if (activeStrokeFilter == strokeCode) 0 else strokeCode
         activeCandidate = 0
         activeCandidateBar = 0
-        val filtered = filterCandidatesByStroke(RimeEngine.showCandidates, activeStrokeFilter)
+        var filtered = filterCandidatesByStroke(RimeEngine.showCandidates, activeStrokeFilter)
+        filtered = filterRareCandidates(filtered)
         updateCandidatesValue(filtered)
     }
 
+    private fun isChineseChar(code: Int): Boolean {
+        return (code in 0x4E00..0x9FFF) || (code in 0x3400..0x4DBF) || (code in 0xF900..0xFAFF) || (code in 0x20000..0x323AF)
+    }
+
     /**
-     * 根据首笔筛选过滤候选词（严格仅匹配首笔）
+     * 根据规范汉字过滤模式 (全部字库 / 一二三级 8105字 / 一二级 6500字 / 一级 3500字) 过滤生僻字
+     */
+    fun filterRareCandidates(list: List<CandidateListItem>): List<CandidateListItem> {
+        val mode = AppPrefs.getInstance().input.chineseCharFilterMode.getValue()
+        if (mode == com.yuyan.imemodule.prefs.behavior.ChineseCharFilterMode.ALL || list.isEmpty()) return list
+
+        val size = list.size
+        val filtered = ArrayList<CandidateListItem>(size)
+        for (i in 0 until size) {
+            val item = list[i]
+            val text = item.text
+            var hasRare = false
+            var idx = 0
+            val len = text.length
+            while (idx < len) {
+                val codePoint = text.codePointAt(idx)
+                val charCount = Character.charCount(codePoint)
+                idx += charCount
+
+                if (isChineseChar(codePoint)) {
+                    if (codePoint > 0xFFFF) { // 4 字节 CJK 扩展区汉字（全部属于生僻字）
+                        hasRare = true
+                        break
+                    } else {
+                        val c = codePoint.toChar()
+                        val isAllowed = when (mode) {
+                            com.yuyan.imemodule.prefs.behavior.ChineseCharFilterMode.LEVEL_1 -> CharFirstStrokeMap.isLevel1Char(c)
+                            com.yuyan.imemodule.prefs.behavior.ChineseCharFilterMode.LEVEL_1_2 -> CharFirstStrokeMap.isLevel1And2Char(c)
+                            com.yuyan.imemodule.prefs.behavior.ChineseCharFilterMode.LEVEL_1_2_3 -> CharFirstStrokeMap.isLevel123Char(c)
+                            else -> true
+                        }
+                        if (!isAllowed) {
+                            hasRare = true
+                            break
+                        }
+                    }
+                }
+            }
+            if (!hasRare) {
+                filtered.add(item)
+            }
+        }
+        return filtered
+    }
+
+    /**
+     * 根据首笔筛选过滤候选词（0-GC 零内存分配极速过滤）
      */
     fun filterCandidatesByStroke(list: List<CandidateListItem>, strokeFilter: Int): List<CandidateListItem> {
         if (strokeFilter == CharFirstStrokeMap.STROKE_ALL || list.isEmpty()) return list
-        return list.filter { item ->
-            val firstChineseChar = item.text.firstOrNull { it.code in 0x4E00..0x9FA5 } ?: item.text.firstOrNull() ?: return@filter false
+        val size = list.size
+        val filtered = ArrayList<CandidateListItem>(size)
+        for (i in 0 until size) {
+            val item = list[i]
+            val text = item.text
+            var firstChineseChar = ' '
+            val textLen = text.length
+            for (j in 0 until textLen) {
+                val c = text[j]
+                if (c.code in 0x4E00..0x9FA5) {
+                    firstChineseChar = c
+                    break
+                }
+            }
+            if (firstChineseChar == ' ' && textLen > 0) {
+                firstChineseChar = text[0]
+            }
             val stroke = CharFirstStrokeMap.getFirstStroke(firstChineseChar)
-            stroke == strokeFilter
+            if (stroke == strokeFilter) {
+                filtered.add(item)
+            }
         }
+        return filtered
     }
 
     val isCandidatesEmpty: Boolean
@@ -152,18 +221,30 @@ object DictDecoder {
                 InputDispatcher.reset()
                 updateCandidatesValue(emptyList())
             } else {
-                // 计算在 candId 之前有多少个强行插入的英文候选词，消除 Rime 索引偏移错位 Bug
-                val safeIndex = candId.coerceIn(0, currentList.size.coerceAtLeast(1) - 1)
-                val englishOffset = if (safeIndex > 0 && currentList.isNotEmpty()) {
+                val showCandidates = RimeEngine.showCandidates
+                // 1. 优先查选中的 chosenItem 在 RimeEngine.showCandidates (原始未筛选列表) 中的真实位置
+                val rawRimeIndex = if (chosenItem != null) {
+                    val idxByRef = showCandidates.indexOf(chosenItem)
+                    if (idxByRef != -1) idxByRef
+                    else {
+                        val idxByText = showCandidates.indexOfFirst { it.text == chosenItem.text }
+                        if (idxByText != -1) idxByText else candId
+                    }
+                } else candId
+
+                // 2. 计算在 rawRimeIndex 之前有多少个强行插入的英文候选词，消除 Rime 索引偏移错位 Bug
+                val safeIndex = rawRimeIndex.coerceIn(0, showCandidates.size.coerceAtLeast(1) - 1)
+                val englishOffset = if (safeIndex > 0 && showCandidates.isNotEmpty()) {
                     var count = 0
                     for (i in 0 until safeIndex) {
-                        if (currentList[i].comment == "🔤") count++
+                        if (showCandidates.getOrNull(i)?.comment == "🔤") count++
                     }
                     count
                 } else 0
-                val realRimeIndex = (candId - englishOffset).coerceAtLeast(0)
+                val realRimeIndex = (rawRimeIndex - englishOffset).coerceAtLeast(0)
 
-                if (candId >= 0 && candId in currentList.indices) InputDispatcher.getWordSelectedWord(realRimeIndex)
+                if (chosenItem != null) InputDispatcher.getWordSelectedWord(realRimeIndex)
+                activeStrokeFilter = 0 // 选择候选词后重置笔画筛选，避免前字笔画过滤污染后续音节！
 
                 val newCandidates = RimeEngine.showCandidates
                 val clickedText = if (candId in currentList.indices) currentList[candId].text else ""
@@ -222,7 +303,8 @@ object DictDecoder {
                 }
             }
         }
-        val filteredList = filterCandidatesByStroke(rimeCandidates, activeStrokeFilter)
+        var filteredList = filterCandidatesByStroke(rimeCandidates, activeStrokeFilter)
+        filteredList = filterRareCandidates(filteredList)
         updateCandidatesValue(filteredList)
     }
 

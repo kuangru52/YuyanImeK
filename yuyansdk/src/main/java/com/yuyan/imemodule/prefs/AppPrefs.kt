@@ -12,6 +12,7 @@ import com.yuyan.imemodule.application.CustomConstant
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.behavior.ChineseAssociationMode
+import com.yuyan.imemodule.prefs.behavior.ChineseCharFilterMode
 import com.yuyan.imemodule.prefs.behavior.ComposingDisplayMode
 import com.yuyan.imemodule.prefs.behavior.DoublePinyinSchemaMode
 import com.yuyan.imemodule.prefs.behavior.FullDisplayCenterMode
@@ -150,6 +151,25 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
 
         val cnEnInput = switch(R.string.cn_en_input, "cn_en_input_enable", true)
 
+        val chineseCharFilterMode = list(
+            R.string.chinese_char_filter_mode_title,
+            "chinese_char_filter_mode_v1",
+            ChineseCharFilterMode.ALL,
+            ChineseCharFilterMode,
+            listOf(
+                ChineseCharFilterMode.ALL,
+                ChineseCharFilterMode.LEVEL_1_2_3,
+                ChineseCharFilterMode.LEVEL_1_2,
+                ChineseCharFilterMode.LEVEL_1
+            ),
+            listOf(
+                R.string.chinese_char_filter_all,
+                R.string.chinese_char_filter_level_1_2_3,
+                R.string.chinese_char_filter_level_1_2,
+                R.string.chinese_char_filter_level_1
+            )
+        )
+
         val titleEnglish = category(R.string.EnglishInput)
 
         // 锁定英语键盘:锁定后，切换到英语键盘，下次弹出键盘使用英语模式
@@ -244,12 +264,14 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
             Lx17PrefixMode,
             listOf(
                 Lx17PrefixMode.None,
+                Lx17PrefixMode.Top,
                 Lx17PrefixMode.Left,
                 Lx17PrefixMode.Center,
                 Lx17PrefixMode.Bottom
             ),
             listOf(
                 R.string.lx17_prefix_mode_none,
+                R.string.lx17_prefix_mode_top,
                 R.string.lx17_prefix_mode_left,
                 R.string.lx17_prefix_mode_center,
                 R.string.lx17_prefix_mode_bottom

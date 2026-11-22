@@ -1,6 +1,7 @@
 package com.yuyan.imemodule.keyboard
 
 import android.content.Context
+import com.yuyan.imemodule.prefs.behavior.Lx17PrefixMode
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -36,7 +37,6 @@ import com.yuyan.imemodule.utils.DevicesUtils
 import kotlin.math.max
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withSave
-import com.yuyan.imemodule.service.InputDispatcher
 
 /**
  * 软件盘视图
@@ -279,9 +279,11 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
             mNormalKeyTextSizeSmall = env.keyTextSmallSize
             val keyXMargin = mSoftKeyboard!!.keyXMargin
             val keyYMargin = mSoftKeyboard!!.keyYMargin
+            val lastRowTop = mSoftKeyboard!!.mKeyRows.lastOrNull()?.firstOrNull()?.mTop ?: Int.MAX_VALUE
             for (softKeys in mSoftKeyboard!!.mKeyRows) {
                 for (softKey in softKeys) {
-                    val isCovered = candidateOverlayLeft >= 0f &&
+                    val isLastRow = softKey.mTop >= lastRowTop - 2
+                    val isCovered = !isLastRow && candidateOverlayLeft >= 0f &&
                             candidateOverlayBottom >= 0f &&
                             softKey.mRight > candidateOverlayLeft &&
                             softKey.mTop < candidateOverlayBottom
@@ -665,7 +667,11 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
         val cx = (left + right) / 2.0f
         val cy = (top + effectiveBottom) / 2.0f
 
-        if (keyboardSymbol && !TextUtils.isEmpty(keyLabelSmall)) {
+        val isLx17 = mSoftKeyboard?.skbLayoutMode == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
+        val isLx17Top = isLx17 && AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue() == Lx17PrefixMode.Top
+        val showSmallSymbol = keyboardSymbol && !isLx17Top && !TextUtils.isEmpty(keyLabelSmall)
+
+        if (showSmallSymbol) {
             mPaint.color = smallSymbolColor
             applyFontWeightToPaint(mPaint, keyboardFontWeight)
             mPaint.textSize = mNormalKeyTextSizeSmall.toFloat()
@@ -700,7 +706,7 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
             applyFontWeightToPaint(mPaint, keyboardFontWeight)
             mPaint.textSize = mNormalKeyTextSize.toFloat()
             val fontMetrics = mPaint.fontMetrics
-            val labelCy = if (keyboardSymbol && !TextUtils.isEmpty(keyLabelSmall)) {
+            val labelCy = if (showSmallSymbol) {
                 top + (effectiveBottom - top) * 0.60f
             } else {
                 cy

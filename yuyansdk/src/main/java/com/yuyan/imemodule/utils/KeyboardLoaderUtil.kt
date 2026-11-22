@@ -387,7 +387,7 @@ class KeyboardLoaderUtil private constructor() {
             }
         }
         val numberLineSkb = numberLine
-        softKeyboard = getSoftKeyboard(rows, numberLineSkb)
+        softKeyboard = getSoftKeyboard(rows, numberLineSkb, skbValue)
         mSoftKeyboardMap[skbValue] = softKeyboard
         return softKeyboard
     }
@@ -495,7 +495,12 @@ class KeyboardLoaderUtil private constructor() {
     }
 
     /** 生成键盘布局，主要用于计算键盘边界 */
-    private fun getSoftKeyboard(rows: List<List<SoftKey>>, isNumberRow: Boolean): SoftKeyboard {
+    private fun getSoftKeyboard(rows: List<List<SoftKey>>, isNumberRow: Boolean, skbValue: Int = 0): SoftKeyboard {
+        val lx17PrefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
+        val isTopMode = (skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_LX17) && (lx17PrefixMode == Lx17PrefixMode.Top)
+        val topBarHeight = if (isTopMode) DevicesUtils.dip2px(36f) else 0
+        val targetSkbHeight = EnvironmentSingleton.instance.skbHeight - topBarHeight
+
         var lastKeyBottom = 0f
         var lastKeyRight: Float
         var lastKeyTop: Float
@@ -515,7 +520,7 @@ class KeyboardLoaderUtil private constructor() {
                 } else {
                     keyBean.setKeyDimensions(keyXPos, keyYPos)
                 }
-                keyBean.setSkbCoreSize(EnvironmentSingleton.instance.skbWidth, EnvironmentSingleton.instance.skbHeight)
+                keyBean.setSkbCoreSize(EnvironmentSingleton.instance.skbWidth, targetSkbHeight)
                 lastKeyRight = keyXPos + keyWidth
                 if (keyHeight in 0.01f..0.35f) {
                     rowHeight = maxOf(rowHeight, keyHeight)

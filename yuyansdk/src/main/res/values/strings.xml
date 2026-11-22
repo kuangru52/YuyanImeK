@@ -27,6 +27,11 @@
     <string name="qwerty_pinyin_lowercase_title">拼音全键键盘小写</string>
     <string name="qwerty_pinyin_lowercase_summary">拼音全键键盘按键显示为小写字母，并将 V 键显示为 ü</string>
     <string name="cn_en_input">中英混输</string>
+    <string name="chinese_char_filter_mode_title">规范汉字过滤</string>
+    <string name="chinese_char_filter_all">全部字库（不限制，例：笔、铋、畀、𪚥）</string>
+    <string name="chinese_char_filter_level_1_2_3">一二三级字表（约 8105 字，例：笔、铋、畀）</string>
+    <string name="chinese_char_filter_level_1_2">一二级字表（约 6500 字，例：笔、铋）</string>
+    <string name="chinese_char_filter_level_1">一级字表（约 3500 字，例：笔）</string>
     <string name="search_english_cell">英文单词补全</string>
     <string name="setting_jian_fan">繁体输入</string>
     <string name="chinese_association">中文联想模式</string>
@@ -36,8 +41,9 @@
     <string name="chinese_association_date">中文联想显示时间</string>
     <string name="EnglishInput">英文输入</string>
     <string name="engish_full_keyboard">数字行</string>
-    <string name="lx17_prefix_mode_title">乱序17键盘拼音选择</string>
+    <string name="lx17_prefix_mode_title">乱序17筛选模式</string>
     <string name="lx17_prefix_mode_none">无</string>
+    <string name="lx17_prefix_mode_top">顶筛</string>
     <string name="lx17_prefix_mode_left">左筛</string>
     <string name="lx17_prefix_mode_center">中筛</string>
     <string name="lx17_prefix_mode_bottom">底筛</string>

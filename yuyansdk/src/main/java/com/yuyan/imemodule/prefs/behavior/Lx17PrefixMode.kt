@@ -4,6 +4,7 @@ import com.yuyan.imemodule.view.preference.ManagedPreference
 
 enum class Lx17PrefixMode {
     None,
+    Top,
     Left,
     Center,
     Bottom;

@@ -44,14 +44,16 @@ class PrefixAdapter(
     }
 
     private fun getItemWidth(recyclerView: RecyclerView): Int {
+        val density = recyclerView.context.resources.displayMetrics.density
         val totalWidth = recyclerView.width.takeIf { it > 0 }
-            ?: recyclerView.layoutParams?.width?.takeIf { it > 0 }
-            ?: (recyclerView.context.resources.displayMetrics.widthPixels * 0.33f).toInt()
+            ?: com.yuyan.imemodule.singleton.EnvironmentSingleton.instance.skbWidth.takeIf { it > 0 }
+            ?: recyclerView.context.resources.displayMetrics.widthPixels
         val paddingLeft = recyclerView.paddingLeft
         val paddingRight = recyclerView.paddingRight
         val availableWidth = (totalWidth - paddingLeft - paddingRight).coerceAtLeast(1)
-        val visibleCount = if (isPrefixs) 3 else 4
-        return availableWidth / visibleCount
+        val visibleCount = 5
+        val totalMargin = (visibleCount * 2 * 2 * density).toInt() // 5 items * 2 sides * 2dp
+        return ((availableWidth - totalMargin) / visibleCount).coerceAtLeast(1)
     }
 
     private fun getItemHeight(recyclerView: RecyclerView): Int {
@@ -66,6 +68,9 @@ class PrefixAdapter(
     }
 
     fun updateData(newDatas: Array<String>, isPrefixs: Boolean = false, selectedIdx: Int = -1) {
+        if (this.isPrefixs == isPrefixs && this.selectedIndex == selectedIdx && this.mDatas.contentEquals(newDatas)) {
+            return
+        }
         this.mDatas = newDatas
         this.isPrefixs = isPrefixs
         this.selectedIndex = selectedIdx
@@ -144,37 +149,65 @@ class PrefixAdapter(
         if (holder is SymbolTypeHolder && position in mDatas.indices) {
             val recyclerView = mRecyclerView ?: (holder.itemView.parent as? RecyclerView)
             val isHorizontal = recyclerView?.layoutManager?.canScrollHorizontally() == true
-            if (isHorizontal) {
+            val density = holder.itemView.context.resources.displayMetrics.density
+            val isSelected = position == selectedIndex
+            val isLx17 = com.yuyan.imemodule.manager.InputModeSwitcher.skbLayout == com.yuyan.imemodule.manager.InputModeSwitcher.MASK_SKB_LAYOUT_LX17
+            val prefixMode = com.yuyan.imemodule.prefs.AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
+            val isTopMode = isLx17 && prefixMode == com.yuyan.imemodule.prefs.behavior.Lx17PrefixMode.Top
+
+            if (isHorizontal && isTopMode) {
                 val itemWidth = getItemWidth(recyclerView)
-                if (holder.itemView.layoutParams.width != itemWidth) {
-                    holder.itemView.layoutParams = holder.itemView.layoutParams.apply {
-                        width = itemWidth
+                val itemMargin = (2 * density).toInt()
+                val lp = (holder.itemView.layoutParams as? RecyclerView.LayoutParams) ?: RecyclerView.LayoutParams(itemWidth, ViewGroup.LayoutParams.MATCH_PARENT)
+                lp.width = itemWidth
+                lp.setMargins(itemMargin, itemMargin, itemMargin, itemMargin)
+                holder.itemView.layoutParams = lp
+
+                val capsuleBg = android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                    cornerRadius = 14f * density
+                    if (isSelected) {
+                        setColor(activeTheme.accentKeyBackgroundColor)
+                    } else {
+                        setColor(activeTheme.sideSymbolKeyBackgroundColor)
                     }
                 }
+                holder.tvSymbolType.background = capsuleBg
+                val paddingPx = (4 * density).toInt()
+                holder.tvSymbolType.setPadding(0, paddingPx, 0, paddingPx)
+                holder.tvSymbolType.gravity = Gravity.CENTER
+            } else if (isHorizontal) {
+                val itemWidth = getItemWidth(recyclerView)
+                val lp = (holder.itemView.layoutParams as? RecyclerView.LayoutParams) ?: RecyclerView.LayoutParams(itemWidth, ViewGroup.LayoutParams.MATCH_PARENT)
+                lp.width = itemWidth
+                lp.setMargins(0, 0, 0, 0)
+                holder.itemView.layoutParams = lp
+
+                holder.tvSymbolType.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                holder.tvSymbolType.setPadding(0, 0, 0, 0)
+                holder.tvSymbolType.gravity = Gravity.CENTER
             } else if (isPrefixs && mDatas.size > 0 && recyclerView != null) {
                 val itemHeight = getItemHeight(recyclerView)
                 if (itemHeight > 0) {
                     holder.itemView.layoutParams = holder.itemView.layoutParams.apply {
                         height = itemHeight
                     }
-                    val density = holder.itemView.context.resources.displayMetrics.density
                     val paddingPx = (2 * density).toInt()
                     holder.tvSymbolType.setPadding(0, paddingPx, 0, paddingPx)
                 }
+                holder.tvSymbolType.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            } else {
+                holder.tvSymbolType.setBackgroundColor(android.graphics.Color.TRANSPARENT)
             }
             val label = mDatas[position]
             holder.tvSymbolType.setText(sbc2dbcCase(label))
-            val isSelected = position == selectedIndex
             val textColor = if (isSelected) {
-                activeTheme.accentKeyBackgroundColor
-            } else if (isPrefixs) {
-                activeTheme.keyTextColor
+                activeTheme.accentKeyTextColor
             } else {
                 activeTheme.sideSymbolKeyTextColor
             }
             holder.tvSymbolType.setTextColor(textColor)
             holder.tvSymbolType.typeface = if (isSelected) android.graphics.Typeface.DEFAULT_BOLD else android.graphics.Typeface.DEFAULT
-            holder.tvSymbolType.setBackgroundColor(android.graphics.Color.TRANSPARENT)
         }
     }
 
