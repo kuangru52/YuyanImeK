@@ -162,9 +162,10 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
                 softKeyboard.keyYMargin
             }
             val colWidth = softKeySymbolHolder?.mRight ?: (skbWidth * 0.18).toInt()
+            val topMargin = softKeySymbolHolder?.mTop ?: softKeyboard.keyYMargin
             LayoutParams(colWidth, 0).apply {
                 leftOfParent(0)
-                topOfParent(softKeyboard.keyYMargin)
+                topOfParent(topMargin)
                 bottomOfParent(bottomMargin)
             }
         }
