@@ -11,9 +11,9 @@ import android.os.IBinder
 import android.view.Gravity
 import android.view.View
 import android.view.Window
-import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.core.graphics.toColorInt
+import androidx.core.view.WindowCompat
 
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.prefs.AppPrefs
@@ -120,14 +120,25 @@ class ImeGlassBlurWindow(private val context: Context) {
                     window?.let { w ->
                         w.setLayout(1, 1)
                         w.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                        w.navigationBarColor = Color.TRANSPARENT
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            w.isNavigationBarContrastEnforced = false
+                        }
+                        WindowCompat.setDecorFitsSystemWindows(w, false)
 
                         w.setFlags(
                             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                                     WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-                                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+                                    WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM or
+                                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or
+                                    WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
                             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                                     WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-                                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+                                    WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM or
+                                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or
+                                    WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
                         )
                     }
                 }
@@ -135,6 +146,12 @@ class ImeGlassBlurWindow(private val context: Context) {
 
             val dialog = globalBlurDialog ?: return
             val window = dialog.window ?: return
+
+            window.navigationBarColor = Color.TRANSPARENT
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                window.isNavigationBarContrastEnforced = false
+            }
+            WindowCompat.setDecorFitsSystemWindows(window, false)
 
             val radiusDp = appPrefs.internal.windowCornerRadiusDp.getValue()
             val radiusPx = DevicesUtils.dip2px(radiusDp).toFloat()
@@ -198,19 +215,22 @@ class ImeGlassBlurWindow(private val context: Context) {
                 flags = flags or
                         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                         WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                        WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM or
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                         WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or
-                        WindowManager.LayoutParams.FLAG_BLUR_BEHIND
+                        WindowManager.LayoutParams.FLAG_BLUR_BEHIND or
+                        WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
             }
 
             try {
-                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND or WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
                 window.setBackgroundBlurRadius(blurRadiusPx)
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
 
-            val appearance = if (!isNightMode) WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS else 0
-            window.insetsController?.setSystemBarsAppearance(appearance, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS)
+            val isDarkTheme = ThemeManager.isThemeDark()
+            WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightNavigationBars = !isDarkTheme
 
             applyVendorBlurFlags(window, blurStyle)
 

@@ -158,4 +158,16 @@ object ThemeManager {
         }
     }
 
+    fun isThemeDark(theme: Theme = activeTheme): Boolean {
+        if (theme.isDark) return true
+        val color = theme.keyboardColor
+        if (color != 0 && (color and 0xFF000000.toInt()) != 0) {
+            val alpha = (color ushr 24) and 0xFF
+            if (alpha > 30) {
+                return androidx.core.graphics.ColorUtils.calculateLuminance(color) < 0.5
+            }
+        }
+        return theme.isDark
+    }
+
 }

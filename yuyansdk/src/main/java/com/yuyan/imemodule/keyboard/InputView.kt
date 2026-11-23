@@ -200,20 +200,22 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
     fun updateBlurWindow() {
         if (!isAttachedToWindow) return
         val token = windowToken ?: return
-        val totalHeight = mLlMainKeyboardCard.height
-        if (totalHeight > 0 && mLlMainKeyboardCard.width > 0) {
+        val vBackgroundBlur: View = mSkbRoot.findViewById(R.id.v_background_blur)
+        val targetView = if (vBackgroundBlur.height > 0 && vBackgroundBlur.width > 0) vBackgroundBlur else mLlMainKeyboardCard
+        val totalHeight = targetView.height
+        if (totalHeight > 0 && targetView.width > 0) {
             val env = com.yuyan.imemodule.singleton.EnvironmentSingleton.instance
             val activeTheme = com.yuyan.imemodule.data.theme.ThemeManager.activeTheme
             val radiusDp = appPrefs.internal.windowCornerRadiusDp.getValue()
             val radiusPx = dp(radiusDp).toFloat()
             val isFloat = env.keyboardModeFloat
-            val isTouchBottom = DevicesUtils.isKeyboardTouchingScreenBottom(mLlMainKeyboardCard)
-            val detectedScreenRadiusPx = if (isTouchBottom) DevicesUtils.getScreenBottomCornerRadiusPx(mLlMainKeyboardCard) else 0f
+            val isTouchBottom = DevicesUtils.isKeyboardTouchingScreenBottom(targetView)
+            val detectedScreenRadiusPx = if (isTouchBottom) DevicesUtils.getScreenBottomCornerRadiusPx(targetView) else 0f
             val bottomRadiusPx = if (isFloat) radiusPx else (if (isTouchBottom && detectedScreenRadiusPx > 0f) detectedScreenRadiusPx else 0f)
             val themeBgColor = activeTheme.keyboardColor
 
             imeGlassBlurWindow?.updateBlurWindow(
-                anchorView = mLlMainKeyboardCard,
+                anchorView = targetView,
                 totalHeight = totalHeight,
                 windowToken = token,
                 bottomRadiusPx = bottomRadiusPx,
@@ -581,8 +583,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
             mLlKeyboardBottomHolder.setBackgroundColor(Color.TRANSPARENT)
         } else {
             if (isBlurEnabled) {
-                val holderColor = (maskBaseColor and 0x00FFFFFF) or (alpha255 shl 24)
-                mLlKeyboardBottomHolder.setBackgroundColor(holderColor)
+                mLlKeyboardBottomHolder.setBackgroundColor(Color.TRANSPARENT)
             } else {
                 mLlKeyboardBottomHolder.setBackgroundColor(if (hasWallpaper) Color.TRANSPARENT else activeTheme.keyboardColor)
             }
@@ -685,6 +686,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
 
     override fun updateTheme() {
         setBackgroundResource(android.R.color.transparent)
+        updateNavbarAppearance()
         val activeTheme = ThemeManager.activeTheme
         val keyTextColor = activeTheme.keyTextColor
         val env = EnvironmentSingleton.instance
@@ -1422,16 +1424,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
     }
 
     private fun initNavbarBackground(service: ImeService?) {
-        try {
-            service?.window?.window?.also { win ->
-                WindowCompat.setDecorFitsSystemWindows(win, true)
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-                    @Suppress("DEPRECATION")
-                    win.navigationBarColor = Color.TRANSPARENT
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) win.isNavigationBarContrastEnforced = false
-            }
-        } catch (_: Exception) {}
+        updateNavbarAppearance(service)
         ViewCompat.setOnApplyWindowInsetsListener(this) { _, insets ->
             val env = EnvironmentSingleton.instance
             env.systemNavbarWindowsBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
@@ -1443,6 +1436,18 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
             }
             insets
         }
+    }
+
+    private fun updateNavbarAppearance(service: ImeService? = this.service) {
+        try {
+            service?.window?.window?.also { win ->
+                win.addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+                win.navigationBarColor = Color.TRANSPARENT
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) win.isNavigationBarContrastEnforced = false
+                val isDarkTheme = ThemeManager.isThemeDark()
+                WindowCompat.getInsetsController(win, win.decorView).isAppearanceLightNavigationBars = !isDarkTheme
+            }
+        } catch (_: Exception) {}
     }
 
     override fun onStartInputView(editorInfo: EditorInfo, restarting: Boolean) {

@@ -111,24 +111,30 @@ class ImeService : InputMethodService(), LifecycleOwner, SavedStateRegistryOwner
 
     override fun onConfigureWindow(win: android.view.Window, isFullscreen: Boolean, isCandidatesOnly: Boolean) {
         super.onConfigureWindow(win, isFullscreen, isCandidatesOnly)
-        win.clearFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        win.addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        win.navigationBarColor = android.graphics.Color.TRANSPARENT
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            win.isNavigationBarContrastEnforced = false
+        }
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
             win.attributes.layoutInDisplayCutoutMode = android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-            win.insetsController?.setSystemBarsAppearance(0, 0)
-        }
+        val isDarkTheme = com.yuyan.imemodule.data.theme.ThemeManager.isThemeDark()
+        androidx.core.view.WindowCompat.getInsetsController(win, win.decorView).isAppearanceLightNavigationBars = !isDarkTheme
     }
 
     override fun onCreateInputView(): View {
         window?.window?.let { win ->
-            win.clearFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            win.addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            win.navigationBarColor = android.graphics.Color.TRANSPARENT
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                win.isNavigationBarContrastEnforced = false
+            }
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
                 win.attributes.layoutInDisplayCutoutMode = android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             }
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                win.insetsController?.setSystemBarsAppearance(0, 0)
-            }
+            val isDarkTheme = com.yuyan.imemodule.data.theme.ThemeManager.isThemeDark()
+            androidx.core.view.WindowCompat.getInsetsController(win, win.decorView).isAppearanceLightNavigationBars = !isDarkTheme
             win.setBackgroundDrawableResource(android.R.color.transparent)
             win.decorView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
             win.decorView.setViewTreeLifecycleOwner(this)
