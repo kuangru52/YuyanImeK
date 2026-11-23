@@ -437,10 +437,10 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
                         } else {
                             softKeyboard.keyYMargin
                         }
-                        LayoutParams(colWidth, instance.skbHeight - softKeyboard.keyYMargin - bottomMargin).apply {
+                        LayoutParams(colWidth, instance.skbHeight - (softKeySymbolHolder?.mTop ?: 0) - softKeyboard.keyYMargin - bottomMargin).apply {
                             addRule(BELOW, candidatesBarView!!.id)
                             leftMargin = 0
-                            topMargin = softKeyboard.keyYMargin
+                            topMargin = (softKeySymbolHolder?.mTop ?: 0) + softKeyboard.keyYMargin
                         }
                     }
 

@@ -124,7 +124,7 @@ class KeyboardLoaderUtil private constructor() {
                 val enterKey = keyBeans.lastOrNull()
                 if (enterKey != null) {
                     enterKey.heightF = 0.50f
-                    enterKey.mTopF = if (numberLine) 0.65f else 0.50f
+                    enterKey.mTopF = if (numberLine) 0.70f else 0.50f
                 }
                 rows.add(keyBeans)
 
@@ -298,7 +298,7 @@ class KeyboardLoaderUtil private constructor() {
                 val enterKey = keyBeans.lastOrNull()
                 if (enterKey != null) {
                     enterKey.heightF = 0.50f
-                    enterKey.mTopF = if (numberLine) 0.65f else 0.50f
+                    enterKey.mTopF = if (numberLine) 0.70f else 0.50f
                 }
                 rows.add(keyBeans)
             }
