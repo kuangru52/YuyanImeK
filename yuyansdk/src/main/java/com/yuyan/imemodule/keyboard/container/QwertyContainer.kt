@@ -7,6 +7,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.adapter.PrefixAdapter
+import com.yuyan.imemodule.database.DataBaseKT
+import com.yuyan.imemodule.database.entry.SideSymbol
+import com.yuyan.imemodule.entity.keyboard.SoftKey
 import com.yuyan.imemodule.keyboard.InputView
 import com.yuyan.imemodule.keyboard.TextKeyboard
 import com.yuyan.imemodule.libs.recyclerview.SwipeRecyclerView
@@ -24,11 +27,13 @@ import splitties.views.dsl.core.*
  * 全键盘/双拼键盘容器
  *
  * 包含输入键盘[TextKeyboard]。
- * 当【筛选方式】设置为【首笔画】时，在顶部提供 5 个胶囊形笔画筛选按钮。
+ * 当【筛选方式】设置为【首笔画】时，在顶部提供 5 个胶囊形按键。
+ * 不打字（无候选字）时，显示拼音侧边栏设定的前 5 个标点符号；打字有候选字时，显示 5 个笔画筛选按钮。
  */
 @SuppressLint("ViewConstructor")
 class QwertyContainer(context: Context?, inputView: InputView, skbValue: Int = 0) : InputBaseContainer(context, inputView) {
     private var mSkbValue: Int = 0
+    private val mSideSymbolsPinyin: List<SideSymbol>
     private val mRVLeftPrefix: SwipeRecyclerView = inflate(getContext(), R.layout.sdk_view_rv_prefix, null) as SwipeRecyclerView
 
     init {
@@ -36,6 +41,10 @@ class QwertyContainer(context: Context?, inputView: InputView, skbValue: Int = 0
         mRVLeftPrefix.isHorizontalScrollBarEnabled = false
         mRVLeftPrefix.isVerticalScrollBarEnabled = false
         mRVLeftPrefix.overScrollMode = View.OVER_SCROLL_NEVER
+
+        val rawSymbols = DataBaseKT.getSideSymbolsPinyin()
+        val defaultSymbols = listOf("，", "。", "？", "！", "～", "：", "；", ".").map { SideSymbol(it, it) }
+        mSideSymbolsPinyin = rawSymbols.ifEmpty { defaultSymbols }
     }
 
     /**
@@ -121,16 +130,41 @@ class QwertyContainer(context: Context?, inputView: InputView, skbValue: Int = 0
             return
         }
 
-        val prefixs = CharFirstStrokeMap.STROKE_LABELS
-        val selectedIdx = if (DictDecoder.activeStrokeFilter > 0) DictDecoder.activeStrokeFilter - 1 else -1
+        val hasCandidates = !DictDecoder.isCandidatesEmpty || DictDecoder.activeStrokeFilter != 0
+
+        val prefixs: Array<String>
+        val selectedIdx: Int
+
+        if (hasCandidates) {
+            prefixs = CharFirstStrokeMap.STROKE_LABELS
+            selectedIdx = if (DictDecoder.activeStrokeFilter > 0) DictDecoder.activeStrokeFilter - 1 else -1
+        } else {
+            val symbolKeys = mSideSymbolsPinyin.map { it.symbolKey }.toTypedArray()
+            val padded = Array(5) { "" }
+            for (i in symbolKeys.indices) {
+                if (i < 5) padded[i] = symbolKeys[i]
+            }
+            prefixs = padded
+            selectedIdx = -1
+        }
 
         mRVLeftPrefix.setOnItemClickListener { _: View?, position: Int ->
-            if (position in CharFirstStrokeMap.STROKE_CODES.indices) {
-                DevicesUtils.tryPlayKeyDown()
-                DevicesUtils.tryVibrate(this)
-                val strokeCode = CharFirstStrokeMap.STROKE_CODES[position]
-                DictDecoder.setStrokeFilter(strokeCode)
-                updateSymbolListView()
+            if (hasCandidates) {
+                if (position in CharFirstStrokeMap.STROKE_CODES.indices) {
+                    DevicesUtils.tryPlayKeyDown()
+                    DevicesUtils.tryVibrate(this)
+                    val strokeCode = CharFirstStrokeMap.STROKE_CODES[position]
+                    DictDecoder.setStrokeFilter(strokeCode)
+                    updateSymbolListView()
+                }
+            } else {
+                if (position in mSideSymbolsPinyin.indices) {
+                    val symbol = mSideSymbolsPinyin[position].symbolValue
+                    val softKey = SoftKey(label = symbol)
+                    DevicesUtils.tryPlayKeyDown()
+                    DevicesUtils.tryVibrate(this)
+                    inputView.responseKeyEvent(softKey)
+                }
             }
         }
 
