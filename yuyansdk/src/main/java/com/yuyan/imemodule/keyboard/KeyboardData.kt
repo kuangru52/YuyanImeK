@@ -58,6 +58,6 @@ object KeyboardData {
         SkbStyleMode.Yuyan to arrayListOf(
             arrayOf(KeyEvent.KEYCODE_DPAD_UP, InputModeSwitcher.USER_KEYCODE_SELECT_ALL, KeyEvent.KEYCODE_DEL),
             arrayOf(KeyEvent.KEYCODE_DPAD_LEFT, InputModeSwitcher.USER_KEYCODE_SELECT_MODE, KeyEvent.KEYCODE_DPAD_RIGHT, InputModeSwitcher.USER_KEYCODE_COPY, KeyEvent.KEYCODE_ENTER),
-            arrayOf(KeyEvent.KEYCODE_DPAD_DOWN, InputModeSwitcher.USER_KEYCODE_MOVE_START, InputModeSwitcher.USER_KEYCODE_MOVE_END, InputModeSwitcher.USER_KEYCODE_PASTE, InputModeSwitcher.USER_KEYCODE_CLIPBOARD))
+            arrayOf(KeyEvent.KEYCODE_DPAD_DOWN, InputModeSwitcher.USER_KEYCODE_MOVE_START, InputModeSwitcher.USER_KEYCODE_MOVE_END, InputModeSwitcher.USER_KEYCODE_PASTE, InputModeSwitcher.USER_KEYCODE_CUT))
     )
 }

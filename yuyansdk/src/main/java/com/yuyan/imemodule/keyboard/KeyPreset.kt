@@ -290,6 +290,7 @@ object KeyPreset {
         InputModeSwitcher.USER_KEYCODE_SELECT_MODE to arrayOf("选择"),
         InputModeSwitcher.USER_KEYCODE_COPY to arrayOf("复制"),
         InputModeSwitcher.USER_KEYCODE_PASTE to arrayOf("粘贴"),
+        InputModeSwitcher.USER_KEYCODE_CUT to arrayOf("剪切"),
         InputModeSwitcher.USER_KEYCODE_CLIPBOARD to arrayOf("剪切板"),
         KeyEvent.KEYCODE_ENTER to arrayOf("回车"),
         KeyEvent.KEYCODE_DEL to arrayOf("删除"),
