@@ -438,7 +438,8 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
             mRightPaddingKey = appPrefs.internal.keyboardRightPadding
             mSkbRoot.bottomPadding = mBottomPaddingKey.getValue()
             mSkbRoot.rightPadding = mRightPaddingKey.getValue()
-            mLlForegroundContent?.setPadding(0, 0, 0, if (fullDisplayEnable) 0 else dp(12))
+            val bottomPaddingDp = appPrefs.internal.keyboardBottomPaddingDp.getValue()
+            mLlForegroundContent?.setPadding(0, 0, 0, if (fullDisplayEnable) 0 else dp(bottomPaddingDp))
         }
         KeyboardManager.instance.switchKeyboard()
         applyTopWindowCornerRadius()
@@ -448,6 +449,10 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
         val env = EnvironmentSingleton.instance
         val activeTheme = ThemeManager.activeTheme
         val radiusDp = appPrefs.internal.windowCornerRadiusDp.getValue()
+        val bottomPaddingDp = appPrefs.internal.keyboardBottomPaddingDp.getValue()
+        val fullDisplayEnable = appPrefs.internal.fullDisplayKeyboardEnable.getValue()
+        val foregroundContent = mSkbRoot.findViewById<LinearLayout>(R.id.ll_foreground_content)
+        foregroundContent?.setPadding(0, 0, 0, if (fullDisplayEnable) 0 else dp(bottomPaddingDp))
         val radiusPx = dp(radiusDp).toFloat()
         val baseColor = activeTheme.keyboardColor
         val isBlurEnabled = appPrefs.internal.keyboardBlurEnable.getValue()

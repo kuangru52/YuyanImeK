@@ -173,13 +173,16 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
         val theme = currentTheme ?: ThemeManager.activeTheme
         val radiusPx = dp(radiusDp).toFloat()
         val extraBottom = dp(bottomPaddingDp)
+        val totalH = instance.skbHeight + instance.heightForCandidatesArea + extraBottom
+
+        layoutParams?.height = totalH
 
         this.elevation = 0f
         this.clipToOutline = true
         this.outlineProvider = object : android.view.ViewOutlineProvider() {
             override fun getOutline(view: View, outline: android.graphics.Outline) {
                 val w = if (view.width > 0) view.width else instance.skbWidth
-                val h = if (view.height > 0) view.height else instance.skbHeight + instance.heightForCandidatesArea + extraBottom
+                val h = if (view.height > 0) view.height else totalH
                 outline.setRoundRect(0, 0, w, h, radiusPx)
             }
         }

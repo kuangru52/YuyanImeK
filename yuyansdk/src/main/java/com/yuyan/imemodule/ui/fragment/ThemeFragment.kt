@@ -52,10 +52,36 @@ class ThemeFragment : Fragment() {
         }
     }
 
+    private val paddingChangeListener = com.yuyan.imemodule.view.preference.ManagedPreference.OnChangeListener<Int> { _, _ ->
+        previewUi.post {
+            val extraBottom = com.yuyan.imemodule.utils.DevicesUtils.dip2px(com.yuyan.imemodule.prefs.AppPrefs.getInstance().internal.keyboardBottomPaddingDp.getValue().toFloat())
+            val origWidth = EnvironmentSingleton.instance.skbWidth
+            val origHeight = EnvironmentSingleton.instance.skbHeight + EnvironmentSingleton.instance.heightForCandidatesArea + extraBottom
+            val scaleRatio = 0.82f
+            val scaledWidth = (origWidth * scaleRatio).toInt()
+            val scaledHeight = (origHeight * scaleRatio).toInt()
+
+            (previewUi.parent as? View)?.layoutParams?.let { lp ->
+                lp.width = origWidth
+                lp.height = origHeight
+                (previewUi.parent as? View)?.layoutParams = lp
+            }
+            (previewUi.parent?.parent as? View)?.layoutParams?.let { lp ->
+                lp.width = scaledWidth
+                lp.height = scaledHeight
+                (previewUi.parent?.parent as? View)?.layoutParams = lp
+            }
+            previewUi.applyWindowTopCornerRadius()
+            previewUi.requestLayout()
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         previewUi.reloadKeyboardLayout(activeTheme)
         ThemeManager.addOnChangedListener(onThemeChangeListener)
+        com.yuyan.imemodule.prefs.AppPrefs.getInstance().internal.keyboardBottomPaddingDp.registerOnChangeListener(paddingChangeListener)
+        com.yuyan.imemodule.prefs.AppPrefs.getInstance().internal.windowCornerRadiusDp.registerOnChangeListener(paddingChangeListener)
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View = with(requireContext()) {
         val extraBottom = dp(12)
@@ -144,5 +170,7 @@ class ThemeFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         ThemeManager.removeOnChangedListener(onThemeChangeListener)
+        com.yuyan.imemodule.prefs.AppPrefs.getInstance().internal.keyboardBottomPaddingDp.unregisterOnChangeListener(paddingChangeListener)
+        com.yuyan.imemodule.prefs.AppPrefs.getInstance().internal.windowCornerRadiusDp.unregisterOnChangeListener(paddingChangeListener)
     }
 }
