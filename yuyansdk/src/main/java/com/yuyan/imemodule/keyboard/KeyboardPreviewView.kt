@@ -161,21 +161,25 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
         val brightness = customBg?.brightness ?: 100
         setBrightness(brightness)
         reloadKeyboardLayout(theme)
-        val extraBottom = dp(12)
+        val extraBottom = dp(AppPrefs.getInstance().internal.keyboardBottomPaddingDp.getValue())
         layoutParams?.width = instance.skbWidth
         layoutParams?.height = instance.skbHeight + instance.heightForCandidatesArea + extraBottom
     }
 
-    fun applyWindowTopCornerRadius(radiusDp: Int = AppPrefs.getInstance().internal.windowCornerRadiusDp.getValue()) {
+    fun applyWindowTopCornerRadius(
+        radiusDp: Int = AppPrefs.getInstance().internal.windowCornerRadiusDp.getValue(),
+        bottomPaddingDp: Int = AppPrefs.getInstance().internal.keyboardBottomPaddingDp.getValue()
+    ) {
         val theme = currentTheme ?: ThemeManager.activeTheme
         val radiusPx = dp(radiusDp).toFloat()
+        val extraBottom = dp(bottomPaddingDp)
 
         this.elevation = 0f
         this.clipToOutline = true
         this.outlineProvider = object : android.view.ViewOutlineProvider() {
             override fun getOutline(view: View, outline: android.graphics.Outline) {
                 val w = if (view.width > 0) view.width else instance.skbWidth
-                val h = if (view.height > 0) view.height else instance.skbHeight + instance.heightForCandidatesArea + dp(12)
+                val h = if (view.height > 0) view.height else instance.skbHeight + instance.heightForCandidatesArea + extraBottom
                 outline.setRoundRect(0, 0, w, h, radiusPx)
             }
         }
@@ -185,7 +189,7 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
             dimView.outlineProvider = object : android.view.ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: android.graphics.Outline) {
                     val w = if (view.width > 0) view.width else instance.skbWidth
-                    val h = if (view.height > 0) view.height else instance.skbHeight + instance.heightForCandidatesArea + dp(12)
+                    val h = if (view.height > 0) view.height else instance.skbHeight + instance.heightForCandidatesArea + extraBottom
                     outline.setRoundRect(0, 0, w, h, radiusPx)
                 }
             }
@@ -196,7 +200,7 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
             chkView.outlineProvider = object : android.view.ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: android.graphics.Outline) {
                     val w = if (view.width > 0) view.width else instance.skbWidth
-                    val h = if (view.height > 0) view.height else instance.skbHeight + instance.heightForCandidatesArea + dp(12)
+                    val h = if (view.height > 0) view.height else instance.skbHeight + instance.heightForCandidatesArea + extraBottom
                     outline.setRoundRect(0, 0, w, h, radiusPx)
                 }
             }
@@ -218,7 +222,7 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
             bgView.outlineProvider = object : android.view.ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: android.graphics.Outline) {
                     val w = if (view.width > 0) view.width else instance.skbWidth
-                    val h = if (view.height > 0) view.height else instance.skbHeight + instance.heightForCandidatesArea + dp(12)
+                    val h = if (view.height > 0) view.height else instance.skbHeight + instance.heightForCandidatesArea + extraBottom
                     outline.setRoundRect(0, 0, w, h, radiusPx)
                 }
             }
@@ -229,7 +233,7 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
 
     private fun getScaledBackgroundDrawable(theme: Theme): Drawable {
         val targetWidth = if (width > 0) width else instance.skbWidth
-        val extraBottom = dp(12)
+        val extraBottom = dp(AppPrefs.getInstance().internal.keyboardBottomPaddingDp.getValue())
         val targetHeight = if (height > 0) height else (instance.skbHeight + instance.heightForCandidatesArea + extraBottom)
         val customTheme = theme as? Theme.Custom
         val rawDrawable = customTheme?.backgroundImage?.toDrawable(theme.backgroundBlurRadius, reqWidth = targetWidth, reqHeight = targetHeight)

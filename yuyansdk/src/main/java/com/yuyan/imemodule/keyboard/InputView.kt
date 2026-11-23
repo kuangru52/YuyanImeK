@@ -165,6 +165,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
         appPrefs.internal.keyboardBlurHighlightEnable.registerOnChangeListener(blurUpdateListener)
         appPrefs.internal.keyboardBlurHighlightAlpha.registerOnChangeListener(blurUpdateListener)
         appPrefs.internal.windowCornerRadiusDp.registerOnChangeListener(cornerRadiusListener)
+        appPrefs.internal.keyboardBottomPaddingDp.registerOnChangeListener(cornerRadiusListener)
     }
 
     override fun onAttachedToWindow() {
@@ -183,6 +184,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
         appPrefs.internal.keyboardBlurHighlightEnable.unregisterOnChangeListener(blurUpdateListener)
         appPrefs.internal.keyboardBlurHighlightAlpha.unregisterOnChangeListener(blurUpdateListener)
         appPrefs.internal.windowCornerRadiusDp.unregisterOnChangeListener(cornerRadiusListener)
+        appPrefs.internal.keyboardBottomPaddingDp.unregisterOnChangeListener(cornerRadiusListener)
         super.onDetachedFromWindow()
     }
 

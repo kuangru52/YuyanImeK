@@ -11,6 +11,7 @@
     <string name="theme_select">主题选择</string>
     <string name="setting_ime_keyboard_show">键盘效果</string>
     <string name="window_corner_radius">窗口圆角半径</string>
+    <string name="keyboard_bottom_padding">键盘底部留白</string>
     <string name="bottom_key_corner_adapt">底部按键圆角自适应</string>
     <string name="setting_ime_keyboard_height">键盘调节</string>
     <string name="keypopup_input_settings">按键气泡</string>
