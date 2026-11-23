@@ -64,7 +64,9 @@ class PrefixAdapter(
         val paddingBottom = recyclerView.paddingBottom
         val availableHeight = (totalHeight - paddingTop - paddingBottom).coerceAtLeast(1)
         val itemCount = mDatas.size.coerceAtLeast(1)
-        return availableHeight / itemCount
+        val density = recyclerView.context.resources.displayMetrics.density
+        val minItemHeight = (38 * density).toInt()
+        return (availableHeight / itemCount).coerceAtLeast(minItemHeight)
     }
 
     fun updateData(newDatas: Array<String>, isPrefixs: Boolean = false, selectedIdx: Int = -1) {
