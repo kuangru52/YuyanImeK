@@ -1444,8 +1444,11 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
                 win.addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
                 win.navigationBarColor = Color.TRANSPARENT
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) win.isNavigationBarContrastEnforced = false
-                val isDarkTheme = ThemeManager.isThemeDark()
-                WindowCompat.getInsetsController(win, win.decorView).isAppearanceLightNavigationBars = !isDarkTheme
+                val isSystemDark = com.yuyan.imemodule.utils.DialogStyleUtils.isDarkUiMode(context)
+                val isKeyboardDark = ThemeManager.isThemeDark()
+                val controller = WindowCompat.getInsetsController(win, win.decorView)
+                controller.isAppearanceLightStatusBars = !isSystemDark
+                controller.isAppearanceLightNavigationBars = !isKeyboardDark
             }
         } catch (_: Exception) {}
     }

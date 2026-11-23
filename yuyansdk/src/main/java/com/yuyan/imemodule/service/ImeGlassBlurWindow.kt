@@ -3,16 +3,12 @@ package com.yuyan.imemodule.service
 import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.LayerDrawable
 import android.os.Build
 import android.os.IBinder
 import android.view.Gravity
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
-import androidx.core.graphics.toColorInt
 import androidx.core.view.WindowCompat
 
 import com.yuyan.imemodule.data.theme.ThemeManager
@@ -132,12 +128,16 @@ class ImeGlassBlurWindow(private val context: Context) {
                                     WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM or
                                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                                     WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or
+                                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
                                     WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
                             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                                     WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
                                     WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM or
                                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                                     WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or
+                                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
                                     WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
                         )
                     }
@@ -156,49 +156,7 @@ class ImeGlassBlurWindow(private val context: Context) {
             val radiusDp = appPrefs.internal.windowCornerRadiusDp.getValue()
             val radiusPx = DevicesUtils.dip2px(radiusDp).toFloat()
 
-            val themeBgColor = customBaseColor.takeIf { it != 0 } ?: ThemeManager.activeTheme.keyboardColor
-            val baseColor = try {
-                if (themeBgColor != 0) {
-                    themeBgColor
-                } else {
-                    config.maskColorHex.toColorInt()
-                }
-            } catch (_: Throwable) {
-                if (isNightMode) Color.BLACK else Color.WHITE
-            }
-            val maskAlpha255 = ((config.maskAlphaPercent / 100f) * 255).toInt().coerceIn(0, 255)
-            val maskColorArgb = Color.argb(maskAlpha255, Color.red(baseColor), Color.green(baseColor), Color.blue(baseColor))
-
-            val maskDrawable = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE
-                setColor(maskColorArgb)
-                cornerRadius = radiusPx
-                setBounds(0, 0, width, height)
-            }
-
-            val finalBackground: Drawable = if (config.highlightEnable && config.highlightAlphaPercent > 0) {
-                val highlightStrokePx = DevicesUtils.dip2px(1)
-                val hlAlpha255 = ((config.highlightAlphaPercent / 100f) * 255).toInt().coerceIn(0, 255)
-                val strokeColor = if (isNightMode) {
-                    Color.argb((hlAlpha255 * 0.75f).toInt(), 255, 255, 255)
-                } else {
-                    Color.argb(hlAlpha255, 255, 255, 255)
-                }
-                val highlightDrawable = GradientDrawable().apply {
-                    shape = GradientDrawable.RECTANGLE
-                    setColor(Color.TRANSPARENT)
-                    setStroke(highlightStrokePx, strokeColor)
-                    cornerRadius = radiusPx
-                    setBounds(0, 0, width, height)
-                }
-                LayerDrawable(arrayOf(maskDrawable, highlightDrawable)).apply {
-                    setBounds(0, 0, width, height)
-                }
-            } else {
-                maskDrawable
-            }
-
-            window.setBackgroundDrawable(finalBackground)
+            window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(Color.TRANSPARENT))
 
             val location = IntArray(2)
             anchorView.getLocationOnScreen(location)
@@ -218,6 +176,8 @@ class ImeGlassBlurWindow(private val context: Context) {
                         WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM or
                         WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                         WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or
+                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
                         WindowManager.LayoutParams.FLAG_BLUR_BEHIND or
                         WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
             }
@@ -229,8 +189,11 @@ class ImeGlassBlurWindow(private val context: Context) {
                 e.printStackTrace()
             }
 
-            val isDarkTheme = ThemeManager.isThemeDark()
-            WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightNavigationBars = !isDarkTheme
+            val isSystemDark = com.yuyan.imemodule.utils.DialogStyleUtils.isDarkUiMode(context)
+            val isKeyboardDark = ThemeManager.isThemeDark()
+            val controller = WindowCompat.getInsetsController(window, window.decorView)
+            controller.isAppearanceLightStatusBars = !isSystemDark
+            controller.isAppearanceLightNavigationBars = !isKeyboardDark
 
             applyVendorBlurFlags(window, blurStyle)
 

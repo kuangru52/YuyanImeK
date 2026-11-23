@@ -119,8 +119,11 @@ class ImeService : InputMethodService(), LifecycleOwner, SavedStateRegistryOwner
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
             win.attributes.layoutInDisplayCutoutMode = android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
-        val isDarkTheme = com.yuyan.imemodule.data.theme.ThemeManager.isThemeDark()
-        androidx.core.view.WindowCompat.getInsetsController(win, win.decorView).isAppearanceLightNavigationBars = !isDarkTheme
+        val isSystemDark = com.yuyan.imemodule.utils.DialogStyleUtils.isDarkUiMode(this)
+        val isKeyboardDark = com.yuyan.imemodule.data.theme.ThemeManager.isThemeDark()
+        val controller = androidx.core.view.WindowCompat.getInsetsController(win, win.decorView)
+        controller.isAppearanceLightStatusBars = !isSystemDark
+        controller.isAppearanceLightNavigationBars = !isKeyboardDark
     }
 
     override fun onCreateInputView(): View {
@@ -133,8 +136,11 @@ class ImeService : InputMethodService(), LifecycleOwner, SavedStateRegistryOwner
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
                 win.attributes.layoutInDisplayCutoutMode = android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             }
-            val isDarkTheme = com.yuyan.imemodule.data.theme.ThemeManager.isThemeDark()
-            androidx.core.view.WindowCompat.getInsetsController(win, win.decorView).isAppearanceLightNavigationBars = !isDarkTheme
+            val isSystemDark = com.yuyan.imemodule.utils.DialogStyleUtils.isDarkUiMode(this)
+            val isKeyboardDark = com.yuyan.imemodule.data.theme.ThemeManager.isThemeDark()
+            val controller = androidx.core.view.WindowCompat.getInsetsController(win, win.decorView)
+            controller.isAppearanceLightStatusBars = !isSystemDark
+            controller.isAppearanceLightNavigationBars = !isKeyboardDark
             win.setBackgroundDrawableResource(android.R.color.transparent)
             win.decorView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
             win.decorView.setViewTreeLifecycleOwner(this)
