@@ -497,7 +497,9 @@ class KeyboardLoaderUtil private constructor() {
     /** 生成键盘布局，主要用于计算键盘边界 */
     private fun getSoftKeyboard(rows: List<List<SoftKey>>, isNumberRow: Boolean, skbValue: Int = 0): SoftKeyboard {
         val lx17PrefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
-        val isTopMode = (skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_LX17) && (lx17PrefixMode == Lx17PrefixMode.Top)
+        val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.filterMode.getValue() == com.yuyan.imemodule.prefs.behavior.FilterMode.STROKE
+        val isQwertyPinyin = skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN
+        val isTopMode = ((skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_LX17) && (lx17PrefixMode == Lx17PrefixMode.Top)) || (isQwertyPinyin && isStrokeFilterEnabled)
         val topBarHeight = if (isTopMode) DevicesUtils.dip2px(30f) else 0
         val targetSkbHeight = EnvironmentSingleton.instance.skbHeight - topBarHeight
 

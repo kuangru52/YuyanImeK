@@ -154,8 +154,10 @@ class PrefixAdapter(
             val density = holder.itemView.context.resources.displayMetrics.density
             val isSelected = position == selectedIndex
             val isLx17 = com.yuyan.imemodule.manager.InputModeSwitcher.skbLayout == com.yuyan.imemodule.manager.InputModeSwitcher.MASK_SKB_LAYOUT_LX17
+            val isQwertyPinyin = com.yuyan.imemodule.manager.InputModeSwitcher.skbLayout == com.yuyan.imemodule.manager.InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN
             val prefixMode = com.yuyan.imemodule.prefs.AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
-            val isTopMode = isLx17 && prefixMode == com.yuyan.imemodule.prefs.behavior.Lx17PrefixMode.Top
+            val isStrokeFilterEnabled = com.yuyan.imemodule.prefs.AppPrefs.getInstance().keyboardSetting.filterMode.getValue() == com.yuyan.imemodule.prefs.behavior.FilterMode.STROKE
+            val isTopMode = (isLx17 && prefixMode == com.yuyan.imemodule.prefs.behavior.Lx17PrefixMode.Top) || (isQwertyPinyin && isStrokeFilterEnabled)
 
             if (isHorizontal && isTopMode) {
                 val itemWidth = getItemWidth(recyclerView)

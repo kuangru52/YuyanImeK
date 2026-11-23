@@ -200,7 +200,7 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
     }
 
     //更新符号/笔画显示,九宫格左侧与顶栏符号/笔画栏
-    fun updateSymbolListView() {
+    override fun updateSymbolListView() {
         val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.filterMode.getValue() == com.yuyan.imemodule.prefs.behavior.FilterMode.STROKE
         val hasRimePrefixs = if (isStrokeFilterEnabled) !DictDecoder.isCandidatesEmpty else DictDecoder.prefixs.isNotEmpty()
         val isLx17 = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_LX17

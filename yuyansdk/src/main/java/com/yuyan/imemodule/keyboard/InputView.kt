@@ -280,7 +280,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
             }
         }
         (KeyboardManager.instance.currentContainer as? CandidatesContainer)?.showCandidatesView()
-        (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
+        (KeyboardManager.instance.currentContainer as? InputBaseContainer)?.updateSymbolListView()
     }
 
     @Suppress("DiscouragedApi", "InternalInsetResource", "RedundantQualifierName")
@@ -1231,12 +1231,12 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
             }
             if (DictDecoder.isCandidatesEmpty || DictDecoder.isAssociate) {
                 KeyboardManager.instance.switchKeyboard()
-                (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
+                (KeyboardManager.instance.currentContainer as? InputBaseContainer)?.updateSymbolListView()
                 if (DictDecoder.isCandidatesEmpty) {
                     resetToIdleState()
                 }
             } else {
-                (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
+                (KeyboardManager.instance.currentContainer as? InputBaseContainer)?.updateSymbolListView()
                 if (InputModeSwitcher.isEnglish) {
                     setComposingText(DictDecoder.composingStrForCommit)
                 } else if (appPrefs.keyboardSetting.composingDisplayMode.getValue() == com.yuyan.imemodule.prefs.behavior.ComposingDisplayMode.INPUT_BOX) {
@@ -1254,7 +1254,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
     fun updateCandidate() {
         DictDecoder.updateDecodingCandidate()
         if (!DictDecoder.isCandidatesEmpty) {
-            (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
+            (KeyboardManager.instance.currentContainer as? InputBaseContainer)?.updateSymbolListView()
         } else if (InputDispatcher.isFinish) {
             resetToIdleState()
         }
@@ -1269,7 +1269,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
         mClipboardSuggestionDismissRunnable?.let { handler.removeCallbacks(it) }
         DictDecoder.reset()
         InputDispatcher.reset()
-        (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
+        (KeyboardManager.instance.currentContainer as? InputBaseContainer)?.updateSymbolListView()
         if (appPrefs.keyboardSetting.composingDisplayMode.getValue() == com.yuyan.imemodule.prefs.behavior.ComposingDisplayMode.INPUT_BOX) {
             setComposingText("")
         }
@@ -1288,7 +1288,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
                 onSettingsMenuClick(SkbMenuMode.CandidatesMore)
             } else {
                 KeyboardManager.instance.switchKeyboard()
-                (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
+                (KeyboardManager.instance.currentContainer as? InputBaseContainer)?.updateSymbolListView()
             }
         }
 

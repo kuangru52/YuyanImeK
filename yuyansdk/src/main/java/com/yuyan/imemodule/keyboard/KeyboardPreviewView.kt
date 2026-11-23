@@ -343,10 +343,12 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
                 val isLx17 = layoutMode == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
                 val isT9 = layoutMode == InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN
                 val isStroke = layoutMode == InputModeSwitcher.MASK_SKB_LAYOUT_STROKE
+                val isQwertyPinyin = layoutMode == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN
                 val prefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
+                val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.filterMode.getValue() == com.yuyan.imemodule.prefs.behavior.FilterMode.STROKE
 
-                val showPrefix = (isLx17 && prefixMode != Lx17PrefixMode.None) || isT9 || isStroke
-                val topSymbol = isLx17 && prefixMode == Lx17PrefixMode.Top
+                val showPrefix = (isLx17 && prefixMode != Lx17PrefixMode.None) || isT9 || isStroke || (isQwertyPinyin && isStrokeFilterEnabled)
+                val topSymbol = (isLx17 && prefixMode == Lx17PrefixMode.Top) || (isQwertyPinyin && isStrokeFilterEnabled)
                 val centerSymbol = isLx17 && prefixMode == Lx17PrefixMode.Center
                 val bottomSymbol = isLx17 && prefixMode == Lx17PrefixMode.Bottom
 
@@ -391,8 +393,12 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
                     mRVLeftPrefix.clipChildren = true
 
                     mRVLeftPrefix.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false)
-                    val symbolKeys = arrayOf("，", "。", "？", "！", "～")
-                    val prefixAdapter = PrefixAdapter(context, symbolKeys, isPrefixs = false)
+                    val symbolKeys = if (isQwertyPinyin && isStrokeFilterEnabled) {
+                        com.yuyan.imemodule.service.CharFirstStrokeMap.STROKE_LABELS
+                    } else {
+                        arrayOf("，", "。", "？", "！", "～")
+                    }
+                    val prefixAdapter = PrefixAdapter(context, symbolKeys, isPrefixs = true)
                     mRVLeftPrefix.adapter = prefixAdapter
 
                     setupPrefixTouchInteraction(mRVLeftPrefix, softKeyboard)

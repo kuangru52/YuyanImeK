@@ -169,8 +169,10 @@ open class InputBaseContainer(context: Context?, inputView: InputView) : BaseCon
             val isStroke = InputModeSwitcher.skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_STROKE
             val isT9 = InputModeSwitcher.isChineseT9
             val isLx17 = InputModeSwitcher.skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
+            val isQwertyPinyin = InputModeSwitcher.skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN
+            val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.filterMode.getValue() == com.yuyan.imemodule.prefs.behavior.FilterMode.STROKE
             val lx17PrefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
-            val isTopMode = isLx17 && lx17PrefixMode == Lx17PrefixMode.Top
+            val isTopMode = (isLx17 && lx17PrefixMode == Lx17PrefixMode.Top) || (isQwertyPinyin && isStrokeFilterEnabled)
             val softKeyboard = mMajorView?.getSoftKeyboard()
             val softKeySymbolHolder = softKeyboard?.getKeyByCode(InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL)
             val lastRowFirstKey = softKeyboard?.mKeyRows?.lastOrNull()?.firstOrNull()
@@ -247,6 +249,11 @@ open class InputBaseContainer(context: Context?, inputView: InputView) : BaseCon
             mMajorView?.setCandidateOverlayBounds(-1f, -1f)
         }
     }
+
+    /**
+     * 刷新侧边/顶栏符号或笔画筛选列表
+     */
+    open fun updateSymbolListView() {}
 
     /**
      * 刷新按键状态，当前主要解决切换键盘时enter键状态切换

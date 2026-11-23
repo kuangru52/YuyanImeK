@@ -72,7 +72,7 @@ class CandidatesContainer(context: Context, inputView: InputView) : BaseContaine
             if (DictDecoder.isCandidatesEmpty || DictDecoder.composingStrForDisplay.isBlank()) {
                 mDeleteHandler?.removeCallbacks(this)
                 KeyboardManager.instance.switchKeyboard()
-                (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
+                (KeyboardManager.instance.currentContainer as? InputBaseContainer)?.updateSymbolListView()
                 return
             }
             inputView.responseKeyEvent(SoftKey(KeyEvent.KEYCODE_DEL))
@@ -175,7 +175,7 @@ class CandidatesContainer(context: Context, inputView: InputView) : BaseContaine
                 MotionEvent.ACTION_DOWN -> {
                     if (DictDecoder.isCandidatesEmpty || DictDecoder.composingStrForDisplay.isBlank()) {
                         KeyboardManager.instance.switchKeyboard()
-                        (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
+                        (KeyboardManager.instance.currentContainer as? InputBaseContainer)?.updateSymbolListView()
                         return@setOnTouchListener true
                     }
                     mDeleteHandler?.removeCallbacks(mRepeatDeleteRunnable)
@@ -184,7 +184,7 @@ class CandidatesContainer(context: Context, inputView: InputView) : BaseContaine
                     inputView.responseKeyEvent(SoftKey(KeyEvent.KEYCODE_DEL))
                     if (DictDecoder.isCandidatesEmpty || DictDecoder.composingStrForDisplay.isBlank()) {
                         KeyboardManager.instance.switchKeyboard()
-                        (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
+                        (KeyboardManager.instance.currentContainer as? InputBaseContainer)?.updateSymbolListView()
                         return@setOnTouchListener true
                     }
                     val longPressTimeout = AppPrefs.getInstance().keyboardSetting.longPressTimeout.getValue().toLong()

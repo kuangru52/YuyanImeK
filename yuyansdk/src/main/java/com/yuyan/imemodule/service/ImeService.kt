@@ -290,7 +290,7 @@ class ImeService : InputMethodService(), LifecycleOwner, SavedStateRegistryOwner
                 InputDispatcher.reset()
                 inputViewInstance?.resetToIdleState()
                 inputViewInstance?.updateCandidateBar()
-                (KeyboardManager.instance.currentContainer as? com.yuyan.imemodule.keyboard.container.T9TextContainer)?.updateSymbolListView()
+                (KeyboardManager.instance.currentContainer as? com.yuyan.imemodule.keyboard.container.InputBaseContainer)?.updateSymbolListView()
             },
             onAmplitudeChanged = {},
             onSpectrumChanged = {},
@@ -347,7 +347,7 @@ class ImeService : InputMethodService(), LifecycleOwner, SavedStateRegistryOwner
                 InputDispatcher.reset()
                 inputViewInstance?.resetToIdleState()
                 inputViewInstance?.updateCandidateBar()
-                (KeyboardManager.instance.currentContainer as? com.yuyan.imemodule.keyboard.container.T9TextContainer)?.updateSymbolListView()
+                (KeyboardManager.instance.currentContainer as? com.yuyan.imemodule.keyboard.container.InputBaseContainer)?.updateSymbolListView()
             } else {
                 spaceVoiceRecognitionHandler.finishRecognition()
             }
