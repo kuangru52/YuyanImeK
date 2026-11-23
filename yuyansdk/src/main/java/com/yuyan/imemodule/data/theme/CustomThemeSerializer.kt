@@ -28,7 +28,6 @@ object CustomThemeSerializer : JsonTransformingSerializer<Theme.Custom>(Theme.Cu
         val jsonObj = element.jsonObject.removeVersion()
         val mutableMap = jsonObj.toMutableMap()
         mutableMap.remove("windowCornerRadiusDp")
-        mutableMap.remove("keyboardBottomPaddingDp")
         for ((key, value) in jsonObj) {
             if ((value is JsonPrimitive) && value.isString) {
                 val str = value.content.trim()

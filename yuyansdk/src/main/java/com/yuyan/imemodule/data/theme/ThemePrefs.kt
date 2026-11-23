@@ -81,15 +81,6 @@ class ThemePrefs(sharedPreferences: SharedPreferences) :
         "dp"
     )
 
-    val keyboardBottomPaddingDp = int(
-        R.string.keyboard_bottom_padding,
-        "keyboard_bottom_padding_dp",
-        12,
-        0,
-        30,
-        "dp"
-    )
-
     val bottomKeyCornerAdaptEnable = switch(
         R.string.bottom_key_corner_adapt,
         "bottom_key_corner_adapt_enable",

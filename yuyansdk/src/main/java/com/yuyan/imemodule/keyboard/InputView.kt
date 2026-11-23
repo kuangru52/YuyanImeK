@@ -165,7 +165,6 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
         appPrefs.internal.keyboardBlurHighlightEnable.registerOnChangeListener(blurUpdateListener)
         appPrefs.internal.keyboardBlurHighlightAlpha.registerOnChangeListener(blurUpdateListener)
         appPrefs.internal.windowCornerRadiusDp.registerOnChangeListener(cornerRadiusListener)
-        appPrefs.internal.keyboardBottomPaddingDp.registerOnChangeListener(cornerRadiusListener)
     }
 
     override fun onAttachedToWindow() {
@@ -184,7 +183,6 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
         appPrefs.internal.keyboardBlurHighlightEnable.unregisterOnChangeListener(blurUpdateListener)
         appPrefs.internal.keyboardBlurHighlightAlpha.unregisterOnChangeListener(blurUpdateListener)
         appPrefs.internal.windowCornerRadiusDp.unregisterOnChangeListener(cornerRadiusListener)
-        appPrefs.internal.keyboardBottomPaddingDp.unregisterOnChangeListener(cornerRadiusListener)
         super.onDetachedFromWindow()
     }
 
@@ -438,21 +436,27 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
             mRightPaddingKey = appPrefs.internal.keyboardRightPadding
             mSkbRoot.bottomPadding = mBottomPaddingKey.getValue()
             mSkbRoot.rightPadding = mRightPaddingKey.getValue()
-            val bottomPaddingDp = appPrefs.internal.keyboardBottomPaddingDp.getValue()
-            mLlForegroundContent?.setPadding(0, 0, 0, if (fullDisplayEnable) 0 else dp(bottomPaddingDp))
+            val bottomPaddingDp = getAutoKeyboardBottomPaddingDp()
+            mLlForegroundContent?.setPadding(0, 0, 0, dp(bottomPaddingDp))
         }
         KeyboardManager.instance.switchKeyboard()
         applyTopWindowCornerRadius()
+    }
+
+    private fun getAutoKeyboardBottomPaddingDp(): Int {
+        val env = EnvironmentSingleton.instance
+        val fullDisplayEnable = appPrefs.internal.fullDisplayKeyboardEnable.getValue()
+        val hasSystemBottomBar = env.systemNavbarWindowsBottom > 0
+        return if (hasSystemBottomBar || fullDisplayEnable) 0 else 12
     }
 
     fun applyTopWindowCornerRadius(customBackground: Drawable? = null) {
         val env = EnvironmentSingleton.instance
         val activeTheme = ThemeManager.activeTheme
         val radiusDp = appPrefs.internal.windowCornerRadiusDp.getValue()
-        val bottomPaddingDp = appPrefs.internal.keyboardBottomPaddingDp.getValue()
-        val fullDisplayEnable = appPrefs.internal.fullDisplayKeyboardEnable.getValue()
+        val bottomPaddingDp = getAutoKeyboardBottomPaddingDp()
         val foregroundContent = mSkbRoot.findViewById<LinearLayout>(R.id.ll_foreground_content)
-        foregroundContent?.setPadding(0, 0, 0, if (fullDisplayEnable) 0 else dp(bottomPaddingDp))
+        foregroundContent?.setPadding(0, 0, 0, dp(bottomPaddingDp))
         val radiusPx = dp(radiusDp).toFloat()
         val baseColor = activeTheme.keyboardColor
         val isBlurEnabled = appPrefs.internal.keyboardBlurEnable.getValue()

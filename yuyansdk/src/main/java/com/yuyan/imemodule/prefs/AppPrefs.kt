@@ -80,7 +80,6 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
         val floatTranslationYLand = float("float_translation_y_land", 0f)
 
         val windowCornerRadiusDp = int("window_corner_radius_dp", 16)
-        val keyboardBottomPaddingDp = int("keyboard_bottom_padding_dp", 12)
 
         val keyboardBlurEnable = bool("keyboard_blur_enable", false)
         val keyboardBlurStyle = stringLike("keyboard_blur_style", KeyboardBlurStyle, KeyboardBlurStyle.DEFAULT)
