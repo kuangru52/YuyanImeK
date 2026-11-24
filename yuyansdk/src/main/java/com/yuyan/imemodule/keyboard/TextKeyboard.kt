@@ -709,31 +709,16 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
             }
             var y = labelCy - (fontMetrics.ascent + fontMetrics.descent) / 2.0f
 
-            val currentSkbLayout = if (skbLayoutMode > 0) skbLayoutMode else InputModeSwitcher.skbLayout
-            val is14Key2Letter = currentSkbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN &&
-                    keyLabel.length == 2 && keyLabel[0].isLetter() && keyLabel[1].isLetter()
-
-            if (is14Key2Letter) {
-                val letter1 = keyLabel.substring(0, 1)
-                val letter2 = keyLabel.substring(1, 2)
-                val cxLeft = left + (right - left) * 0.25f
-                val cxRight = left + (right - left) * 0.75f
-                val x1 = cxLeft - mPaint.measureText(letter1) / 2.0f
-                val x2 = cxRight - mPaint.measureText(letter2) / 2.0f
-                canvas.drawText(letter1, x1, y, mPaint)
-                canvas.drawText(letter2, x2, y, mPaint)
-            } else {
-                var x = cx - mPaint.measureText(keyLabel) / 2.0f
-                if (keyLabel == "，" || keyLabel == ",") {
-                    x += mPaint.textSize * 0.14f
-                    if (keyboardSymbol && !TextUtils.isEmpty(keyLabelSmall)) {
-                        y -= mPaint.textSize * 0.05f
-                    } else {
-                        y -= mPaint.textSize * 0.08f
-                    }
+            var x = cx - mPaint.measureText(keyLabel) / 2.0f
+            if (keyLabel == "，" || keyLabel == ",") {
+                x += mPaint.textSize * 0.14f
+                if (keyboardSymbol && !TextUtils.isEmpty(keyLabelSmall)) {
+                    y -= mPaint.textSize * 0.05f
+                } else {
+                    y -= mPaint.textSize * 0.08f
                 }
-                canvas.drawText(keyLabel, x, y, mPaint)
             }
+            canvas.drawText(keyLabel, x, y, mPaint)
         }
         if (keyboardMnemonic && !TextUtils.isEmpty(keyMnemonic)) {  // 助记符位于按键下方
             mPaint.color = textColor

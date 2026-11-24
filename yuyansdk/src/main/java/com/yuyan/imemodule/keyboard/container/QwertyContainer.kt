@@ -72,8 +72,7 @@ class QwertyContainer(context: Context?, inputView: InputView, skbValue: Int = 0
     private fun updateKeyboardView() {
         val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.filterMode.getValue() == FilterMode.STROKE
         val isQwertyPinyin = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN
-        val is14Key = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN
-        val showTopBar = (isQwertyPinyin && isStrokeFilterEnabled) || is14Key
+        val showTopBar = isQwertyPinyin && isStrokeFilterEnabled
 
         if (!showTopBar) {
             if (mRVLeftPrefix.parent != null) {
@@ -128,13 +127,10 @@ class QwertyContainer(context: Context?, inputView: InputView, skbValue: Int = 0
     override fun updateSymbolListView() {
         val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.filterMode.getValue() == FilterMode.STROKE
         val isQwertyPinyin = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN
-        val is14Key = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN
-        if ((!isQwertyPinyin || !isStrokeFilterEnabled) && !is14Key) {
+        if (!isQwertyPinyin || !isStrokeFilterEnabled) {
             return
         }
 
-        val rimePrefixs = com.yuyan.inputmethod.RimeEngine.getPrefixs()
-        val hasRimePrefixs = is14Key && rimePrefixs.isNotEmpty()
         val hasCandidates = !DictDecoder.isCandidatesEmpty || DictDecoder.activeStrokeFilter != 0
 
         val prefixs: Array<String>
@@ -145,15 +141,6 @@ class QwertyContainer(context: Context?, inputView: InputView, skbValue: Int = 0
             // 开启首笔画筛选时，只要有候选字，始终展示笔画筛选 [一, 丨, 丿, 丶, 乙]
             prefixs = CharFirstStrokeMap.STROKE_LABELS
             selectedIdx = if (DictDecoder.activeStrokeFilter > 0) DictDecoder.activeStrokeFilter - 1 else -1
-            isPrefixsMode = true
-        } else if (hasRimePrefixs) {
-            // 未开启笔画筛选时，14键全拼打字展示拼音组合选项 [qi, qu, wu...]
-            val padded = Array(5) { "" }
-            for (i in rimePrefixs.indices) {
-                if (i < 5) padded[i] = rimePrefixs[i]
-            }
-            prefixs = padded
-            selectedIdx = 0
             isPrefixsMode = true
         } else {
             // 空闲状态显示 5 个快捷标点及设置项
@@ -175,12 +162,6 @@ class QwertyContainer(context: Context?, inputView: InputView, skbValue: Int = 0
                     val strokeCode = CharFirstStrokeMap.STROKE_CODES[position]
                     DictDecoder.setStrokeFilter(strokeCode)
                     updateSymbolListView()
-                }
-            } else if (hasRimePrefixs) {
-                if (position in rimePrefixs.indices) {
-                    DevicesUtils.tryPlayKeyDown()
-                    DevicesUtils.tryVibrate(this)
-                    inputView.selectPrefix(position)
                 }
             } else {
                 if (position in mSideSymbolsPinyin.indices) {

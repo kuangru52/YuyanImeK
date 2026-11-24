@@ -17,7 +17,7 @@ object CustomConstant {
         }
     const val SCHEMA_ZH_T9 = "t9_pinyin" // 拼音九键
     const val SCHEMA_ZH_QWERTY = "pinyin" // 拼音全键
-    const val SCHEMA_ZH_14KEY = "pinyin_14key" // 14键全拼
+
     const val SCHEMA_EN = "english"         // 英语方案
     const val SCHEMA_ZH_DOUBLE_FLYPY = "double_pinyin_" // 小鹤双拼
     const val SCHEMA_ZH_DOUBLE_LX17 = "double_pinyin_ls17" // 乱序17双拼

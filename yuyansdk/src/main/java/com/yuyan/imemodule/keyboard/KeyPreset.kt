@@ -304,48 +304,6 @@ object KeyPreset {
         InputModeSwitcher.USER_KEYCODE_PASTE to android.R.id.paste,
     )
 
-    val pinyin14PYKeyPreset: Map<Int, Array<String>> = hashMapOf(
-        KeyEvent.KEYCODE_Q to arrayOf("QW", "1"),
-        KeyEvent.KEYCODE_E to arrayOf("ER", "2"),
-        KeyEvent.KEYCODE_T to arrayOf("TY", "3"),
-        KeyEvent.KEYCODE_U to arrayOf("UI", "4"),
-        KeyEvent.KEYCODE_O to arrayOf("OP", "5"),
-        KeyEvent.KEYCODE_A to arrayOf("AS", "6"),
-        KeyEvent.KEYCODE_D to arrayOf("DF", "7"),
-        KeyEvent.KEYCODE_G to arrayOf("GH", "8"),
-        KeyEvent.KEYCODE_J to arrayOf("JK", "9"),
-        KeyEvent.KEYCODE_L to arrayOf("L", "0"),
-        KeyEvent.KEYCODE_APOSTROPHE to arrayOf("分词", "，"),
-        KeyEvent.KEYCODE_Z to arrayOf("ZX", "。"),
-        KeyEvent.KEYCODE_C to arrayOf("CV", "@"),
-        KeyEvent.KEYCODE_B to arrayOf("BN", "！"),
-        KeyEvent.KEYCODE_M to arrayOf("M", "？"),
-        InputModeSwitcher.USER_KEYCODE_LEFT_COMMA to arrayOf("，", "；"),
-        KeyEvent.KEYCODE_SPACE to arrayOf("空格", "En"),
-        InputModeSwitcher.USER_KEYCODE_SYMBOL to arrayOf("符号"),
-        InputModeSwitcher.USER_KEYCODE_NUMBER to arrayOf("123"),
-    )
 
-    val pinyin14PYKeyNumberPreset: Map<Int, Array<String>> = hashMapOf(
-        KeyEvent.KEYCODE_Q to arrayOf("QW", "1"),
-        KeyEvent.KEYCODE_E to arrayOf("ER", "2"),
-        KeyEvent.KEYCODE_T to arrayOf("TY", "3"),
-        KeyEvent.KEYCODE_U to arrayOf("UI", "4"),
-        KeyEvent.KEYCODE_O to arrayOf("OP", "5"),
-        KeyEvent.KEYCODE_A to arrayOf("AS", "6"),
-        KeyEvent.KEYCODE_D to arrayOf("DF", "7"),
-        KeyEvent.KEYCODE_G to arrayOf("GH", "8"),
-        KeyEvent.KEYCODE_J to arrayOf("JK", "9"),
-        KeyEvent.KEYCODE_L to arrayOf("L", "0"),
-        KeyEvent.KEYCODE_APOSTROPHE to arrayOf("分词", "，"),
-        KeyEvent.KEYCODE_Z to arrayOf("ZX", "。"),
-        KeyEvent.KEYCODE_C to arrayOf("CV", "@"),
-        KeyEvent.KEYCODE_B to arrayOf("BN", "！"),
-        KeyEvent.KEYCODE_M to arrayOf("M", "？"),
-        InputModeSwitcher.USER_KEYCODE_LEFT_COMMA to arrayOf("，", "；"),
-        KeyEvent.KEYCODE_SPACE to arrayOf("空格", "En"),
-        InputModeSwitcher.USER_KEYCODE_SYMBOL to arrayOf("符号"),
-        InputModeSwitcher.USER_KEYCODE_NUMBER to arrayOf("123"),
-    )
 
 }

@@ -88,8 +88,7 @@ class KeyRecordStack {
             }
             in KeyEvent.KEYCODE_A..KeyEvent.KEYCODE_Z -> {
                 val rimeSchema = Rime.getCurrentRimeSchema()
-                val skbLayout = com.yuyan.imemodule.manager.InputModeSwitcher.skbLayout
-                if (skbLayout == com.yuyan.imemodule.manager.InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN || rimeSchema == CustomConstant.SCHEMA_ZH_DOUBLE_LX17 || ('A'.code <= keyChar && 'Z'.code >= keyChar)) {
+                if (rimeSchema == CustomConstant.SCHEMA_ZH_DOUBLE_LX17 || ('A'.code <= keyChar && 'Z'.code >= keyChar)) {
                     keyRecords.add(InputKey.T9Key(Character.toUpperCase(keyChar)))
                 } else {
                     keyRecords.add(InputKey.QwertKey(keyChar))
@@ -142,11 +141,6 @@ class KeyRecordStack {
         val rimeSchema = Rime.getCurrentRimeSchema()
         val skbLayout = com.yuyan.imemodule.manager.InputModeSwitcher.skbLayout
         when {
-            skbLayout == com.yuyan.imemodule.manager.InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN -> {
-                com.yuyan.inputmethod.util.Pinyin14Utils.pinyin2Key(pinyin).forEach {
-                    keys.add(InputKey.T9Key(it))
-                }
-            }
             rimeSchema == CustomConstant.SCHEMA_ZH_T9 -> {
                 T9PinYinUtils.pinyin2Key(pinyin).forEach {
                     keys.add(InputKey.T9Key(it))
@@ -234,11 +228,7 @@ interface InputKey {
         val inputKeyLength: Int = pinyinLength + 1
         fun t9Keys(): String {
             val rimeSchema = Rime.getCurrentRimeSchema()
-            val skbLayout = com.yuyan.imemodule.manager.InputModeSwitcher.skbLayout
             return when {
-                skbLayout == com.yuyan.imemodule.manager.InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN -> {
-                    com.yuyan.inputmethod.util.Pinyin14Utils.pinyin2Key(pinyin)
-                }
                 rimeSchema == CustomConstant.SCHEMA_ZH_T9 -> {
                     T9PinYinUtils.pinyin2Key(pinyin)
                 }
@@ -252,13 +242,7 @@ interface InputKey {
         fun restoreToT9key(): List<T9Key> {
             val keys = LinkedList<T9Key>()
             val rimeSchema = Rime.getCurrentRimeSchema()
-            val skbLayout = com.yuyan.imemodule.manager.InputModeSwitcher.skbLayout
             when {
-                skbLayout == com.yuyan.imemodule.manager.InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN -> {
-                    com.yuyan.inputmethod.util.Pinyin14Utils.pinyin2Key(pinyin).forEach {
-                        keys.add(T9Key(it))
-                    }
-                }
                 rimeSchema == CustomConstant.SCHEMA_ZH_T9 -> {
                     T9PinYinUtils.pinyin2Key(pinyin).forEach {
                         keys.add(T9Key(it))

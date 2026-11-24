@@ -281,7 +281,6 @@ class SettingsContainer(context: Context, inputView: InputView) : BaseContainer(
             return
         }
         val value = when (data.skbMenuMode) {
-            SkbMenuMode.Pinyin14 -> Pair(InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN, CustomConstant.SCHEMA_ZH_QWERTY)
             SkbMenuMode.Pinyin26Jian -> Pair(InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN, CustomConstant.SCHEMA_ZH_QWERTY)
             SkbMenuMode.PinyinLx17 -> Pair(InputModeSwitcher.MASK_SKB_LAYOUT_LX17, CustomConstant.SCHEMA_ZH_DOUBLE_LX17)
             SkbMenuMode.PinyinStroke -> Pair(InputModeSwitcher.MASK_SKB_LAYOUT_STROKE, CustomConstant.SCHEMA_ZH_STROKE)
@@ -290,7 +289,6 @@ class SettingsContainer(context: Context, inputView: InputView) : BaseContainer(
         }
         val targetType = when (value.first) {
             InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN -> KeyboardManager.KeyboardType.QWERTY
-            InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN -> KeyboardManager.KeyboardType.PINYIN14
             InputModeSwitcher.MASK_SKB_LAYOUT_LX17 -> KeyboardManager.KeyboardType.LX17
             InputModeSwitcher.MASK_SKB_LAYOUT_STROKE -> KeyboardManager.KeyboardType.STROKE
             else -> KeyboardManager.KeyboardType.T9

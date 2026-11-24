@@ -148,7 +148,6 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
             SkbMenuMode.PinyinT9 -> !InputModeSwitcher.isTextEditSkb && rimeValue == CustomConstant.SCHEMA_ZH_T9
             SkbMenuMode.Pinyin26Jian -> !InputModeSwitcher.isTextEditSkb && rimeValue == CustomConstant.SCHEMA_ZH_QWERTY
             SkbMenuMode.PinyinLx17 -> !InputModeSwitcher.isTextEditSkb && rimeValue == CustomConstant.SCHEMA_ZH_DOUBLE_LX17
-            SkbMenuMode.Pinyin14 -> !InputModeSwitcher.isTextEditSkb && InputModeSwitcher.skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN
             SkbMenuMode.Pinyin26Double -> !InputModeSwitcher.isTextEditSkb && rimeValue.startsWith(CustomConstant.SCHEMA_ZH_DOUBLE_FLYPY) && rimeValue != CustomConstant.SCHEMA_ZH_DOUBLE_LX17
             SkbMenuMode.PinyinStroke -> !InputModeSwitcher.isTextEditSkb && rimeValue == CustomConstant.SCHEMA_ZH_STROKE
             SkbMenuMode.LockClipBoard -> CustomConstant.lockClipBoardEnable

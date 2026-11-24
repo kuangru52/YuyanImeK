@@ -17,7 +17,7 @@ import com.yuyan.imemodule.prefs.AppPrefs
  */
 class KeyboardManager {
     enum class KeyboardType {
-        T9, QWERTY, LX17, PINYIN14, QWERTYABC, NUMBER, SYMBOL, SETTINGS, CANDIDATES, ClipBoard, TEXTEDIT, VOICE, STROKE
+        T9, QWERTY, LX17, QWERTYABC, NUMBER, SYMBOL, SETTINGS, CANDIDATES, ClipBoard, TEXTEDIT, VOICE, STROKE
     }
     private lateinit var mInputView: InputView
     private lateinit var mKeyboardRootView: InputViewParent
@@ -70,7 +70,6 @@ class KeyboardManager {
             InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC -> KeyboardType.QWERTYABC
             InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER -> KeyboardType.NUMBER
             InputModeSwitcher.MASK_SKB_LAYOUT_LX17 -> KeyboardType.LX17
-            InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN -> KeyboardType.PINYIN14
             InputModeSwitcher.MASK_SKB_LAYOUT_STROKE -> KeyboardType.STROKE
             InputModeSwitcher.MASK_SKB_LAYOUT_TEXTEDIT -> KeyboardType.TEXTEDIT
             InputModeSwitcher.MASK_SKB_LAYOUT_VOICE -> KeyboardType.VOICE
@@ -101,7 +100,6 @@ class KeyboardManager {
                 KeyboardType.SYMBOL -> SymbolContainer(ctx, mInputView)
                 KeyboardType.QWERTYABC -> QwertyContainer(ctx, mInputView, InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC)
                 KeyboardType.LX17 -> T9TextContainer(ctx, mInputView, InputModeSwitcher.MASK_SKB_LAYOUT_LX17)
-                KeyboardType.PINYIN14 -> QwertyContainer(ctx, mInputView, InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN)
                 KeyboardType.STROKE -> T9TextContainer(ctx, mInputView, InputModeSwitcher.MASK_SKB_LAYOUT_STROKE)
                 KeyboardType.ClipBoard -> ClipBoardContainer(ctx, mInputView)
                 KeyboardType.TEXTEDIT -> QwertyContainer(ctx, mInputView, InputModeSwitcher.MASK_SKB_LAYOUT_TEXTEDIT)

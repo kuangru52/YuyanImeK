@@ -996,30 +996,7 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
                     }
                 }
             }
-            InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN -> {
-                when (keyCode) {
-                    KeyEvent.KEYCODE_Q, KeyEvent.KEYCODE_W -> "Q"
-                    KeyEvent.KEYCODE_E, KeyEvent.KEYCODE_R -> "E"
-                    KeyEvent.KEYCODE_T, KeyEvent.KEYCODE_Y -> "T"
-                    KeyEvent.KEYCODE_U, KeyEvent.KEYCODE_I -> "U"
-                    KeyEvent.KEYCODE_O, KeyEvent.KEYCODE_P -> "O"
-                    KeyEvent.KEYCODE_A, KeyEvent.KEYCODE_S -> "A"
-                    KeyEvent.KEYCODE_D, KeyEvent.KEYCODE_F -> "D"
-                    KeyEvent.KEYCODE_G, KeyEvent.KEYCODE_H -> "G"
-                    KeyEvent.KEYCODE_J, KeyEvent.KEYCODE_K -> "J"
-                    KeyEvent.KEYCODE_L -> "L"
-                    KeyEvent.KEYCODE_Z, KeyEvent.KEYCODE_X -> "Z"
-                    KeyEvent.KEYCODE_C, KeyEvent.KEYCODE_V -> "C"
-                    KeyEvent.KEYCODE_B, KeyEvent.KEYCODE_N -> "B"
-                    KeyEvent.KEYCODE_M -> "M"
-                    else -> {
-                        val ch = keyChar.toChar()
-                        if (ch in 'a'..'z' || ch in 'A'..'Z') {
-                            com.yuyan.inputmethod.util.Pinyin14Utils.pinyin214Key(ch.lowercaseChar())
-                        } else ""
-                    }
-                }
-            }
+
             InputModeSwitcher.MASK_SKB_LAYOUT_LX17 -> {
                 when (keyCode) {
                     KeyEvent.KEYCODE_H -> "H"

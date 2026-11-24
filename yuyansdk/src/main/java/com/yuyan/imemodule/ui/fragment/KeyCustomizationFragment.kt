@@ -51,7 +51,6 @@ class KeyCustomizationFragment : Fragment() {
     private val layoutOptions = listOf(
         LayoutOption("拼音全键", InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN),
         LayoutOption("中文9键", InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN),
-        LayoutOption("14键全拼", InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN),
         LayoutOption("乱序17", InputModeSwitcher.MASK_SKB_LAYOUT_LX17),
         LayoutOption("笔画键盘", InputModeSwitcher.MASK_SKB_LAYOUT_STROKE),
         LayoutOption("英文键盘", InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC),
