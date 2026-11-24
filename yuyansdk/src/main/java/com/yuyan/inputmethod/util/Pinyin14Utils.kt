@@ -192,6 +192,11 @@ object Pinyin14Utils {
                     for (py in matchingPinyins) {
                         dfs(index + len, currentPath + listOf(py))
                     }
+                    // 最大音节优先原则：如果已经匹配到了长度 >= 4 的完整长音节（如 xiang, jiang, zhuang），
+                    // 终止进一步切割为短碎片（如 xi + ang），彻底避免出现“高息昂”等无意义生造词！
+                    if (len >= 4) {
+                        break
+                    }
                 }
             }
             if (!foundAny && currentPath.isNotEmpty()) {
@@ -204,10 +209,15 @@ object Pinyin14Utils {
 
         // 1. 完全消耗全量输入按键的全拼组合
         val fullMatches = results.filter { ph -> pinyin2Key(ph.replace("'", "")).length == totalKeyLen }
-        // 2. 支持简拼/超级简拼组合（如 sm -> shen'me -> 什么, zg -> zhong'guo -> 中国）
-        val jianpinMatches = getJianpinPhrases(upperSeq)
 
-        val candidatesList = (fullMatches + jianpinMatches + results).distinct()
+        val candidatesList = if (upperSeq.length <= 4) {
+            // 短按键输入（2-4键，如 sm, zg, nh）：同时支持全拼与超级简拼
+            val jianpinMatches = getJianpinPhrases(upperSeq)
+            (fullMatches + jianpinMatches + results).distinct()
+        } else {
+            // 长按键输入（5键以上，如 gao'xiang）：严格限定为完整全拼切分，避免混入过度切割的碎片词
+            if (fullMatches.isNotEmpty()) fullMatches.distinct() else results.distinct()
+        }
 
         return candidatesList.sortedByDescending { getPhraseScore(it, totalKeyLen) }.take(20)
     }

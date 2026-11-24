@@ -258,67 +258,12 @@ object RimeEngine {
         if (is14Key) {
             val unselected14Keys = keyRecordStack.getUnselectedT9Keys()
             if (unselected14Keys.isNotEmpty()) {
+                pinyins = Pinyin14Utils.getSingleSyllablePrefixes(unselected14Keys)
                 val validPhrases = Pinyin14Utils.getValidPinyinPhrases(unselected14Keys)
                 if (validPhrases.isNotEmpty()) {
-                    pinyins = Pinyin14Utils.getSingleSyllablePrefixes(unselected14Keys)
                     val primaryPhrase = validPhrases.first()
-
-                    val phraseCandidateMap = mutableListOf<List<CandidateListItem>>()
-                    for (i in 0 until validPhrases.size.coerceAtMost(6)) {
-                        val phrase = validPhrases[i]
-                        Rime.clearComposition()
-                        Rime.replaceKey(0, 0, phrase)
-                        val cands = Rime.getRimeContext()?.candidates?.asList() ?: emptyList()
-                        if (cands.isNotEmpty()) {
-                            phraseCandidateMap.add(cands.take(10))
-                        }
-                    }
-
-                    // Restore primary phrase composition so composition bar displays primary phrase
                     Rime.clearComposition()
                     Rime.replaceKey(0, 0, primaryPhrase)
-
-                    // Interleave top candidates across all valid Pinyin phrases
-                    var mergedCandidates = mutableListOf<CandidateListItem>()
-                    var maxCands = 0
-                    for (list in phraseCandidateMap) {
-                        if (list.size > maxCands) maxCands = list.size
-                    }
-
-                    for (rank in 0 until maxCands) {
-                        for (list in phraseCandidateMap) {
-                            if (rank < list.size) {
-                                val cand = list[rank]
-                                if (mergedCandidates.none { it.text == cand.text }) {
-                                    mergedCandidates.add(cand)
-                                }
-                            }
-                        }
-                    }
-
-                    // 关联上字组词：如果之前刚选择了上一个字（如 '体'），优先将能与上一个字联动组词的字（如 '育'）提升至第 1 候选！
-                    if (preCommitText.isNotEmpty() && unselected14Keys.isNotEmpty()) {
-                        val assocList = Rime.getAssociateList(preCommitText).filterNotNull()
-                        if (assocList.isNotEmpty()) {
-                            val assocSecondChars = assocList.filter { it.length >= 2 }.map { it.substring(1, 2) }
-                            val promoted = mutableListOf<CandidateListItem>()
-                            for (char in assocSecondChars) {
-                                val matchedCand = mergedCandidates.find { it.text == char }
-                                if (matchedCand != null && promoted.none { it.text == matchedCand.text }) {
-                                    promoted.add(matchedCand)
-                                }
-                            }
-                            if (promoted.isNotEmpty()) {
-                                val remaining = mergedCandidates.filterNot { cand -> promoted.any { it.text == cand.text } }
-                                mergedCandidates = (promoted + remaining).toMutableList()
-                            }
-                        }
-                    }
-
-                    showCandidates = mergedCandidates
-                    showComposition = primaryPhrase
-                    preCommitText = ""
-                    return null
                 }
             }
         }
