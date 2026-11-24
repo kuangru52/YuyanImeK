@@ -21,6 +21,30 @@ object Pinyin14Utils {
         'm' to "M"
     )
 
+    val allPinyins = arrayOf(
+        "a", "ai", "an", "ang", "ao", "ba", "bai", "ban", "bang", "bao", "bei", "ben", "beng", "bi", "bian", "biao", "bie", "bin", "bing", "bo", "bu",
+        "ca", "cai", "can", "cang", "cao", "ce", "cen", "ceng", "cha", "chai", "chan", "chang", "chao", "che", "chen", "cheng", "chi", "chong", "chou",
+        "chu", "chua", "chuai", "chuan", "chuang", "chui", "chun", "chuo", "ci", "cong", "cou", "cu", "cuan", "cui", "cun", "cuo",
+        "da", "dai", "dan", "dang", "dao", "de", "dei", "den", "deng", "di", "dia", "dian", "diao", "die", "ding", "diu", "dong", "dou", "du", "duan", "dui", "dun", "duo",
+        "e", "ei", "en", "eng", "er", "fa", "fan", "fang", "fei", "fen", "feng", "fo", "fou", "fu",
+        "ga", "gai", "gan", "gang", "gao", "ge", "gei", "gen", "geng", "gong", "gou", "gu", "gua", "guai", "guan", "guang", "gui", "gun", "guo",
+        "ha", "hai", "han", "hang", "hao", "he", "hei", "hen", "heng", "hong", "hou", "hu", "hua", "huai", "huan", "huang", "hui", "hun", "huo",
+        "ji", "jia", "jian", "jiang", "jiao", "jie", "jin", "jing", "jiong", "jiu", "ju", "juan", "jue", "jun",
+        "ka", "kai", "kan", "kang", "kao", "ke", "kei", "ken", "keng", "kong", "kou", "ku", "kua", "kuai", "kuan", "kuang", "kui", "kun", "kuo",
+        "la", "lai", "lan", "lang", "lao", "le", "lei", "leng", "li", "lia", "lian", "liang", "liao", "lie", "lin", "ling", "liu", "lo", "long", "lou", "lu", "luan", "lue", "lun", "luo", "lv", "lve",
+        "ma", "mai", "man", "mang", "mao", "me", "mei", "men", "meng", "mi", "mian", "miao", "mie", "min", "ming", "miu", "mo", "mou", "mu",
+        "na", "nai", "nan", "nang", "nao", "ne", "nei", "nen", "neng", "ni", "nian", "niang", "niao", "nie", "nin", "ning", "niu", "nong", "nou", "nu", "nuan", "nue", "nuo", "nv", "nve",
+        "o", "ou", "pa", "pai", "pan", "pang", "pao", "pei", "pen", "peng", "pi", "pian", "piao", "pie", "pin", "ping", "po", "pou", "pu",
+        "qi", "qia", "qian", "qiang", "qiao", "qie", "qin", "qing", "qiong", "qiu", "qu", "quan", "que", "qun",
+        "ran", "rang", "rao", "re", "ren", "reng", "ri", "rong", "rou", "ru", "ruan", "rue", "run", "ruo",
+        "sa", "sai", "san", "sang", "sao", "se", "sen", "seng", "sha", "shai", "shan", "shang", "shao", "she", "shei", "shen", "sheng", "shi", "shou", "shu", "shua", "shuai", "shuan", "shuang", "shui", "shun", "shuo", "si", "song", "sou", "su", "suan", "sui", "sun", "suo",
+        "ta", "tai", "tan", "tang", "tao", "te", "teng", "ti", "tian", "tiao", "tie", "ting", "tong", "tou", "tu", "tuan", "tui", "tun", "tuo",
+        "wa", "wai", "wan", "wang", "wei", "wen", "weng", "wo", "wu",
+        "xi", "xia", "xian", "xiang", "xiao", "xie", "xin", "xing", "xiong", "xiu", "xu", "xuan", "xue", "xun",
+        "ya", "yan", "yang", "yao", "ye", "yi", "yin", "ying", "yo", "yong", "you", "yu", "yuan", "yue", "yun",
+        "za", "zai", "zan", "zang", "zao", "ze", "zei", "zen", "zeng", "zha", "zhai", "zhan", "zhang", "zhao", "zhe", "zhei", "zhen", "zheng", "zhi", "zhong", "zhou", "zhu", "zhua", "zhuai", "zhuan", "zhuang", "zhui", "zhun", "zhuo", "zi", "zong", "zou", "zu", "zuan", "zui", "zun", "zuo"
+    )
+
     private val pinyin14Map = HashMap<String, String>(400)
 
     init {
@@ -40,70 +64,62 @@ object Pinyin14Utils {
         pinyin14Map.put("B", "b,n")
         pinyin14Map.put("M", "m")
 
-        // 2键 / 3键 / 4键 / 5键 / 6键 全量真实汉语拼音音节显式映射表
+        // 2键真实汉语单字音节映射
         pinyin14Map.put("AA", "sa,se")
         pinyin14Map.put("AB", "an")
         pinyin14Map.put("AO", "ao")
-        pinyin14Map.put("BA", "ba,ca")
-        pinyin14Map.put("BD", "be,ce")
-        pinyin14Map.put("BG", "bi,ci")
+        pinyin14Map.put("BA", "ba,ca,na")
+        pinyin14Map.put("BD", "be,ne")
         pinyin14Map.put("BO", "bo")
         pinyin14Map.put("BU", "bi,bu,ni,nu")
-        pinyin14Map.put("CA", "ca,ce,va,ve")
-        pinyin14Map.put("CI", "ci")
-        pinyin14Map.put("CU", "cu")
+        pinyin14Map.put("BC", "nv")
+        pinyin14Map.put("CA", "ca")
+        pinyin14Map.put("CE", "ce")
+        pinyin14Map.put("CU", "ci,cu")
         pinyin14Map.put("DA", "da,fa")
-        pinyin14Map.put("DD", "de,fe")
-        pinyin14Map.put("DG", "di,fi")
-        pinyin14Map.put("DU", "du,fu")
-        pinyin14Map.put("EI", "ei")
-        pinyin14Map.put("EN", "en")
-        pinyin14Map.put("ER", "er")
+        pinyin14Map.put("DE", "de")
+        pinyin14Map.put("DO", "fo")
+        pinyin14Map.put("DU", "di,du,fu")
+        pinyin14Map.put("EE", "er,re")
+        pinyin14Map.put("EU", "ei,ri,ru")
+        pinyin14Map.put("EB", "en")
         pinyin14Map.put("FA", "fa")
         pinyin14Map.put("FO", "fo")
         pinyin14Map.put("FU", "fu")
         pinyin14Map.put("GA", "ga,ge,ha,he")
-        pinyin14Map.put("GD", "ge,he")
-        pinyin14Map.put("GG", "gi,hi")
+        pinyin14Map.put("GE", "ge,he")
         pinyin14Map.put("GU", "gu,hu")
-        pinyin14Map.put("JA", "jia,ka,la")
-        pinyin14Map.put("JD", "jie,ke,le")
-        pinyin14Map.put("JG", "ji,li")
-        pinyin14Map.put("JU", "ju,ku,lu,lv")
+        pinyin14Map.put("JA", "ka")
+        pinyin14Map.put("JE", "ke")
+        pinyin14Map.put("JU", "ji,ju,ku")
         pinyin14Map.put("LA", "la")
-        pinyin14Map.put("LD", "le")
-        pinyin14Map.put("LG", "li")
-        pinyin14Map.put("LU", "lu,lv")
-        pinyin14Map.put("MA", "ma,na")
-        pinyin14Map.put("MD", "me,ne")
-        pinyin14Map.put("MG", "mi,ni")
+        pinyin14Map.put("LE", "le")
+        pinyin14Map.put("LO", "lo")
+        pinyin14Map.put("LU", "li,lu")
+        pinyin14Map.put("LC", "lv")
+        pinyin14Map.put("MA", "ma")
+        pinyin14Map.put("ME", "me")
         pinyin14Map.put("MO", "mo")
-        pinyin14Map.put("MT", "mu,nu,nv,ou")
-        pinyin14Map.put("PA", "pa,sa")
-        pinyin14Map.put("PD", "pe,re,se")
-        pinyin14Map.put("PG", "pi,qi,ri,si")
-        pinyin14Map.put("PM", "po")
-        pinyin14Map.put("PT", "pu,qu,ru,su")
-        pinyin14Map.put("QA", "qa,wa")
-        pinyin14Map.put("QD", "qe,we")
-        pinyin14Map.put("QG", "qi,wi")
-        pinyin14Map.put("QU", "qu,wu")
+        pinyin14Map.put("MU", "mi,mu")
+        pinyin14Map.put("OA", "pa")
+        pinyin14Map.put("OO", "po")
+        pinyin14Map.put("OU", "ou,pi,pu")
+        pinyin14Map.put("QA", "wa")
+        pinyin14Map.put("QO", "wo")
+        pinyin14Map.put("QU", "qi,qu,wu")
         pinyin14Map.put("RA", "ra")
         pinyin14Map.put("RD", "re")
         pinyin14Map.put("RG", "ri")
         pinyin14Map.put("RU", "ru")
         pinyin14Map.put("TA", "ta,ya")
-        pinyin14Map.put("TD", "te,ye")
-        pinyin14Map.put("TG", "ti,yi")
-        pinyin14Map.put("TT", "tu,yu")
-        pinyin14Map.put("WA", "wa,ya,za")
-        pinyin14Map.put("WD", "ye,ze")
-        pinyin14Map.put("WG", "xi,yi,zi")
-        pinyin14Map.put("WT", "wu,xu,yu,zu")
-        pinyin14Map.put("ZA", "za,ze,xa,xe")
-        pinyin14Map.put("ZG", "zi,zu,xi,xu")
+        pinyin14Map.put("TE", "te,ye")
+        pinyin14Map.put("TO", "yo")
+        pinyin14Map.put("TU", "ti,tu,yi,yu")
+        pinyin14Map.put("ZA", "za")
+        pinyin14Map.put("ZE", "ze")
         pinyin14Map.put("ZU", "zi,zu,xi,xu")
 
+        // 3键真实汉语单字音节映射
         pinyin14Map.put("AAB", "san")
         pinyin14Map.put("AAG", "sai")
         pinyin14Map.put("AAO", "sao")
@@ -112,41 +128,36 @@ object Pinyin14Utils {
         pinyin14Map.put("AGB", "shan")
         pinyin14Map.put("AGO", "shou")
         pinyin14Map.put("AGU", "shu,shui")
-        pinyin14Map.put("BAB", "ban,can")
-        pinyin14Map.put("BAG", "bai,cai")
-        pinyin14Map.put("BAO", "bao,cao")
-        pinyin14Map.put("BDO", "bei,cei")
-        pinyin14Map.put("BDB", "ben,cen")
-        pinyin14Map.put("BDG", "beng,ceng")
-        pinyin14Map.put("BGA", "bia")
-        pinyin14Map.put("BGD", "bie")
-        pinyin14Map.put("BGB", "bin")
-        pinyin14Map.put("BGG", "bing")
-        pinyin14Map.put("BUA", "bua")
-        pinyin14Map.put("BUB", "bian")
-        pinyin14Map.put("BUO", "biao")
-        pinyin14Map.put("CAB", "can,van")
-        pinyin14Map.put("CAG", "cai,vai")
-        pinyin14Map.put("CAO", "cao,vao")
+        pinyin14Map.put("BAB", "ban,can,nan")
+        pinyin14Map.put("BAG", "bai,cai,nai")
+        pinyin14Map.put("BAO", "bao,cao,nao")
+        pinyin14Map.put("BDO", "bei")
+        pinyin14Map.put("BDB", "ben,nen")
+        pinyin14Map.put("BDG", "beng,neng")
+        pinyin14Map.put("BGD", "bie,nie")
+        pinyin14Map.put("BGB", "bin,nin")
+        pinyin14Map.put("BGG", "bing,ning")
+        pinyin14Map.put("BUB", "bian,nian")
+        pinyin14Map.put("BUO", "biao,niao")
+        pinyin14Map.put("CAB", "can")
+        pinyin14Map.put("CAG", "cai")
+        pinyin14Map.put("CAO", "cao")
         pinyin14Map.put("CEN", "cen")
         pinyin14Map.put("CUB", "cun")
         pinyin14Map.put("CUM", "cuo")
         pinyin14Map.put("CUG", "cui")
         pinyin14Map.put("DAB", "dan,fan")
-        pinyin14Map.put("DAG", "dai,fai")
-        pinyin14Map.put("DAO", "dao,fao")
+        pinyin14Map.put("DAG", "dai")
+        pinyin14Map.put("DAO", "dao")
         pinyin14Map.put("DDB", "den,fen")
         pinyin14Map.put("DDG", "dei,fei,deng,feng")
         pinyin14Map.put("DGD", "die")
-        pinyin14Map.put("DGB", "din,fin")
         pinyin14Map.put("DGG", "ding")
         pinyin14Map.put("DUB", "duan")
         pinyin14Map.put("DUG", "dui")
         pinyin14Map.put("DUM", "duo")
         pinyin14Map.put("ENB", "eng")
         pinyin14Map.put("FAB", "fan")
-        pinyin14Map.put("FAG", "fai")
-        pinyin14Map.put("FAO", "fao")
         pinyin14Map.put("FDB", "fen")
         pinyin14Map.put("FDG", "feng")
         pinyin14Map.put("GAB", "gan,han")
@@ -166,56 +177,55 @@ object Pinyin14Utils {
         pinyin14Map.put("JGD", "jie,lie")
         pinyin14Map.put("JGB", "jin,lin")
         pinyin14Map.put("JGG", "jing,ling")
+        pinyin14Map.put("JUA", "jia")
+        pinyin14Map.put("JUE", "jie,jue,lue")
+        pinyin14Map.put("JUO", "jiao")
         pinyin14Map.put("JUB", "juan,luan")
         pinyin14Map.put("JUG", "jue,lue")
         pinyin14Map.put("LAB", "lan")
         pinyin14Map.put("LAG", "lai")
         pinyin14Map.put("LAO", "lao")
-        pinyin14Map.put("LDB", "len")
         pinyin14Map.put("LDG", "lei,leng")
         pinyin14Map.put("LGB", "lin")
         pinyin14Map.put("LGG", "ling")
         pinyin14Map.put("LUB", "luan")
         pinyin14Map.put("LUG", "lue")
-        pinyin14Map.put("MAB", "man,nan")
-        pinyin14Map.put("MAG", "mai,nai")
-        pinyin14Map.put("MAO", "mao,nao")
-        pinyin14Map.put("MDB", "men,nen")
-        pinyin14Map.put("MDG", "mei,nei,meng,neng")
-        pinyin14Map.put("MGD", "mie,nie")
-        pinyin14Map.put("MGB", "min,nin")
-        pinyin14Map.put("MGG", "ming,ning")
-        pinyin14Map.put("MUB", "nuan")
+        pinyin14Map.put("MAB", "man")
+        pinyin14Map.put("MAG", "mai")
+        pinyin14Map.put("MAO", "mao")
+        pinyin14Map.put("MDB", "men")
+        pinyin14Map.put("MDG", "mei,meng")
+        pinyin14Map.put("MGD", "mie")
+        pinyin14Map.put("MGB", "min")
+        pinyin14Map.put("MGG", "ming")
         pinyin14Map.put("PAB", "pan,ran,san")
-        pinyin14Map.put("PAG", "pai,rai,sai")
+        pinyin14Map.put("PAG", "pai,sai")
         pinyin14Map.put("PAO", "pao,rao,sao")
         pinyin14Map.put("PDB", "pen,ren,sen")
-        pinyin14Map.put("PDG", "pei,rei,sei,peng,reng,seng")
-        pinyin14Map.put("PGB", "pin,qin,rin,sin")
-        pinyin14Map.put("PGG", "ping,qing,ring,sing")
+        pinyin14Map.put("PDG", "pei,peng,reng,seng")
+        pinyin14Map.put("PGB", "pin,qin")
+        pinyin14Map.put("PGG", "ping,qing")
         pinyin14Map.put("PUB", "qun,run,sun")
-        pinyin14Map.put("PUG", "qie,rie,sie")
+        pinyin14Map.put("PUG", "qie")
         pinyin14Map.put("PUM", "ruo,suo")
         pinyin14Map.put("QAB", "qian,wan")
-        pinyin14Map.put("QAG", "qai,wai")
-        pinyin14Map.put("QAO", "qiao,wao")
+        pinyin14Map.put("QAO", "qiao")
         pinyin14Map.put("QDB", "wen")
         pinyin14Map.put("QDG", "wei,weng")
-        pinyin14Map.put("QGB", "qin,win")
+        pinyin14Map.put("QGB", "qin")
         pinyin14Map.put("QGG", "qing")
         pinyin14Map.put("QUB", "quan")
         pinyin14Map.put("QUG", "que")
         pinyin14Map.put("RAB", "ran")
-        pinyin14Map.put("RAG", "rai")
         pinyin14Map.put("RAO", "rao")
         pinyin14Map.put("RDB", "ren")
         pinyin14Map.put("RDG", "reng")
         pinyin14Map.put("RUB", "ruan")
         pinyin14Map.put("TAB", "tan,yan")
-        pinyin14Map.put("TAG", "tai,yai")
+        pinyin14Map.put("TAG", "tai")
         pinyin14Map.put("TAO", "tao,yao")
-        pinyin14Map.put("TDB", "ten,yen")
-        pinyin14Map.put("TDG", "teng,yeng")
+        pinyin14Map.put("TDB", "ten")
+        pinyin14Map.put("TDG", "teng")
         pinyin14Map.put("TGD", "tie,ye")
         pinyin14Map.put("TGB", "tin,yin")
         pinyin14Map.put("TGG", "ting,ying")
@@ -223,28 +233,29 @@ object Pinyin14Utils {
         pinyin14Map.put("TUG", "tui,yue")
         pinyin14Map.put("TUM", "tuo")
         pinyin14Map.put("WAB", "wan,yan,zan")
-        pinyin14Map.put("WAG", "wai,yai,zai")
+        pinyin14Map.put("WAG", "wai,zai")
         pinyin14Map.put("WAO", "yao,zao")
         pinyin14Map.put("WDB", "wen,zen")
         pinyin14Map.put("WDG", "wei,zeng")
         pinyin14Map.put("WGD", "xie,ze")
-        pinyin14Map.put("WGB", "xin,yin,zin")
-        pinyin14Map.put("WGG", "xing,ying,zing")
+        pinyin14Map.put("WGB", "xin,yin")
+        pinyin14Map.put("WGG", "xing,ying")
         pinyin14Map.put("WUB", "xuan,yuan,zuan")
         pinyin14Map.put("WUG", "xue,yue,zui")
         pinyin14Map.put("WUM", "xun,yun,zuo")
-        pinyin14Map.put("ZAB", "zan,xan")
-        pinyin14Map.put("ZAG", "zai,xai")
-        pinyin14Map.put("ZAO", "zao,xao")
+        pinyin14Map.put("ZAB", "zan")
+        pinyin14Map.put("ZAG", "zai")
+        pinyin14Map.put("ZAO", "zao")
         pinyin14Map.put("ZDB", "zen")
         pinyin14Map.put("ZDG", "zei,zeng")
         pinyin14Map.put("ZGD", "xie,zhe")
-        pinyin14Map.put("ZGB", "xin,zin")
-        pinyin14Map.put("ZGG", "xing,zing")
+        pinyin14Map.put("ZGB", "xin")
+        pinyin14Map.put("ZGG", "xing")
         pinyin14Map.put("ZUB", "zuan")
         pinyin14Map.put("ZUG", "zui")
         pinyin14Map.put("ZUM", "zuo")
 
+        // 4键 / 5键 / 6键 真实汉语单字音节映射
         pinyin14Map.put("AABG", "sang")
         pinyin14Map.put("AAGB", "sheng,shang")
         pinyin14Map.put("AGAB", "shan")
@@ -280,9 +291,6 @@ object Pinyin14Utils {
         pinyin14Map.put("DDBG", "deng,feng")
         pinyin14Map.put("DGAB", "dian")
         pinyin14Map.put("DGAO", "diao")
-        pinyin14Map.put("DGABG", "diang")
-        pinyin14Map.put("DUBG", "duang")
-        pinyin14Map.put("ENBG", "eng")
         pinyin14Map.put("FABG", "fang")
         pinyin14Map.put("FDBG", "feng")
         pinyin14Map.put("GABG", "gang,hang")
@@ -315,16 +323,14 @@ object Pinyin14Utils {
         pinyin14Map.put("PUAB", "quan,ruan,suan")
         pinyin14Map.put("PUABG", "qiang")
         pinyin14Map.put("QUAB", "quan")
-        pinyin14Map.put("QUAG", "quai")
         pinyin14Map.put("QUABG", "qiang")
         pinyin14Map.put("RABG", "rang")
         pinyin14Map.put("RDBG", "reng")
         pinyin14Map.put("RUAB", "ruan")
         pinyin14Map.put("TABG", "tang,yang")
-        pinyin14Map.put("TDBG", "teng,yeng")
+        pinyin14Map.put("TDBG", "teng")
         pinyin14Map.put("TGAB", "tian")
         pinyin14Map.put("TGAO", "tiao")
-        pinyin14Map.put("TGABG", "tiang")
         pinyin14Map.put("TUAB", "tuan,yuan")
         pinyin14Map.put("WABG", "wang,yang,zang")
         pinyin14Map.put("WDBG", "weng,zeng")
@@ -333,7 +339,7 @@ object Pinyin14Utils {
         pinyin14Map.put("WGABG", "xiang,zhang")
         pinyin14Map.put("WUAB", "xuan,yuan,zuan")
         pinyin14Map.put("WUABG", "xiang")
-        pinyin14Map.put("ZABG", "zang,xang")
+        pinyin14Map.put("ZABG", "zang")
         pinyin14Map.put("ZDBG", "zeng")
         pinyin14Map.put("ZGAB", "zhan")
         pinyin14Map.put("ZGAG", "zhai")
@@ -422,30 +428,6 @@ object Pinyin14Utils {
         val letterCombinations = expandKeySeqTo26Letters(upperSeq)
         val results = ArrayList<String>()
 
-        val validChinesePinyins = arrayOf(
-            "a", "ai", "an", "ang", "ao", "ba", "bai", "ban", "bang", "bao", "bei", "ben", "beng", "bi", "bian", "biao", "bie", "bin", "bing", "bo", "bu",
-            "ca", "cai", "can", "cang", "cao", "ce", "cen", "ceng", "cha", "chai", "chan", "chang", "chao", "che", "chen", "cheng", "chi", "chong", "chou",
-            "chu", "chua", "chuai", "chuan", "chuang", "chui", "chun", "chuo", "ci", "cong", "cou", "cu", "cuan", "cui", "cun", "cuo",
-            "da", "dai", "dan", "dang", "dao", "de", "dei", "den", "deng", "di", "dia", "dian", "diao", "die", "ding", "diu", "dong", "dou", "du", "duan", "dui", "dun", "duo",
-            "e", "ei", "en", "eng", "er", "fa", "fan", "fang", "fei", "fen", "feng", "fo", "fou", "fu",
-            "ga", "gai", "gan", "gang", "gao", "ge", "gei", "gen", "geng", "gong", "gou", "gu", "gua", "guai", "guan", "guang", "gui", "gun", "guo",
-            "ha", "hai", "han", "hang", "hao", "he", "hei", "hen", "heng", "hong", "hou", "hu", "hua", "huai", "huan", "huang", "hui", "hun", "huo",
-            "ji", "jia", "jian", "jiang", "jiao", "jie", "jin", "jing", "jiong", "jiu", "ju", "juan", "jue", "jun",
-            "ka", "kai", "kan", "kang", "kao", "ke", "kei", "ken", "keng", "kong", "kou", "ku", "kua", "kuai", "kuan", "kuang", "kui", "kun", "kuo",
-            "la", "lai", "lan", "lang", "lao", "le", "lei", "leng", "li", "lia", "lian", "liang", "liao", "lie", "lin", "ling", "liu", "lo", "long", "lou", "lu", "luan", "lue", "lun", "luo", "lv", "lve",
-            "ma", "mai", "man", "mang", "mao", "me", "mei", "men", "meng", "mi", "mian", "miao", "mie", "min", "ming", "miu", "mo", "mou", "mu",
-            "na", "nai", "nan", "nang", "nao", "ne", "nei", "nen", "neng", "ni", "nian", "niang", "niao", "nie", "nin", "ning", "niu", "nong", "nou", "nu", "nuan", "nue", "nuo", "nv", "nve",
-            "o", "ou", "pa", "pai", "pan", "pang", "pao", "pei", "pen", "peng", "pi", "pian", "piao", "pie", "pin", "ping", "po", "pou", "pu",
-            "qi", "qia", "qian", "qiang", "qiao", "qie", "qin", "qing", "qiong", "qiu", "qu", "quan", "que", "qun",
-            "ran", "rang", "rao", "re", "ren", "reng", "ri", "rong", "rou", "ru", "ruan", "rue", "run", "ruo",
-            "sa", "sai", "san", "sang", "sao", "se", "sen", "seng", "sha", "shai", "shan", "shang", "shao", "she", "shei", "shen", "sheng", "shi", "shou", "shu", "shua", "shuai", "shuan", "shuang", "shui", "shun", "shuo", "si", "song", "sou", "su", "suan", "sui", "sun", "suo",
-            "ta", "tai", "tan", "tang", "tao", "te", "teng", "ti", "tian", "tiao", "tie", "ting", "tong", "tou", "tu", "tuan", "tui", "tun", "tuo",
-            "wa", "wai", "wan", "wang", "wei", "wen", "weng", "wo", "wu",
-            "xi", "xia", "xian", "xiang", "xiao", "xie", "xin", "xing", "xiong", "xiu", "xu", "xuan", "xue", "xun",
-            "ya", "yan", "yang", "yao", "ye", "yi", "yin", "ying", "yo", "yong", "you", "yu", "yuan", "yue", "yun",
-            "za", "zai", "zan", "zang", "zao", "ze", "zei", "zen", "zeng", "zha", "zhai", "zhan", "zhang", "zhao", "zhe", "zhei", "zhen", "zheng", "zhi", "zhong", "zhou", "zhu", "zhua", "zhuai", "zhuan", "zhuang", "zhui", "zhun", "zhuo", "zi", "zong", "zou", "zu", "zuan", "zui", "zun", "zuo"
-        )
-
         for (comb in letterCombinations) {
             fun dfsComb(index: Int, currentPath: List<String>) {
                 if (index >= comb.length) {
@@ -455,7 +437,7 @@ object Pinyin14Utils {
                 val maxLen = (comb.length - index).coerceAtMost(6)
                 for (len in maxLen downTo 1) {
                     val subSeq = comb.substring(index, index + len)
-                    if (validChinesePinyins.contains(subSeq)) {
+                    if (allPinyins.contains(subSeq)) {
                         dfsComb(index + len, currentPath + listOf(subSeq))
                         if (len >= 4) break
                     }
@@ -469,7 +451,7 @@ object Pinyin14Utils {
         val fullMatches = results.filter { ph -> pinyin2Key(ph.replace("'", "")).length == totalKeyLen }
 
         val candidatesList = if (upperSeq.length <= 4) {
-            val jianpinMatches = getJianpinPhrases(upperSeq, validChinesePinyins)
+            val jianpinMatches = getJianpinPhrases(upperSeq)
             (fullMatches + jianpinMatches + results).distinct()
         } else {
             if (fullMatches.isNotEmpty()) fullMatches.distinct() else results.distinct()
@@ -515,9 +497,9 @@ object Pinyin14Utils {
         }
     }
 
-    private fun getPrimarySyllablesForInitials(initials: List<String>, validPinyins: Array<String>): List<String> {
+    private fun getPrimarySyllablesForInitials(initials: List<String>): List<String> {
         val results = mutableListOf<String>()
-        for (py in validPinyins) {
+        for (py in allPinyins) {
             for (init in initials) {
                 if (py.startsWith(init)) {
                     results.add(py)
@@ -528,12 +510,12 @@ object Pinyin14Utils {
         return results
     }
 
-    private fun getJianpinPhrases(keySeq: String, validPinyins: Array<String>): List<String> {
+    private fun getJianpinPhrases(keySeq: String): List<String> {
         if (keySeq.length !in 2..4) return emptyList()
 
         val keyList = keySeq.toCharArray().toList()
         val initialLists = keyList.map { getInitialsForKey(it) }
-        val primarySyllableLists = initialLists.map { getPrimarySyllablesForInitials(it, validPinyins) }
+        val primarySyllableLists = initialLists.map { getPrimarySyllablesForInitials(it) }
 
         var combinations = listOf("")
         for (sylList in primarySyllableLists) {
