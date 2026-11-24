@@ -75,6 +75,38 @@ object Pinyin14Utils {
         return phrases.toTypedArray()
     }
 
+    private val commonPinyinWeight = mapOf(
+        "yi" to 100, "shi" to 95, "de" to 95, "bu" to 95, "le" to 95, "wo" to 95, "ni" to 95,
+        "hao" to 90, "ta" to 90, "zai" to 90, "you" to 90, "ren" to 90, "zhe" to 90, "zhong" to 90,
+        "guo" to 90, "ji" to 85, "qi" to 85, "xi" to 85, "qu" to 85, "zhi" to 85, "chi" to 85,
+        "shang" to 85, "xia" to 85, "jing" to 85, "tian" to 85, "sheng" to 85, "nong" to 80,
+        "dao" to 80, "lai" to 80, "yijing" to 150, "yijin" to 30, "yiji" to 120, "yangan" to 30
+    )
+
+    private fun getPhraseScore(phrase: String, totalKeyLen: Int): Int {
+        val cleanPy = phrase.replace("'", "")
+        val keysConsumed = pinyin2Key(cleanPy).length
+        val letterCount = cleanPy.length
+        val syllables = phrase.split("'")
+
+        var score = keysConsumed * 1000 + letterCount * 100
+
+        if (keysConsumed < totalKeyLen) {
+            score -= (totalKeyLen - keysConsumed) * 800
+        }
+
+        val fullPhrase = syllables.joinToString("")
+        val phraseBonus = commonPinyinWeight[fullPhrase] ?: 0
+        score += phraseBonus
+
+        for (syl in syllables) {
+            val sylBonus = commonPinyinWeight[syl] ?: 0
+            score += sylBonus
+        }
+
+        return score
+    }
+
     fun getValidPinyinPhrases(keySeq: String): List<String> {
         if (keySeq.isBlank()) return emptyList()
 
@@ -127,7 +159,8 @@ object Pinyin14Utils {
                     }
                 }
             }
-            return currentCombinations.distinct().take(12)
+            val totalKeyLen = keySeq.replace("'", "").length
+            return currentCombinations.distinct().sortedByDescending { getPhraseScore(it, totalKeyLen) }.take(15)
         }
 
         val upperSeq = keySeq.uppercase()
@@ -156,6 +189,7 @@ object Pinyin14Utils {
         }
 
         dfs(0, emptyList())
-        return results.distinct().take(12)
+        val totalKeyLen = upperSeq.length
+        return results.distinct().sortedByDescending { getPhraseScore(it, totalKeyLen) }.take(15)
     }
 }
