@@ -178,6 +178,11 @@ object Pinyin14Utils {
 
         dfs(0, emptyList())
         val totalKeyLen = upperSeq.length
-        return results.distinct().sortedByDescending { getPhraseScore(it, totalKeyLen) }.take(15)
+
+        // 仅保留完全消耗全量输入按键的完整拼音组合（过滤掉未消耗完按键的短音节）
+        val fullMatches = results.filter { ph -> pinyin2Key(ph.replace("'", "")).length == totalKeyLen }
+        val candidatesList = if (fullMatches.isNotEmpty()) fullMatches else results
+
+        return candidatesList.distinct().sortedByDescending { getPhraseScore(it, totalKeyLen) }.take(15)
     }
 }
