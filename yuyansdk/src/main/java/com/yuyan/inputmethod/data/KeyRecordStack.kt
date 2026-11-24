@@ -38,8 +38,16 @@ class KeyRecordStack {
         for (key in keyRecords) {
             if (key is InputKey.T9Key && !key.consumed) {
                 sb.append(key.toString())
-            } else if (key is InputKey.Apostrophe) {
+            } else if (key is InputKey.PinyinKey) {
+                if (sb.isNotEmpty() && !sb.endsWith("'")) {
+                    sb.append("'")
+                }
+                sb.append(key.pinyin)
                 sb.append("'")
+            } else if (key is InputKey.Apostrophe) {
+                if (sb.isNotEmpty() && !sb.endsWith("'")) {
+                    sb.append("'")
+                }
             }
         }
         return sb.toString()
@@ -217,7 +225,7 @@ interface InputKey {
         override fun toString(): String = keyChar.toString()
     }
 
-    class PinyinKey(private val pinyin: String, val posInInput: Int = 0) : InputKey {
+    class PinyinKey(val pinyin: String, val posInInput: Int = 0) : InputKey {
         val pinyinLength: Int = pinyin.length
         val inputKeyLength: Int = pinyinLength + 1
         fun t9Keys(): String {
