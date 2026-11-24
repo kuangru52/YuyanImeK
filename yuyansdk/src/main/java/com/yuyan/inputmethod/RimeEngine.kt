@@ -262,8 +262,43 @@ object RimeEngine {
                 val validPhrases = Pinyin14Utils.getValidPinyinPhrases(unselected14Keys)
                 if (validPhrases.isNotEmpty()) {
                     val primaryPhrase = validPhrases.first()
+
+                    val phraseCandidateMap = mutableListOf<List<CandidateListItem>>()
+                    for (i in 0 until validPhrases.size.coerceAtMost(6)) {
+                        val phrase = validPhrases[i]
+                        Rime.clearComposition()
+                        Rime.replaceKey(0, 0, phrase)
+                        val cands = Rime.getRimeContext()?.candidates?.asList() ?: emptyList()
+                        if (cands.isNotEmpty()) {
+                            phraseCandidateMap.add(cands.take(10))
+                        }
+                    }
+
+                    // Restore primary phrase composition
                     Rime.clearComposition()
                     Rime.replaceKey(0, 0, primaryPhrase)
+
+                    var mergedCandidates = mutableListOf<CandidateListItem>()
+                    var maxCands = 0
+                    for (list in phraseCandidateMap) {
+                        if (list.size > maxCands) maxCands = list.size
+                    }
+
+                    for (rank in 0 until maxCands) {
+                        for (list in phraseCandidateMap) {
+                            if (rank < list.size) {
+                                val cand = list[rank]
+                                if (mergedCandidates.none { it.text == cand.text }) {
+                                    mergedCandidates.add(cand)
+                                }
+                            }
+                        }
+                    }
+
+                    showCandidates = mergedCandidates
+                    showComposition = primaryPhrase
+                    preCommitText = ""
+                    return null
                 }
             }
         }
