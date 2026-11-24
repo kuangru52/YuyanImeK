@@ -63,7 +63,9 @@ class CandidatesBarAdapter(context: Context?) :
         val view = holder.textView
         val lp = view.layoutParams as? ViewGroup.MarginLayoutParams
 
-        if (position == 0) {
+        val activePosition = if (mActiveCandNo > 0) mActiveCandNo - 1 else 0
+
+        if (position == activePosition) {
             val bg = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 cornerRadius = view.dp(6f)
@@ -86,7 +88,7 @@ class CandidatesBarAdapter(context: Context?) :
             }
         }
 
-        view.setTextColor(if (mActiveCandNo - 1 == position) activeTheme.accentKeyBackgroundColor else activeTheme.candidateTextColor)
+        view.setTextColor(activeTheme.candidateTextColor)
         if (mOnItemClickListener != null) {
             view.setOnClickListener { v: View? ->
                 mOnItemClickListener!!.onItemClick(this@CandidatesBarAdapter, v, position)
