@@ -1,5 +1,8 @@
 package com.yuyan.inputmethod.util
 
+/**
+ * 14 键全拼工具类，模仿 T9PinYinUtils 及 LX17PinYinUtils 的映射表机制与设计架构
+ */
 object Pinyin14Utils {
     private val keyMap = mapOf(
         'q' to "Q", 'w' to "Q",
@@ -42,23 +45,27 @@ object Pinyin14Utils {
         "za", "zai", "zan", "zang", "zao", "ze", "zei", "zen", "zeng", "zha", "zhai", "zhan", "zhang", "zhao", "zhe", "zhei", "zhen", "zheng", "zhi", "zhong", "zhou", "zhu", "zhua", "zhuai", "zhuan", "zhuang", "zhui", "zhun", "zhuo", "zi", "zong", "zou", "zu", "zuan", "zui", "zun", "zuo"
     )
 
-    private val pinyin14Map = HashMap<String, MutableList<String>>(300)
+    private val pinyin14Map = HashMap<String, String>(400)
 
     init {
         for (py in allPinyins) {
             val keySeq = pinyin2Key(py)
             if (keySeq.isNotEmpty()) {
-                pinyin14Map.getOrPut(keySeq) { ArrayList() }.add(py)
+                val existing = pinyin14Map[keySeq]
+                pinyin14Map[keySeq] = if (existing == null) py else "$existing,$py"
             }
         }
     }
 
     fun pinyin214Key(pinyin: Char): String = keyMap[pinyin.lowercaseChar()] ?: pinyin.toString().uppercase()
 
-    fun pinyin2Key(pinyin: String?): String {
-        if (pinyin.isNullOrEmpty()) return ""
+    /**
+     * 获取拼音对应的 14 键键码
+     */
+    fun pinyin2Key(sequence: String?): String {
+        if (sequence.isNullOrEmpty()) return ""
         val sb = StringBuilder()
-        for (ch in pinyin.lowercase()) {
+        for (ch in sequence.lowercase()) {
             val k = keyMap[ch]
             if (k != null) {
                 sb.append(k)
@@ -69,78 +76,34 @@ object Pinyin14Utils {
         return sb.toString()
     }
 
+    /**
+     * 仿照 T9PinYinUtils 及 LX17PinYinUtils 的 keyToPinyin 实现：
+     * 获取 14 键键码对应的单音节拼音列表
+     */
     fun keyToPinyin(sequence: String?): Array<String> {
-        val prefixes = getSingleSyllablePrefixes(sequence ?: "")
-        if (prefixes.isEmpty()) return emptyArray()
-        return prefixes
-    }
-
-    fun getSingleSyllablePrefixes(keySeq: String): Array<String> {
-        if (keySeq.isBlank()) return emptyArray()
-        val seg = keySeq.substringAfterLast("'").uppercase()
-        if (seg.isBlank()) return emptyArray()
-
-        val results = ArrayList<String>()
-        val maxLen = seg.length.coerceAtMost(6)
-
-        for (len in maxLen downTo 1) {
-            val sub = seg.substring(0, len)
-            val pinyins = pinyin14Map[sub]
-            if (pinyins != null) {
-                for (py in pinyins) {
-                    if (!results.contains(py)) {
-                        results.add(py)
-                    }
+        if (sequence.isNullOrEmpty()) return emptyArray()
+        val cleanSeq = sequence.substringAfterLast("'").uppercase()
+        val pinyin = ArrayList<String>()
+        for (length in cleanSeq.length downTo 1) {
+            val prefix = cleanSeq.substring(0, length)
+            pinyin14Map[prefix]?.let { value ->
+                value.split(",").forEach { py ->
+                    if (!pinyin.contains(py)) pinyin.add(py)
                 }
             }
         }
-
-        return results.take(10).toTypedArray()
+        return pinyin.distinct().toTypedArray()
     }
 
-    private fun getPhraseScore(phrase: String, totalKeyLen: Int): Int {
-        val cleanPy = phrase.replace("'", "")
-        val keysConsumed = pinyin2Key(cleanPy).length
-        val letterCount = cleanPy.length
-        val syllables = phrase.split("'")
-
-        // 1. 基础分：完整消耗全部输入按键优先级最高（按键消耗数 * 10000）
-        var score = keysConsumed * 10000 + letterCount * 100
-
-        // 2. 惩罚分：遗留未消耗的输入按键扣除高额分数（确保完整按键匹配永远排在部分匹配前面）
-        if (keysConsumed < totalKeyLen) {
-            score -= (totalKeyLen - keysConsumed) * 20000
-        }
-
-        // 3. 音节切分合理性：音节切分越自然惩罚越小
-        score -= syllables.size * 5
-
-        return score
+    fun getSingleSyllablePrefixes(keySeq: String): Array<String> {
+        return keyToPinyin(keySeq)
     }
 
+    /**
+     * 针对 14 键的全拼与简拼提取
+     */
     fun getValidPinyinPhrases(keySeq: String): List<String> {
         if (keySeq.isBlank()) return emptyList()
-
-        if (keySeq.length == 1) {
-            val upper = keySeq.uppercase()
-            return when (upper) {
-                "Q" -> listOf("q", "w")
-                "E" -> listOf("e", "r")
-                "T" -> listOf("t", "y")
-                "U" -> listOf("u", "i")
-                "O" -> listOf("o", "p")
-                "A" -> listOf("a", "s")
-                "D" -> listOf("d", "f")
-                "G" -> listOf("g", "h")
-                "J" -> listOf("j", "k")
-                "L" -> listOf("l")
-                "Z" -> listOf("z", "x")
-                "C" -> listOf("c", "v")
-                "B" -> listOf("b", "n")
-                "M" -> listOf("m")
-                else -> listOf(upper.lowercase())
-            }
-        }
 
         if (keySeq.contains("'")) {
             val parts = keySeq.split("'")
@@ -170,79 +133,59 @@ object Pinyin14Utils {
                     }
                 }
             }
-            val totalKeyLen = keySeq.replace("'", "").length
-            return currentCombinations.distinct().sortedByDescending { getPhraseScore(it, totalKeyLen) }.take(15)
+            return currentCombinations.distinct().take(15)
         }
 
         val upperSeq = keySeq.uppercase()
-        val letterCombinations = expandKeySeqTo26Letters(upperSeq)
         val results = ArrayList<String>()
 
-        for (comb in letterCombinations) {
-            fun dfsComb(index: Int, currentPath: List<String>) {
-                if (index >= comb.length) {
-                    results.add(currentPath.joinToString("'"))
-                    return
-                }
-                val maxLen = (comb.length - index).coerceAtMost(6)
-                for (len in maxLen downTo 1) {
-                    val subSeq = comb.substring(index, index + len)
-                    if (allPinyins.contains(subSeq)) {
-                        dfsComb(index + len, currentPath + listOf(subSeq))
-                        if (len >= 4) break
+        // 1. 全拼递归切分（优先最大音节）
+        fun dfs(index: Int, currentPath: List<String>) {
+            if (index >= upperSeq.length) {
+                results.add(currentPath.joinToString("'"))
+                return
+            }
+            val maxLen = (upperSeq.length - index).coerceAtMost(6)
+            for (len in maxLen downTo 1) {
+                val subSeq = upperSeq.substring(index, index + len)
+                val matchingPinyins = pinyin14Map[subSeq]?.split(",")
+                if (!matchingPinyins.isNullOrEmpty()) {
+                    for (py in matchingPinyins) {
+                        dfs(index + len, currentPath + listOf(py))
                     }
+                    if (len >= 4) break
                 }
             }
-            dfsComb(0, emptyList())
         }
+
+        dfs(0, emptyList())
+
+        // 2. 简拼扩展（例如 sm -> shen'me -> 什么, zg -> zhong'guo -> 中国）
+        val jianpinMatches = if (upperSeq.length in 2..4) getJianpinPhrases(upperSeq) else emptyList()
 
         val totalKeyLen = upperSeq.length
-
         val fullMatches = results.filter { ph -> pinyin2Key(ph.replace("'", "")).length == totalKeyLen }
 
-        val candidatesList = if (upperSeq.length <= 4) {
-            val jianpinMatches = getJianpinPhrases(upperSeq)
-            (fullMatches + jianpinMatches + results).distinct()
-        } else {
-            if (fullMatches.isNotEmpty()) fullMatches.distinct() else results.distinct()
-        }
+        val candidatesList = (fullMatches + jianpinMatches + results).distinct()
 
         return candidatesList.sortedByDescending { getPhraseScore(it, totalKeyLen) }.take(20)
     }
 
-    private fun expandKeySeqTo26Letters(keySeq: String): List<String> {
-        val cleanKeys = keySeq.replace("'", "").uppercase()
-        if (cleanKeys.isEmpty()) return emptyList()
+    private fun getPhraseScore(phrase: String, totalKeyLen: Int): Int {
+        val cleanPy = phrase.replace("'", "")
+        val keysConsumed = pinyin2Key(cleanPy).length
+        val letterCount = cleanPy.length
+        val syllables = phrase.split("'")
 
-        var combinations = listOf("")
-        for (ch in cleanKeys) {
-            val letters = when (ch) {
-                'Q' -> listOf('q', 'w')
-                'E' -> listOf('e', 'r')
-                'T' -> listOf('t', 'y')
-                'U' -> listOf('u', 'i')
-                'O' -> listOf('o', 'p')
-                'A' -> listOf('a', 's')
-                'D' -> listOf('d', 'f')
-                'G' -> listOf('g', 'h')
-                'J' -> listOf('j', 'k')
-                'L' -> listOf('l')
-                'Z' -> listOf('z', 'x')
-                'C' -> listOf('c', 'v')
-                'B' -> listOf('b', 'n')
-                'M' -> listOf('m')
-                else -> listOf(ch.lowercaseChar())
-            }
+        var score = keysConsumed * 10000 + letterCount * 100
 
-            val next = mutableListOf<String>()
-            for (base in combinations) {
-                for (letter in letters) {
-                    next.add(base + letter)
-                }
-            }
-            combinations = next.take(32)
+        if (keysConsumed < totalKeyLen) {
+            score -= (totalKeyLen - keysConsumed) * 20000
         }
-        return combinations
+
+        score -= syllables.size * 5
+
+        return score
     }
 
     private fun getInitialsForKey(keyChar: Char): List<String> {
