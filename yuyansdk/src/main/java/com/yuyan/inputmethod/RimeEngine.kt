@@ -279,7 +279,7 @@ object RimeEngine {
                     Rime.replaceKey(0, 0, primaryPhrase)
 
                     // Interleave top candidates across all valid Pinyin phrases
-                    val mergedCandidates = mutableListOf<CandidateListItem>()
+                    var mergedCandidates = mutableListOf<CandidateListItem>()
                     var maxCands = 0
                     for (list in phraseCandidateMap) {
                         if (list.size > maxCands) maxCands = list.size
@@ -292,6 +292,25 @@ object RimeEngine {
                                 if (mergedCandidates.none { it.text == cand.text }) {
                                     mergedCandidates.add(cand)
                                 }
+                            }
+                        }
+                    }
+
+                    // 关联上字组词：如果之前刚选择了上一个字（如 '体'），优先将能与上一个字联动组词的字（如 '育'）提升至第 1 候选！
+                    if (preCommitText.isNotEmpty() && unselected14Keys.isNotEmpty()) {
+                        val assocList = Rime.getAssociateList(preCommitText).filterNotNull()
+                        if (assocList.isNotEmpty()) {
+                            val assocSecondChars = assocList.filter { it.length >= 2 }.map { it.substring(1, 2) }
+                            val promoted = mutableListOf<CandidateListItem>()
+                            for (char in assocSecondChars) {
+                                val matchedCand = mergedCandidates.find { it.text == char }
+                                if (matchedCand != null && promoted.none { it.text == matchedCand.text }) {
+                                    promoted.add(matchedCand)
+                                }
+                            }
+                            if (promoted.isNotEmpty()) {
+                                val remaining = mergedCandidates.filterNot { cand -> promoted.any { it.text == cand.text } }
+                                mergedCandidates = (promoted + remaining).toMutableList()
                             }
                         }
                     }
