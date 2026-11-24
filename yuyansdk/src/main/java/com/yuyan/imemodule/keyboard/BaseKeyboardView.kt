@@ -189,12 +189,15 @@ open class BaseKeyboardView(mContext: Context?) : View(mContext) {
         return result
     }
 
+    private var isCandidateSwiping = false
+
     private fun onModifiedTouchEvent(me: MotionEvent): Boolean {
         when (me.action) {
             MotionEvent.ACTION_DOWN -> {
                 mCurrentKey = getKeyIndices(me.x.toInt(), me.y.toInt())
                 mAbortKey = false
                 mLongPressKey = false
+                isCandidateSwiping = false
                 if (mCurrentKey?.code == KeyEvent.KEYCODE_SPACE) {
                     mService?.isCursorSwiping = true
                 }
@@ -212,6 +215,18 @@ open class BaseKeyboardView(mContext: Context?) : View(mContext) {
                 mService?.isCursorSwiping = false
                 mCurrentKey = getKeyIndices(me.x.toInt(), me.y.toInt())
                 removeMessages()
+
+                if (isCandidateSwiping) {
+                    isCandidateSwiping = false
+                    val activeIndex = mService?.mSkbCandidatesBarView?.getActiveCandNo() ?: 0
+                    if (!com.yuyan.imemodule.service.DictDecoder.isCandidatesEmpty) {
+                        mService?.chooseAndUpdate(activeIndex)
+                    }
+                    currentDistanceX = 0F
+                    currentDistanceY = 0F
+                    return true
+                }
+
                 if (!mAbortKey && !mLongPressKey && mCurrentKey != null) {
                     mService?.responseKeyEvent(mCurrentKey!!)
                 }
@@ -222,6 +237,7 @@ open class BaseKeyboardView(mContext: Context?) : View(mContext) {
                 mCurrentKey?.onReleased()
                 mSoftKeyboard?.releaseAllKeys()
                 mService?.isCursorSwiping = false
+                isCandidateSwiping = false
                 removeMessages()
                 currentDistanceX = 0F
                 currentDistanceY = 0F
@@ -281,22 +297,41 @@ open class BaseKeyboardView(mContext: Context?) : View(mContext) {
                 mService?.responseKeyEvent(SoftKey(KeyEvent.KEYCODE_CLEAR))
             } else if (isSwipeKey && AppPrefs.getInstance().keyboardSetting.spaceSwipeMoveCursor.getValue()) {  // 左右滑动
                 removeMessages()
-                val steps = (relDiffX / spaceSwipeMoveCursorSpeed).toInt().coerceIn(1, 8)
-                lastEventX = currentX
-                lastEventY = currentY
                 mAbortKey = true
-                com.yuyan.imemodule.service.DictDecoder.reset()
-                val ic = mService?.imeService?.currentInputConnection
-                val isLeft = distanceX > 0
-                val keycode = if (isLeft) KeyEvent.KEYCODE_DPAD_LEFT else KeyEvent.KEYCODE_DPAD_RIGHT
-                repeat(steps) {
-                    val canMove = if (isLeft) {
-                        ic?.getTextBeforeCursor(1, 0)?.isNotEmpty() == true
-                    } else {
-                        ic?.getTextAfterCursor(1, 0)?.isNotEmpty() == true
+
+                val hasCandidates = !com.yuyan.imemodule.service.DictDecoder.isCandidatesEmpty &&
+                        com.yuyan.imemodule.service.DictDecoder.composingStrForDisplay.isNotBlank()
+
+                if (hasCandidates && isSpace) {
+                    isCandidateSwiping = true
+                    val steps = (relDiffX / spaceSwipeMoveCursorSpeed).toInt().coerceIn(1, 4)
+                    lastEventX = currentX
+                    lastEventY = currentY
+                    val isRight = distanceX < 0
+                    val keycode = if (isRight) KeyEvent.KEYCODE_DPAD_RIGHT else KeyEvent.KEYCODE_DPAD_LEFT
+                    repeat(steps) {
+                        mService?.mSkbCandidatesBarView?.updateActiveCandidateNo(keycode)
                     }
-                    if (canMove) {
-                        mService!!.responseKeyEvent(SoftKey(code = keycode))
+                    DevicesUtils.tryPlayKeyDown()
+                    DevicesUtils.tryVibrate(this)
+                } else {
+                    isCandidateSwiping = false
+                    val steps = (relDiffX / spaceSwipeMoveCursorSpeed).toInt().coerceIn(1, 8)
+                    lastEventX = currentX
+                    lastEventY = currentY
+                    com.yuyan.imemodule.service.DictDecoder.reset()
+                    val ic = mService?.imeService?.currentInputConnection
+                    val isLeft = distanceX > 0
+                    val keycode = if (isLeft) KeyEvent.KEYCODE_DPAD_LEFT else KeyEvent.KEYCODE_DPAD_RIGHT
+                    repeat(steps) {
+                        val canMove = if (isLeft) {
+                            ic?.getTextBeforeCursor(1, 0)?.isNotEmpty() == true
+                        } else {
+                            ic?.getTextAfterCursor(1, 0)?.isNotEmpty() == true
+                        }
+                        if (canMove) {
+                            mService!!.responseKeyEvent(SoftKey(code = keycode))
+                        }
                     }
                 }
                 result = true
