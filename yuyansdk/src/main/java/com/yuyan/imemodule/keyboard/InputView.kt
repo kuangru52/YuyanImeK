@@ -593,11 +593,14 @@ class InputView(context: Context, private val service: ImeService) : IKeyboardVi
         if (isFloat) {
             mLlKeyboardBottomHolder.setBackgroundColor(Color.TRANSPARENT)
         } else {
-            if (isBlurEnabled) {
-                mLlKeyboardBottomHolder.setBackgroundColor(Color.TRANSPARENT)
+            val holderColor = if (maskBaseColor != 0) {
+                Color.rgb(Color.red(maskBaseColor), Color.green(maskBaseColor), Color.blue(maskBaseColor))
+            } else if (activeTheme.keyboardColor != 0) {
+                Color.rgb(Color.red(activeTheme.keyboardColor), Color.green(activeTheme.keyboardColor), Color.blue(activeTheme.keyboardColor))
             } else {
-                mLlKeyboardBottomHolder.setBackgroundColor(if (hasWallpaper) Color.TRANSPARENT else activeTheme.keyboardColor)
+                if (isNightMode) Color.parseColor("#18181C") else Color.WHITE
             }
+            mLlKeyboardBottomHolder.setBackgroundColor(holderColor)
         }
         mSkbRoot.background = null
         updateOneHandButtonsTheme()
