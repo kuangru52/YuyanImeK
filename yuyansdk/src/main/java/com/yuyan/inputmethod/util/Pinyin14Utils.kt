@@ -202,10 +202,72 @@ object Pinyin14Utils {
         dfs(0, emptyList())
         val totalKeyLen = upperSeq.length
 
-        // 仅保留完全消耗全量输入按键的完整拼音组合（过滤掉未消耗完按键的短音节）
+        // 1. 完全消耗全量输入按键的全拼组合
         val fullMatches = results.filter { ph -> pinyin2Key(ph.replace("'", "")).length == totalKeyLen }
-        val candidatesList = if (fullMatches.isNotEmpty()) fullMatches else results
+        // 2. 支持简拼/超级简拼组合（如 sm -> shen'me -> 什么, zg -> zhong'guo -> 中国）
+        val jianpinMatches = getJianpinPhrases(upperSeq)
 
-        return candidatesList.distinct().sortedByDescending { getPhraseScore(it, totalKeyLen) }.take(15)
+        val candidatesList = (fullMatches + jianpinMatches + results).distinct()
+
+        return candidatesList.sortedByDescending { getPhraseScore(it, totalKeyLen) }.take(20)
+    }
+
+    private fun getInitialsForKey(keyChar: Char): List<String> {
+        return when (keyChar.uppercaseChar()) {
+            'Q' -> listOf("q", "w")
+            'E' -> listOf("e", "r")
+            'T' -> listOf("t", "y")
+            'U' -> listOf("u", "i")
+            'O' -> listOf("o", "p")
+            'A' -> listOf("s", "sh", "a")
+            'D' -> listOf("d", "f")
+            'G' -> listOf("g", "h")
+            'J' -> listOf("j", "k")
+            'L' -> listOf("l")
+            'Z' -> listOf("z", "zh", "x")
+            'C' -> listOf("c", "ch", "v")
+            'B' -> listOf("b", "n")
+            'M' -> listOf("m")
+            else -> listOf(keyChar.lowercase())
+        }
+    }
+
+    private fun getPrimarySyllablesForInitials(initials: List<String>): List<String> {
+        val results = mutableListOf<String>()
+        for (py in allPinyins) {
+            for (init in initials) {
+                if (py.startsWith(init)) {
+                    results.add(py)
+                    break
+                }
+            }
+        }
+        return results
+    }
+
+    private fun getJianpinPhrases(keySeq: String): List<String> {
+        if (keySeq.length !in 2..4) return emptyList()
+
+        val keyList = keySeq.toCharArray().toList()
+        val initialLists = keyList.map { getInitialsForKey(it) }
+        val primarySyllableLists = initialLists.map { getPrimarySyllablesForInitials(it) }
+
+        var combinations = listOf("")
+        for (sylList in primarySyllableLists) {
+            val next = mutableListOf<String>()
+            val limitedSyls = sylList.take(8)
+            for (base in combinations) {
+                for (syl in limitedSyls) {
+                    if (base.isEmpty()) {
+                        next.add(syl)
+                    } else {
+                        next.add("$base'$syl")
+                    }
+                }
+            }
+            combinations = next.take(30)
+        }
+
+        return combinations
     }
 }
