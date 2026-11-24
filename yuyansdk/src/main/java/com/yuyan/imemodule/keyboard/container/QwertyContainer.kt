@@ -141,7 +141,13 @@ class QwertyContainer(context: Context?, inputView: InputView, skbValue: Int = 0
         val selectedIdx: Int
         val isPrefixsMode: Boolean
 
-        if (hasRimePrefixs && (!isStrokeFilterEnabled || DictDecoder.activeStrokeFilter == 0)) {
+        if (hasCandidates && isStrokeFilterEnabled) {
+            // 开启首笔画筛选时，只要有候选字，始终展示笔画筛选 [一, 丨, 丿, 丶, 乙]
+            prefixs = CharFirstStrokeMap.STROKE_LABELS
+            selectedIdx = if (DictDecoder.activeStrokeFilter > 0) DictDecoder.activeStrokeFilter - 1 else -1
+            isPrefixsMode = true
+        } else if (hasRimePrefixs) {
+            // 未开启笔画筛选时，14键全拼打字展示拼音组合选项 [qi, qu, wu...]
             val padded = Array(5) { "" }
             for (i in rimePrefixs.indices) {
                 if (i < 5) padded[i] = rimePrefixs[i]
@@ -149,11 +155,8 @@ class QwertyContainer(context: Context?, inputView: InputView, skbValue: Int = 0
             prefixs = padded
             selectedIdx = 0
             isPrefixsMode = true
-        } else if (hasCandidates && isStrokeFilterEnabled) {
-            prefixs = CharFirstStrokeMap.STROKE_LABELS
-            selectedIdx = if (DictDecoder.activeStrokeFilter > 0) DictDecoder.activeStrokeFilter - 1 else -1
-            isPrefixsMode = true
         } else {
+            // 空闲状态显示 5 个快捷标点及设置项
             val symbolKeys = mSideSymbolsPinyin.map { it.symbolKey }.toTypedArray()
             val padded = Array(5) { "" }
             for (i in symbolKeys.indices) {
@@ -165,19 +168,19 @@ class QwertyContainer(context: Context?, inputView: InputView, skbValue: Int = 0
         }
 
         mRVLeftPrefix.setOnItemClickListener { _: View?, position: Int ->
-            if (hasRimePrefixs && (!isStrokeFilterEnabled || DictDecoder.activeStrokeFilter == 0)) {
-                if (position in rimePrefixs.indices) {
-                    DevicesUtils.tryPlayKeyDown()
-                    DevicesUtils.tryVibrate(this)
-                    inputView.selectPrefix(position)
-                }
-            } else if (hasCandidates && isStrokeFilterEnabled) {
+            if (hasCandidates && isStrokeFilterEnabled) {
                 if (position in CharFirstStrokeMap.STROKE_CODES.indices) {
                     DevicesUtils.tryPlayKeyDown()
                     DevicesUtils.tryVibrate(this)
                     val strokeCode = CharFirstStrokeMap.STROKE_CODES[position]
                     DictDecoder.setStrokeFilter(strokeCode)
                     updateSymbolListView()
+                }
+            } else if (hasRimePrefixs) {
+                if (position in rimePrefixs.indices) {
+                    DevicesUtils.tryPlayKeyDown()
+                    DevicesUtils.tryVibrate(this)
+                    inputView.selectPrefix(position)
                 }
             } else {
                 if (position in mSideSymbolsPinyin.indices) {

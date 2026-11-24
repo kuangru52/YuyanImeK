@@ -78,6 +78,27 @@ object Pinyin14Utils {
     fun getValidPinyinPhrases(keySeq: String): List<String> {
         if (keySeq.isBlank()) return emptyList()
 
+        if (keySeq.length == 1) {
+            val upper = keySeq.uppercase()
+            return when (upper) {
+                "Q" -> listOf("q", "w")
+                "E" -> listOf("e", "r")
+                "T" -> listOf("t", "y")
+                "U" -> listOf("u", "i")
+                "O" -> listOf("o", "p")
+                "A" -> listOf("a", "s")
+                "D" -> listOf("d", "f")
+                "G" -> listOf("g", "h")
+                "J" -> listOf("j", "k")
+                "L" -> listOf("l")
+                "Z" -> listOf("z", "x")
+                "C" -> listOf("c", "v")
+                "B" -> listOf("b", "n")
+                "M" -> listOf("m")
+                else -> listOf(upper.lowercase())
+            }
+        }
+
         if (keySeq.contains("'")) {
             val parts = keySeq.split("'")
             var currentCombinations = listOf("")

@@ -646,7 +646,7 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
             label.contains("123") ||
             label == "空格" || label == "En" || label == "cn" || key.labelSmall == "En" || key.labelSmall == "cn" ||
             label == "回车" || label == "发送" || label == "Enter" || keyLabel == "Send" || label == "Go" || label == "Search" || label == "Done" ||
-            label == "重输" || label == "返回" || label == "分词" || label == "Clear" || label == "Back" ||
+            label == "重输" || label == "返回" || label == "Clear" || label == "Back" ||
             label == "⌫" || label == "删除" ||
             label.lowercase().contains("shift") || label.lowercase().contains("caps") || label == "⇧" || label == "⇪"
         ) {
