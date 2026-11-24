@@ -222,13 +222,7 @@ class SettingsContainer(context: Context, inputView: InputView) : BaseContainer(
                 SkbMenuMode.PinyinLx17
             )
         )
-        funItems.add(
-            SkbFunItem(
-                mContext.getString(R.string.keyboard_name_pinyin_14),
-                R.drawable.selece_input_mode_lx17,
-                SkbMenuMode.Pinyin14
-            )
-        )
+
         funItems.add(
             SkbFunItem(
                 mContext.getString(R.string.keyboard_name_stroke),
