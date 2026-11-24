@@ -257,7 +257,7 @@ object RimeEngine {
             if (unselected14Keys.isNotEmpty()) {
                 val validPhrases = Pinyin14Utils.getValidPinyinPhrases(unselected14Keys)
                 if (validPhrases.isNotEmpty()) {
-                    pinyins = validPhrases.toTypedArray()
+                    pinyins = Pinyin14Utils.getSingleSyllablePrefixes(unselected14Keys)
                     val primaryPhrase = validPhrases.first()
 
                     val phraseCandidateMap = mutableListOf<List<CandidateListItem>>()
