@@ -1,10 +1,10 @@
 package com.yuyan.inputmethod.util
 
 /**
- * 14 键全拼工具类，模仿 T9PinYinUtils 及 LX17PinYinUtils 的映射表机制与设计架构
+ * 14 键全拼工具类，形式与 T9PinYinUtils 及 LX17PinYinUtils 完全保持一致
  */
 object Pinyin14Utils {
-    private val keyMap = mapOf(
+    private val pinyin14KeyMap = mapOf(
         'q' to "Q", 'w' to "Q",
         'e' to "E", 'r' to "E",
         't' to "T", 'y' to "T",
@@ -48,25 +48,86 @@ object Pinyin14Utils {
     private val pinyin14Map = HashMap<String, String>(400)
 
     init {
+        // 单字母 / 单按键显式映射关系
+        pinyin14Map.put("Q", "q,w")
+        pinyin14Map.put("E", "e,r")
+        pinyin14Map.put("T", "t,y")
+        pinyin14Map.put("U", "u,i")
+        pinyin14Map.put("O", "o,p")
+        pinyin14Map.put("A", "a,s,sh")
+        pinyin14Map.put("D", "d,f")
+        pinyin14Map.put("G", "g,h")
+        pinyin14Map.put("J", "j,k")
+        pinyin14Map.put("L", "l")
+        pinyin14Map.put("Z", "z,zh,x")
+        pinyin14Map.put("C", "c,ch,v")
+        pinyin14Map.put("B", "b,n")
+        pinyin14Map.put("M", "m")
+
+        // 2键 / 3键 / 4键 常见双字母音节及词组映射表
+        pinyin14Map.put("AA", "sa,se,so")
+        pinyin14Map.put("AM", "an,ao,bo,sam,shen,shuo,sheng,shen'me,shuo'ming,sheng'ming")
+        pinyin14Map.put("AG", "ai,bi,ci,ch,ang,seng,shang")
+        pinyin14Map.put("AT", "bu,cu,su,shou,shuo")
+        pinyin14Map.put("ZU", "zi,zu,xi,xu")
+        pinyin14Map.put("TU", "ti,tu,yi,yu")
+        pinyin14Map.put("ZUTU", "zi'ti,xi'ti,zu'tu,xu'tu")
+        pinyin14Map.put("ZG", "zhong,zhou,zhu,zhua,zhui,zhun,zhuo,xi,xia,xian,xiang,xiao,xie,xin,xing,xiong,xiu,xuan,xue,xun,zhong'guo,zhu'guan,zi'ge,zui'gao")
+        pinyin14Map.put("GA", "ga,ha,ge,he")
+        pinyin14Map.put("GD", "ge,he,de,fe")
+        pinyin14Map.put("GT", "gu,hu,du,fu")
+        pinyin14Map.put("GAO", "gao,hao")
+        pinyin14Map.put("GAOLE", "hao'le,gao'le")
+        pinyin14Map.put("GAOZXUABG", "gao'xiang,hao'xiang")
+        pinyin14Map.put("JA", "jia,ka,la")
+        pinyin14Map.put("JD", "ke,le,jie")
+        pinyin14Map.put("JG", "ji,li,ki")
+        pinyin14Map.put("JT", "ju,ku,lu,lv")
+        pinyin14Map.put("MA", "ma,na")
+        pinyin14Map.put("MD", "me,ne")
+        pinyin14Map.put("MG", "mi,ni")
+        pinyin14Map.put("MT", "mu,nu,nv,ou")
+        pinyin14Map.put("PA", "pa,sa")
+        pinyin14Map.put("PD", "re,se")
+        pinyin14Map.put("PG", "pi,qi,ri,si,sh")
+        pinyin14Map.put("PM", "po")
+        pinyin14Map.put("PT", "pu,qu,ru,su")
+        pinyin14Map.put("TA", "ta,ya")
+        pinyin14Map.put("TD", "te,ye")
+        pinyin14Map.put("TG", "ti,yi")
+        pinyin14Map.put("TT", "tu,yu")
+        pinyin14Map.put("WA", "wa,ya,za")
+        pinyin14Map.put("WD", "ye,ze")
+        pinyin14Map.put("WG", "xi,yi,zi")
+        pinyin14Map.put("WT", "wu,xu,yu,zu")
+        pinyin14Map.put("BJ", "bei'jing,bei'jing,jiu'jing")
+        pinyin14Map.put("NH", "ni'hao,nan'han")
+        pinyin14Map.put("WS", "wo'shi,wei'sheng")
+
+        // 全量 400 音节自动补充映射，保证无遗漏
         for (py in allPinyins) {
             val keySeq = pinyin2Key(py)
             if (keySeq.isNotEmpty()) {
                 val existing = pinyin14Map[keySeq]
-                pinyin14Map[keySeq] = if (existing == null) py else "$existing,$py"
+                if (existing == null) {
+                    pinyin14Map[keySeq] = py
+                } else {
+                    val list = existing.split(",")
+                    if (!list.contains(py)) {
+                        pinyin14Map[keySeq] = "$existing,$py"
+                    }
+                }
             }
         }
     }
 
-    fun pinyin214Key(pinyin: Char): String = keyMap[pinyin.lowercaseChar()] ?: pinyin.toString().uppercase()
+    fun pinyin214Key(pinyin: Char): String = pinyin14KeyMap[pinyin.lowercaseChar()] ?: pinyin.toString().uppercase()
 
-    /**
-     * 获取拼音对应的 14 键键码
-     */
     fun pinyin2Key(sequence: String?): String {
         if (sequence.isNullOrEmpty()) return ""
         val sb = StringBuilder()
         for (ch in sequence.lowercase()) {
-            val k = keyMap[ch]
+            val k = pinyin14KeyMap[ch]
             if (k != null) {
                 sb.append(k)
             } else if (ch in 'a'..'z') {
@@ -76,10 +137,6 @@ object Pinyin14Utils {
         return sb.toString()
     }
 
-    /**
-     * 仿照 T9PinYinUtils 及 LX17PinYinUtils 的 keyToPinyin 实现：
-     * 获取 14 键键码对应的单音节拼音列表
-     */
     fun keyToPinyin(sequence: String?): Array<String> {
         if (sequence.isNullOrEmpty()) return emptyArray()
         val cleanSeq = sequence.substringAfterLast("'").uppercase()
@@ -99,9 +156,6 @@ object Pinyin14Utils {
         return keyToPinyin(keySeq)
     }
 
-    /**
-     * 针对 14 键的全拼与简拼提取
-     */
     fun getValidPinyinPhrases(keySeq: String): List<String> {
         if (keySeq.isBlank()) return emptyList()
 
@@ -137,36 +191,37 @@ object Pinyin14Utils {
         }
 
         val upperSeq = keySeq.uppercase()
+        val letterCombinations = expandKeySeqTo26Letters(upperSeq)
         val results = ArrayList<String>()
 
-        // 1. 全拼递归切分（优先最大音节）
-        fun dfs(index: Int, currentPath: List<String>) {
-            if (index >= upperSeq.length) {
-                results.add(currentPath.joinToString("'"))
-                return
-            }
-            val maxLen = (upperSeq.length - index).coerceAtMost(6)
-            for (len in maxLen downTo 1) {
-                val subSeq = upperSeq.substring(index, index + len)
-                val matchingPinyins = pinyin14Map[subSeq]?.split(",")
-                if (!matchingPinyins.isNullOrEmpty()) {
-                    for (py in matchingPinyins) {
-                        dfs(index + len, currentPath + listOf(py))
+        for (comb in letterCombinations) {
+            fun dfsComb(index: Int, currentPath: List<String>) {
+                if (index >= comb.length) {
+                    results.add(currentPath.joinToString("'"))
+                    return
+                }
+                val maxLen = (comb.length - index).coerceAtMost(6)
+                for (len in maxLen downTo 1) {
+                    val subSeq = comb.substring(index, index + len)
+                    if (allPinyins.contains(subSeq)) {
+                        dfsComb(index + len, currentPath + listOf(subSeq))
+                        if (len >= 4) break
                     }
-                    if (len >= 4) break
                 }
             }
+            dfsComb(0, emptyList())
         }
 
-        dfs(0, emptyList())
-
-        // 2. 简拼扩展（例如 sm -> shen'me -> 什么, zg -> zhong'guo -> 中国）
-        val jianpinMatches = if (upperSeq.length in 2..4) getJianpinPhrases(upperSeq) else emptyList()
-
         val totalKeyLen = upperSeq.length
+
         val fullMatches = results.filter { ph -> pinyin2Key(ph.replace("'", "")).length == totalKeyLen }
 
-        val candidatesList = (fullMatches + jianpinMatches + results).distinct()
+        val candidatesList = if (upperSeq.length <= 4) {
+            val jianpinMatches = getJianpinPhrases(upperSeq)
+            (fullMatches + jianpinMatches + results).distinct()
+        } else {
+            if (fullMatches.isNotEmpty()) fullMatches.distinct() else results.distinct()
+        }
 
         return candidatesList.sortedByDescending { getPhraseScore(it, totalKeyLen) }.take(20)
     }
@@ -244,6 +299,41 @@ object Pinyin14Utils {
             combinations = next.take(30)
         }
 
+        return combinations
+    }
+
+    private fun expandKeySeqTo26Letters(keySeq: String): List<String> {
+        val cleanKeys = keySeq.replace("'", "").uppercase()
+        if (cleanKeys.isEmpty()) return emptyList()
+
+        var combinations = listOf("")
+        for (ch in cleanKeys) {
+            val letters = when (ch) {
+                'Q' -> listOf('q', 'w')
+                'E' -> listOf('e', 'r')
+                'T' -> listOf('t', 'y')
+                'U' -> listOf('u', 'i')
+                'O' -> listOf('o', 'p')
+                'A' -> listOf('a', 's')
+                'D' -> listOf('d', 'f')
+                'G' -> listOf('g', 'h')
+                'J' -> listOf('j', 'k')
+                'L' -> listOf('l')
+                'Z' -> listOf('z', 'x')
+                'C' -> listOf('c', 'v')
+                'B' -> listOf('b', 'n')
+                'M' -> listOf('m')
+                else -> listOf(ch.lowercaseChar())
+            }
+
+            val next = mutableListOf<String>()
+            for (base in combinations) {
+                for (letter in letters) {
+                    next.add(base + letter)
+                }
+            }
+            combinations = next.take(32)
+        }
         return combinations
     }
 }
