@@ -70,9 +70,32 @@ object Pinyin14Utils {
     }
 
     fun keyToPinyin(sequence: String?): Array<String> {
-        val phrases = getValidPinyinPhrases(sequence ?: "")
-        if (phrases.isEmpty()) return emptyArray()
-        return phrases.toTypedArray()
+        val prefixes = getSingleSyllablePrefixes(sequence ?: "")
+        if (prefixes.isEmpty()) return emptyArray()
+        return prefixes
+    }
+
+    fun getSingleSyllablePrefixes(keySeq: String): Array<String> {
+        if (keySeq.isBlank()) return emptyArray()
+        val seg = keySeq.substringAfterLast("'").uppercase()
+        if (seg.isBlank()) return emptyArray()
+
+        val results = ArrayList<String>()
+        val maxLen = seg.length.coerceAtMost(6)
+
+        for (len in maxLen downTo 1) {
+            val sub = seg.substring(0, len)
+            val pinyins = pinyin14Map[sub]
+            if (pinyins != null) {
+                for (py in pinyins) {
+                    if (!results.contains(py)) {
+                        results.add(py)
+                    }
+                }
+            }
+        }
+
+        return results.take(10).toTypedArray()
     }
 
     private fun getPhraseScore(phrase: String, totalKeyLen: Int): Int {
