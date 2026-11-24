@@ -33,6 +33,13 @@ object KeyboardData {
             arrayOf(31, 45, 35, 34, 48, 67))
     )
 
+    val layout14KeyCn: Map<SkbStyleMode, ArrayList<Array<Int>>> = linkedMapOf(
+        SkbStyleMode.Yuyan to arrayListOf(
+            arrayOf(KeyEvent.KEYCODE_Q, KeyEvent.KEYCODE_E, KeyEvent.KEYCODE_T, KeyEvent.KEYCODE_U, KeyEvent.KEYCODE_O),
+            arrayOf(KeyEvent.KEYCODE_A, KeyEvent.KEYCODE_D, KeyEvent.KEYCODE_G, KeyEvent.KEYCODE_J, KeyEvent.KEYCODE_L),
+            arrayOf(KeyEvent.KEYCODE_APOSTROPHE, KeyEvent.KEYCODE_Z, KeyEvent.KEYCODE_C, KeyEvent.KEYCODE_B, KeyEvent.KEYCODE_M, KeyEvent.KEYCODE_DEL))
+    )
+
     val layoutLX17CnWithLeftPrefix: Map<SkbStyleMode, ArrayList<Array<Int>>> = linkedMapOf(
         SkbStyleMode.Yuyan to arrayListOf(
             arrayOf(InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL, 36, 47, 54, 30, 52, 41),

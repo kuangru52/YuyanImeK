@@ -85,7 +85,8 @@ open class T9TextContainer(context: Context?, inputView: InputView, skbValue: In
         val isStroke = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_STROKE
         val prefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
 
-        if ((isStroke && mIsExpanded) || (isLx17 && prefixMode == Lx17PrefixMode.None)) {
+        val is14Key = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN
+        if ((isStroke && mIsExpanded) || (isLx17 && prefixMode == Lx17PrefixMode.None) || is14Key) {
             if (mRVLeftPrefix.parent != null) {
                 (mRVLeftPrefix.parent as ViewGroup).removeView(mRVLeftPrefix)
             }

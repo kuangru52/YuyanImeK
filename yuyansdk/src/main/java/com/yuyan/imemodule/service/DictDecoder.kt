@@ -286,7 +286,8 @@ object DictDecoder {
         if (!isAssociate && AppPrefs.getInstance().input.cnEnInput.getValue()) {
             val skbLayout = InputModeSwitcher.skbLayout
             if (skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN ||
-                skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_LX17
+                skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_LX17 ||
+                skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN
             ) {
                 val rawComposition = Rime.compositionText.replace("'", "")
                 val composition = rawComposition.ifEmpty { RimeEngine.showComposition.replace("'", "") }

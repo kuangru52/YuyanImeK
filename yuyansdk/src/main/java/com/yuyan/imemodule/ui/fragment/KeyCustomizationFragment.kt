@@ -51,6 +51,7 @@ class KeyCustomizationFragment : Fragment() {
     private val layoutOptions = listOf(
         LayoutOption("拼音全键", InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN),
         LayoutOption("中文9键", InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN),
+        LayoutOption("14键全拼", InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN),
         LayoutOption("乱序17", InputModeSwitcher.MASK_SKB_LAYOUT_LX17),
         LayoutOption("笔画键盘", InputModeSwitcher.MASK_SKB_LAYOUT_STROKE),
         LayoutOption("英文键盘", InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC),
@@ -152,7 +153,11 @@ class KeyCustomizationFragment : Fragment() {
             }
         }
 
-        btnKeyboardCapsule = createCapsuleButton(layoutOptions[0].name) { anchorView ->
+        val currentMode = InputModeSwitcher.skbLayout
+        val defaultIdx = layoutOptions.indexOfFirst { option -> option.mode == currentMode }.coerceAtLeast(0)
+        currentLayoutIndex = defaultIdx
+
+        btnKeyboardCapsule = createCapsuleButton(layoutOptions[currentLayoutIndex].name) { anchorView ->
             val options = layoutOptions.map { option -> option.name }.toTypedArray()
             showCapsuleDropdown(anchorView, options) { selectedTitle ->
                 btnKeyboardCapsule.text = selectedTitle

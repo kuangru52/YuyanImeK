@@ -14,6 +14,7 @@ object SlideUpSymbolManager {
             InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN -> "t9"
             InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN -> "qwerty_py"
             InputModeSwitcher.MASK_SKB_LAYOUT_LX17 -> "lx17"
+            InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN -> "pinyin_14"
             InputModeSwitcher.MASK_SKB_LAYOUT_STROKE -> "stroke"
             InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC -> "qwerty_en"
             else -> "qwerty_py"

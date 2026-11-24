@@ -13,6 +13,7 @@ import com.yuyan.inputmethod.data.InputKey
 import com.yuyan.inputmethod.data.KeyRecordStack
 import com.yuyan.inputmethod.util.DoublePinYinUtils
 import com.yuyan.inputmethod.util.LX17PinYinUtils
+import com.yuyan.inputmethod.util.Pinyin14Utils
 import com.yuyan.inputmethod.util.QwertyPinYinUtils
 import com.yuyan.inputmethod.util.T9PinYinUtils
 import java.util.Locale
@@ -73,6 +74,41 @@ object RimeEngine {
             customPhraseSize = 0
             return preCommitText
         }
+
+        val skbLayout = InputModeSwitcher.skbLayout
+        if (skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN) {
+            val selectedItem = showCandidates.getOrNull(index)
+            if (selectedItem != null) {
+                val selectedText = selectedItem.text
+                val unselected14Keys = keyRecordStack.getUnselectedT9Keys()
+                val totalKeyLen = unselected14Keys.replace("'", "").length
+                val validPhrases = Pinyin14Utils.getValidPinyinPhrases(unselected14Keys)
+
+                var matchedKeyCount = 0
+                for (ph in validPhrases) {
+                    Rime.clearComposition()
+                    Rime.replaceKey(0, 0, ph)
+                    val cands = Rime.getRimeContext()?.candidates?.asList() ?: emptyList()
+                    if (cands.any { it.text == selectedText }) {
+                        matchedKeyCount = Pinyin14Utils.pinyin2Key(ph.replace("'", "")).length
+                        break
+                    }
+                }
+
+                preCommitText = selectedText
+
+                if (matchedKeyCount in 1 until totalKeyLen) {
+                    keyRecordStack.consumeKeys(matchedKeyCount)
+                    Rime.clearComposition()
+                } else {
+                    keyRecordStack.clear()
+                    Rime.clearComposition()
+                }
+
+                return updateCandidatesOrCommitText() ?: preCommitText
+            }
+        }
+
         val indexReal = index - customPhraseSize
         Rime.selectCandidate(indexReal)
         keyRecordStack.pushCandidateSelectAction()
@@ -213,6 +249,58 @@ object RimeEngine {
                 preCommitText.lowercase()
             }
         }
+        val skbLayout = InputModeSwitcher.skbLayout
+        val is14Key = skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN
+
+        if (is14Key) {
+            val unselected14Keys = keyRecordStack.getUnselectedT9Keys()
+            if (unselected14Keys.isNotEmpty()) {
+                val validPhrases = Pinyin14Utils.getValidPinyinPhrases(unselected14Keys)
+                if (validPhrases.isNotEmpty()) {
+                    pinyins = validPhrases.toTypedArray()
+                    val primaryPhrase = validPhrases.first()
+
+                    val phraseCandidateMap = mutableListOf<List<CandidateListItem>>()
+                    for (i in 0 until validPhrases.size.coerceAtMost(6)) {
+                        val phrase = validPhrases[i]
+                        Rime.clearComposition()
+                        Rime.replaceKey(0, 0, phrase)
+                        val cands = Rime.getRimeContext()?.candidates?.asList() ?: emptyList()
+                        if (cands.isNotEmpty()) {
+                            phraseCandidateMap.add(cands.take(10))
+                        }
+                    }
+
+                    // Restore primary phrase composition so composition bar displays primary phrase
+                    Rime.clearComposition()
+                    Rime.replaceKey(0, 0, primaryPhrase)
+
+                    // Interleave top candidates across all valid Pinyin phrases
+                    val mergedCandidates = mutableListOf<CandidateListItem>()
+                    var maxCands = 0
+                    for (list in phraseCandidateMap) {
+                        if (list.size > maxCands) maxCands = list.size
+                    }
+
+                    for (rank in 0 until maxCands) {
+                        for (list in phraseCandidateMap) {
+                            if (rank < list.size) {
+                                val cand = list[rank]
+                                if (mergedCandidates.none { it.text == cand.text }) {
+                                    mergedCandidates.add(cand)
+                                }
+                            }
+                        }
+                    }
+
+                    showCandidates = mergedCandidates
+                    showComposition = primaryPhrase
+                    preCommitText = ""
+                    return null
+                }
+            }
+        }
+
         val candidates = Rime.getRimeContext()?.candidates?.asList() ?: emptyList()
         customPhraseSize = 0
         val compositionText = Rime.compositionText
@@ -251,14 +339,20 @@ object RimeEngine {
         }
         val rimeSchema = Rime.getCurrentRimeSchema()
         val unselectedT9Keys = keyRecordStack.getUnselectedT9Keys()
-        pinyins = when (rimeSchema) {
-            CustomConstant.SCHEMA_ZH_T9 -> {
+        pinyins = when {
+            skbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN -> {
+                val inputSeq = unselectedT9Keys.ifEmpty {
+                    Regex("[a-zA-Z]+").find(compositionText.replace("'", ""))?.value?.uppercase() ?: ""
+                }
+                Pinyin14Utils.keyToPinyin(inputSeq)
+            }
+            rimeSchema == CustomConstant.SCHEMA_ZH_T9 -> {
                 val inputSeq = unselectedT9Keys.ifEmpty {
                     Regex("[A-Z]+").find(compositionText.replace("'", ""))?.value ?: ""
                 }
                 T9PinYinUtils.t9KeyToPinyin(inputSeq)
             }
-            CustomConstant.SCHEMA_ZH_DOUBLE_LX17 -> {
+            rimeSchema == CustomConstant.SCHEMA_ZH_DOUBLE_LX17 -> {
                 val inputSeq = unselectedT9Keys.ifEmpty {
                     Regex("[a-zA-Z]+").find(compositionText.replace("'", ""))?.value?.uppercase() ?: ""
                 }

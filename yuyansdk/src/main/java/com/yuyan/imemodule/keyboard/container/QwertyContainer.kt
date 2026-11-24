@@ -2,6 +2,7 @@ package com.yuyan.imemodule.keyboard.container
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -71,7 +72,8 @@ class QwertyContainer(context: Context?, inputView: InputView, skbValue: Int = 0
     private fun updateKeyboardView() {
         val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.filterMode.getValue() == FilterMode.STROKE
         val isQwertyPinyin = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN
-        val showTopBar = isQwertyPinyin && isStrokeFilterEnabled
+        val is14Key = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN
+        val showTopBar = (isQwertyPinyin && isStrokeFilterEnabled) || is14Key
 
         if (!showTopBar) {
             if (mRVLeftPrefix.parent != null) {
@@ -126,18 +128,31 @@ class QwertyContainer(context: Context?, inputView: InputView, skbValue: Int = 0
     override fun updateSymbolListView() {
         val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.filterMode.getValue() == FilterMode.STROKE
         val isQwertyPinyin = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN
-        if (!isQwertyPinyin || !isStrokeFilterEnabled) {
+        val is14Key = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN
+        if ((!isQwertyPinyin || !isStrokeFilterEnabled) && !is14Key) {
             return
         }
 
+        val rimePrefixs = com.yuyan.inputmethod.RimeEngine.getPrefixs()
+        val hasRimePrefixs = is14Key && rimePrefixs.isNotEmpty()
         val hasCandidates = !DictDecoder.isCandidatesEmpty || DictDecoder.activeStrokeFilter != 0
 
         val prefixs: Array<String>
         val selectedIdx: Int
+        val isPrefixsMode: Boolean
 
-        if (hasCandidates) {
+        if (hasRimePrefixs && (!isStrokeFilterEnabled || DictDecoder.activeStrokeFilter == 0)) {
+            val padded = Array(5) { "" }
+            for (i in rimePrefixs.indices) {
+                if (i < 5) padded[i] = rimePrefixs[i]
+            }
+            prefixs = padded
+            selectedIdx = 0
+            isPrefixsMode = true
+        } else if (hasCandidates && isStrokeFilterEnabled) {
             prefixs = CharFirstStrokeMap.STROKE_LABELS
             selectedIdx = if (DictDecoder.activeStrokeFilter > 0) DictDecoder.activeStrokeFilter - 1 else -1
+            isPrefixsMode = true
         } else {
             val symbolKeys = mSideSymbolsPinyin.map { it.symbolKey }.toTypedArray()
             val padded = Array(5) { "" }
@@ -146,10 +161,17 @@ class QwertyContainer(context: Context?, inputView: InputView, skbValue: Int = 0
             }
             prefixs = padded
             selectedIdx = -1
+            isPrefixsMode = false
         }
 
         mRVLeftPrefix.setOnItemClickListener { _: View?, position: Int ->
-            if (hasCandidates) {
+            if (hasRimePrefixs && (!isStrokeFilterEnabled || DictDecoder.activeStrokeFilter == 0)) {
+                if (position in rimePrefixs.indices) {
+                    DevicesUtils.tryPlayKeyDown()
+                    DevicesUtils.tryVibrate(this)
+                    inputView.selectPrefix(position)
+                }
+            } else if (hasCandidates && isStrokeFilterEnabled) {
                 if (position in CharFirstStrokeMap.STROKE_CODES.indices) {
                     DevicesUtils.tryPlayKeyDown()
                     DevicesUtils.tryVibrate(this)
@@ -170,9 +192,13 @@ class QwertyContainer(context: Context?, inputView: InputView, skbValue: Int = 0
 
         val existingAdapter = mRVLeftPrefix.originAdapter as? PrefixAdapter
         if (existingAdapter != null) {
-            existingAdapter.updateData(prefixs, isPrefixs = true, selectedIdx = selectedIdx)
+            existingAdapter.updateData(prefixs, isPrefixs = isPrefixsMode, selectedIdx = selectedIdx)
         } else {
-            val adapter = PrefixAdapter(context, prefixs, isPrefixs = true)
+            val adapter = PrefixAdapter(context, prefixs, isPrefixs = isPrefixsMode) {
+                val arguments = Bundle()
+                arguments.putInt("type", 0)
+                com.yuyan.imemodule.utils.AppUtil.launchSettingsToPrefix(context, arguments)
+            }
             adapter.selectedIndex = selectedIdx
             mRVLeftPrefix.setAdapter(adapter)
         }

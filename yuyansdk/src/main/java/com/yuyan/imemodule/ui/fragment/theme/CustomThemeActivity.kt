@@ -193,14 +193,14 @@ class CustomThemeActivity : AppCompatActivity() {
     }
 
     private fun getCurrentKeyboardName(): String {
-        val rimeValue = AppPrefs.getInstance().internal.pinyinModeRime.getValue()
-        return when (rimeValue) {
-            CustomConstant.SCHEMA_ZH_T9 -> "中文9键"
-            CustomConstant.SCHEMA_ZH_QWERTY -> "拼音全键"
-            CustomConstant.SCHEMA_ZH_DOUBLE_FLYPY -> "小鹤双拼"
-            CustomConstant.SCHEMA_ZH_DOUBLE_LX17 -> "乱序17"
-            CustomConstant.SCHEMA_ZH_STROKE -> "笔画键盘"
-            else -> "乱序17"
+        val skbLayout = InputModeSwitcher.skbLayout
+        return when (skbLayout) {
+            InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN -> "中文9键"
+            InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN -> "14键全拼"
+            InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN -> "拼音全键"
+            InputModeSwitcher.MASK_SKB_LAYOUT_LX17 -> "乱序17"
+            InputModeSwitcher.MASK_SKB_LAYOUT_STROKE -> "笔画键盘"
+            else -> "拼音全键"
         }
     }
 
@@ -263,16 +263,16 @@ class CustomThemeActivity : AppCompatActivity() {
     private val btnKeyboardCapsule: TextView by lazy {
         val defaultName = getCurrentKeyboardName()
         createCapsuleButton(defaultName) { anchorView ->
-            val options = arrayOf("中文9键", "拼音全键", "小鹤双拼", "乱序17", "笔画键盘")
+            val options = arrayOf("中文9键", "14键全拼", "拼音全键", "乱序17", "笔画键盘")
             showCapsuleDropdown(anchorView, options) { selectedTitle ->
                 btnKeyboardCapsule.text = selectedTitle
                 val skbMode = when (selectedTitle) {
                     "中文9键" -> InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN
+                    "14键全拼" -> InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN
                     "拼音全键" -> InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN
-                    "小鹤双拼" -> InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN
                     "乱序17" -> InputModeSwitcher.MASK_SKB_LAYOUT_LX17
                     "笔画键盘" -> InputModeSwitcher.MASK_SKB_LAYOUT_STROKE
-                    else -> InputModeSwitcher.MASK_SKB_LAYOUT_LX17
+                    else -> InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN
                 }
                 previewUi.setSkbLayout(skbMode)
             }

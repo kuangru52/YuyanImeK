@@ -152,6 +152,12 @@ object InputModeSwitcher {
     const val MASK_SKB_LAYOUT_VOICE = 0x9000
 
     /**
+     * A kind of soft keyboard layout. An input mode should be anded with
+     * [.MASK_SKB_LAYOUT] to get its soft keyboard layout. 指明14键全拼
+     */
+    const val MASK_SKB_LAYOUT_14KEY_PINYIN = 0xA000
+
+    /**
      * 第6位指明语言。
      */
     private const val MASK_LANGUAGE = 0x00f0

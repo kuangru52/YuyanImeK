@@ -271,6 +271,37 @@ class KeyboardLoaderUtil private constructor() {
                     rows.add(lastRow)
                 }
             }
+            InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN -> {  // 14键全拼
+                val keys = KeyboardData.layout14KeyCn[skbStyleMode]!!
+                var keyBeans: MutableList<SoftKey> = LinkedList()
+                var pinyin14Keys = createPinyin14Keys(keys[0], 0.198f)
+                keyBeans.addAll(pinyin14Keys)
+                rows.add(keyBeans)
+
+                keyBeans = LinkedList()
+                pinyin14Keys = createPinyin14Keys(keys[1], 0.198f)
+                pinyin14Keys.first().apply { mLeftF = 0.06f }
+                pinyin14Keys.last().apply { widthF = 0.099f }
+                keyBeans.addAll(pinyin14Keys)
+                rows.add(keyBeans)
+
+                keyBeans = LinkedList()
+                pinyin14Keys = createPinyin14Keys(keys[2])
+                pinyin14Keys.first().apply { widthF = 0.147f }
+                pinyin14Keys.last().apply { widthF = 0.147f }
+                for (i in 1 until pinyin14Keys.size - 1) {
+                    if (pinyin14Keys[i].code == KeyEvent.KEYCODE_M) {
+                        pinyin14Keys[i].widthF = 0.099f
+                    } else {
+                        pinyin14Keys[i].widthF = 0.198f
+                    }
+                }
+                keyBeans.addAll(pinyin14Keys)
+                rows.add(keyBeans)
+
+                val lastRow = lastRows(skbValue)
+                rows.add(lastRow)
+            }
             InputModeSwitcher.MASK_SKB_LAYOUT_STROKE -> {  // 7000  笔画键盘
                 var keyBeans: MutableList<SoftKey> = LinkedList()
                 val keys =  KeyboardData.layoutStrokeCn[skbStyleMode]!!
@@ -438,6 +469,10 @@ class KeyboardLoaderUtil private constructor() {
                     ))
                 }
             }
+            InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN -> {
+                createPinyin14Keys(arrayOf(InputModeSwitcher.USER_KEYCODE_SYMBOL, InputModeSwitcher.USER_KEYCODE_NUMBER,
+                        KeyEvent.KEYCODE_SPACE))
+            }
             else -> { //0x1000 InputModeSwitcherManager.MASK_SKB_LAYOUT_QWERTY_PINYIN
                 createQwertyPYKeys(arrayOf(InputModeSwitcher.USER_KEYCODE_SYMBOL, InputModeSwitcher.USER_KEYCODE_NUMBER,
                         InputModeSwitcher.USER_KEYCODE_LEFT_COMMA, KeyEvent.KEYCODE_SPACE))
@@ -499,7 +534,8 @@ class KeyboardLoaderUtil private constructor() {
         val lx17PrefixMode = AppPrefs.getInstance().keyboardSetting.lx17PrefixMode.getValue()
         val isStrokeFilterEnabled = AppPrefs.getInstance().keyboardSetting.filterMode.getValue() == com.yuyan.imemodule.prefs.behavior.FilterMode.STROKE
         val isQwertyPinyin = skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN
-        val isTopMode = ((skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_LX17) && (lx17PrefixMode == Lx17PrefixMode.Top)) || (isQwertyPinyin && isStrokeFilterEnabled)
+        val is14Key = skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_14KEY_PINYIN
+        val isTopMode = ((skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_LX17) && (lx17PrefixMode == Lx17PrefixMode.Top)) || (isQwertyPinyin && isStrokeFilterEnabled) || is14Key
         val topBarHeight = if (isTopMode) DevicesUtils.dip2px(30f) else 0
         val targetSkbHeight = EnvironmentSingleton.instance.skbHeight - topBarHeight
 
@@ -628,6 +664,20 @@ class KeyboardLoaderUtil private constructor() {
             val defaultSmall = labels?.getOrNull(1) ?: ""
             val small = SlideUpSymbolManager.getEffectiveLabelSmall(mSkbValue, code, defaultSmall)
             softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = small, keyMnemonic= lx17MnemonicPreset[code] ?: "").apply {
+                widthF = width
+            })
+        }
+        return softKeys.toTypedArray()
+    }
+
+    private fun createPinyin14Keys(codes: Array<Int>, width: Float = 0.20f): Array<SoftKey> {
+        val softKeys = mutableListOf<SoftKey>()
+        val keyPreset = if (numberLine) KeyPreset.pinyin14PYKeyPreset else KeyPreset.pinyin14PYKeyNumberPreset
+        for (code in codes) {
+            val labels = keyPreset[code]
+            val defaultSmall = labels?.getOrNull(1) ?: ""
+            val small = SlideUpSymbolManager.getEffectiveLabelSmall(mSkbValue, code, defaultSmall)
+            softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = small).apply {
                 widthF = width
             })
         }
