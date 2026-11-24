@@ -25,6 +25,10 @@ class KeyRecordStack {
             if (key is InputKey.T9Key && !key.consumed) {
                 keyRecords.removeAt(i)
                 removed++
+            } else if (key is InputKey.PinyinKey) {
+                val len = key.t9Keys().length
+                keyRecords.removeAt(i)
+                removed += len
             } else if (key is InputKey.Apostrophe) {
                 keyRecords.removeAt(i)
             } else {

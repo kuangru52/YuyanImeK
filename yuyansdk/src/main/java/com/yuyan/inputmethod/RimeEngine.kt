@@ -90,7 +90,10 @@ object RimeEngine {
                     Rime.replaceKey(0, 0, ph)
                     val cands = Rime.getRimeContext()?.candidates?.asList() ?: emptyList()
                     if (cands.any { it.text == selectedText }) {
-                        matchedKeyCount = Pinyin14Utils.pinyin2Key(ph.replace("'", "")).length
+                        val syllables = ph.split("'")
+                        val wordLen = selectedText.length.coerceAtMost(syllables.size)
+                        val consumedSyllables = syllables.take(wordLen).joinToString("")
+                        matchedKeyCount = Pinyin14Utils.pinyin2Key(consumedSyllables).length
                         break
                     }
                 }
