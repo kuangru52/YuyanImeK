@@ -175,51 +175,74 @@ object Pinyin14Utils {
         }
 
         val upperSeq = keySeq.uppercase()
+        val letterCombinations = expandKeySeqTo26Letters(upperSeq)
         val results = ArrayList<String>()
 
-        fun dfs(index: Int, currentPath: List<String>) {
-            if (index >= upperSeq.length) {
-                results.add(currentPath.joinToString("'"))
-                return
-            }
-            val maxLen = (upperSeq.length - index).coerceAtMost(6)
-            var foundAny = false
-            for (len in maxLen downTo 1) {
-                val subSeq = upperSeq.substring(index, index + len)
-                val matchingPinyins = pinyin14Map[subSeq]
-                if (matchingPinyins != null && matchingPinyins.isNotEmpty()) {
-                    foundAny = true
-                    for (py in matchingPinyins) {
-                        dfs(index + len, currentPath + listOf(py))
-                    }
-                    // 最大音节优先原则：如果已经匹配到了长度 >= 4 的完整长音节（如 xiang, jiang, zhuang），
-                    // 终止进一步切割为短碎片（如 xi + ang），彻底避免出现“高息昂”等无意义生造词！
-                    if (len >= 4) {
-                        break
+        for (comb in letterCombinations) {
+            fun dfsComb(index: Int, currentPath: List<String>) {
+                if (index >= comb.length) {
+                    results.add(currentPath.joinToString("'"))
+                    return
+                }
+                val maxLen = (comb.length - index).coerceAtMost(6)
+                for (len in maxLen downTo 1) {
+                    val subSeq = comb.substring(index, index + len)
+                    if (allPinyins.contains(subSeq)) {
+                        dfsComb(index + len, currentPath + listOf(subSeq))
+                        if (len >= 4) break
                     }
                 }
             }
-            if (!foundAny && currentPath.isNotEmpty()) {
-                results.add(currentPath.joinToString("'"))
-            }
+            dfsComb(0, emptyList())
         }
 
-        dfs(0, emptyList())
         val totalKeyLen = upperSeq.length
 
-        // 1. 完全消耗全量输入按键的全拼组合
         val fullMatches = results.filter { ph -> pinyin2Key(ph.replace("'", "")).length == totalKeyLen }
 
         val candidatesList = if (upperSeq.length <= 4) {
-            // 短按键输入（2-4键，如 sm, zg, nh）：同时支持全拼与超级简拼
             val jianpinMatches = getJianpinPhrases(upperSeq)
             (fullMatches + jianpinMatches + results).distinct()
         } else {
-            // 长按键输入（5键以上，如 gao'xiang）：严格限定为完整全拼切分，避免混入过度切割的碎片词
             if (fullMatches.isNotEmpty()) fullMatches.distinct() else results.distinct()
         }
 
         return candidatesList.sortedByDescending { getPhraseScore(it, totalKeyLen) }.take(20)
+    }
+
+    private fun expandKeySeqTo26Letters(keySeq: String): List<String> {
+        val cleanKeys = keySeq.replace("'", "").uppercase()
+        if (cleanKeys.isEmpty()) return emptyList()
+
+        var combinations = listOf("")
+        for (ch in cleanKeys) {
+            val letters = when (ch) {
+                'Q' -> listOf('q', 'w')
+                'E' -> listOf('e', 'r')
+                'T' -> listOf('t', 'y')
+                'U' -> listOf('u', 'i')
+                'O' -> listOf('o', 'p')
+                'A' -> listOf('a', 's')
+                'D' -> listOf('d', 'f')
+                'G' -> listOf('g', 'h')
+                'J' -> listOf('j', 'k')
+                'L' -> listOf('l')
+                'Z' -> listOf('z', 'x')
+                'C' -> listOf('c', 'v')
+                'B' -> listOf('b', 'n')
+                'M' -> listOf('m')
+                else -> listOf(ch.lowercaseChar())
+            }
+
+            val next = mutableListOf<String>()
+            for (base in combinations) {
+                for (letter in letters) {
+                    next.add(base + letter)
+                }
+            }
+            combinations = next.take(32)
+        }
+        return combinations
     }
 
     private fun getInitialsForKey(keyChar: Char): List<String> {
