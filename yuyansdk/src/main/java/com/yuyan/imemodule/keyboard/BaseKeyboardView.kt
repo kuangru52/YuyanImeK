@@ -218,10 +218,6 @@ open class BaseKeyboardView(mContext: Context?) : View(mContext) {
 
                 if (isCandidateSwiping) {
                     isCandidateSwiping = false
-                    val activeIndex = mService?.mSkbCandidatesBarView?.getActiveCandNo() ?: 0
-                    if (!com.yuyan.imemodule.service.DictDecoder.isCandidatesEmpty) {
-                        mService?.chooseAndUpdate(activeIndex)
-                    }
                     currentDistanceX = 0F
                     currentDistanceY = 0F
                     return true
