@@ -274,14 +274,7 @@ open class BaseKeyboardView(mContext: Context?) : View(mContext) {
                 mLongPressKey = true
                 mAbortKey = true
 
-                val currentSkbLayout = mSoftKeyboard?.skbLayoutMode?.takeIf { it > 0 } ?: InputModeSwitcher.skbLayout
-                val isT9OrStroke = currentSkbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN || currentSkbLayout == InputModeSwitcher.MASK_SKB_LAYOUT_STROKE
-
-                if (isT9OrStroke) {
-                    mService?.responseKeyEvent(SoftKey(code = KeyEvent.KEYCODE_0, label = "0"))
-                } else {
-                    InputModeSwitcher.switchModeForUserKey(InputModeSwitcher.USER_KEYCODE_LANG)
-                }
+                InputModeSwitcher.switchModeForUserKey(InputModeSwitcher.USER_KEYCODE_LANG)
                 return true
             }
         }
