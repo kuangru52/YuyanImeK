@@ -28,6 +28,22 @@ object CustomThemeSerializer : JsonTransformingSerializer<Theme.Custom>(Theme.Cu
         val jsonObj = element.jsonObject.removeVersion()
         val mutableMap = jsonObj.toMutableMap()
         mutableMap.remove("windowCornerRadiusDp")
+
+        // 智能向下兼容：将旧主题中废弃的 atKey 参数自动迁移映射为 langKey 参数
+        val atBg = mutableMap.remove("atKeyBackgroundColor")
+        val atText = mutableMap.remove("atKeyTextColor")
+        val atPress = mutableMap.remove("atKeyPressColor")
+
+        if (!mutableMap.containsKey("langKeyBackgroundColor") && atBg != null) {
+            mutableMap["langKeyBackgroundColor"] = atBg
+        }
+        if (!mutableMap.containsKey("langKeyTextColor") && atText != null) {
+            mutableMap["langKeyTextColor"] = atText
+        }
+        if (!mutableMap.containsKey("langKeyPressColor") && atPress != null) {
+            mutableMap["langKeyPressColor"] = atPress
+        }
+
         for ((key, value) in jsonObj) {
             if ((value is JsonPrimitive) && value.isString) {
                 val str = value.content.trim()
