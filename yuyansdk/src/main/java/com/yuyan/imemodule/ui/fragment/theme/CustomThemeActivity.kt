@@ -508,9 +508,9 @@ class CustomThemeActivity : AppCompatActivity() {
         shiftKeyTextColorRow.isVisible = false
         shiftKeyPressColorRow.isVisible = false
 
-        atKeyBgColorRow.isVisible = false
-        atKeyTextColorRow.isVisible = false
-        atKeyPressColorRow.isVisible = false
+        langKeyBgColorRow.isVisible = false
+        langKeyTextColorRow.isVisible = false
+        langKeyPressColorRow.isVisible = false
 
         symbolKeyBgColorRow.isVisible = false
         symbolKeyTextColorRow.isVisible = false
@@ -623,8 +623,8 @@ class CustomThemeActivity : AppCompatActivity() {
             key.code == android.view.KeyEvent.KEYCODE_CLEAR || label == "重输" -> {
                 setConsoleBarContent("已圈选按键区域：[ 重输键 ]", createOpacitySlider({ theme.clearKeyBackgroundColor ushr 24 }) { alpha -> updateColorTheme { it.copy(clearKeyBackgroundColor = it.clearKeyBackgroundColor.withAlpha(alpha)) } }, clearKeyBgColorRow, clearKeyTextColorRow, clearKeyPressColorRow)
             }
-            key.code == android.view.KeyEvent.KEYCODE_AT || label?.contains("@") == true -> {
-                setConsoleBarContent("已圈选按键区域：[ @键 ]", createOpacitySlider({ theme.atKeyBackgroundColor ushr 24 }) { alpha -> updateColorTheme { it.copy(atKeyBackgroundColor = it.atKeyBackgroundColor.withAlpha(alpha)) } }, atKeyBgColorRow, atKeyTextColorRow, atKeyPressColorRow)
+            key.code == InputModeSwitcher.USER_KEYCODE_LANG || label?.contains("中/英") == true || label?.contains("En") == true -> {
+                setConsoleBarContent("已圈选按键区域：[ 中英切换键 ]", createOpacitySlider({ theme.langKeyBackgroundColor ushr 24 }) { alpha -> updateColorTheme { it.copy(langKeyBackgroundColor = it.langKeyBackgroundColor.withAlpha(alpha)) } }, langKeyBgColorRow, langKeyTextColorRow, langKeyPressColorRow)
             }
             key.code == android.view.KeyEvent.KEYCODE_PERIOD || label == "." -> {
                 setConsoleBarContent("已圈选按键区域：[ .句点键 ]", createOpacitySlider({ theme.periodKeyBackgroundColor ushr 24 }) { alpha -> updateColorTheme { it.copy(periodKeyBackgroundColor = it.periodKeyBackgroundColor.withAlpha(alpha)) } }, periodKeyBgColorRow, periodKeyTextColorRow, periodKeyPressColorRow)
@@ -721,10 +721,10 @@ class CustomThemeActivity : AppCompatActivity() {
     private val shiftKeyTextColorRow by lazy { createColorPickerItem("【上档键】按键图标与文字色", { theme.shiftKeyTextColor }) { color -> updateColorTheme { it.copy(shiftKeyTextColor = color) } } }
     private val shiftKeyPressColorRow by lazy { createColorPickerItem("【上档键】按键按下高亮色", { theme.shiftKeyPressColor }) { color -> updateColorTheme { it.copy(shiftKeyPressColor = color) } } }
 
-    // 3.9. @ 键
-    private val atKeyBgColorRow by lazy { createColorPickerItem("【@键】按键背景色", { theme.atKeyBackgroundColor }) { color -> updateColorTheme { it.copy(atKeyBackgroundColor = color) } } }
-    private val atKeyTextColorRow by lazy { createColorPickerItem("【@键】按键图标与文字色", { theme.atKeyTextColor }) { color -> updateColorTheme { it.copy(atKeyTextColor = color) } } }
-    private val atKeyPressColorRow by lazy { createColorPickerItem("【@键】按键按下高亮色", { theme.atKeyPressColor }) { color -> updateColorTheme { it.copy(atKeyPressColor = color) } } }
+    // 3.9. 中英切换键
+    private val langKeyBgColorRow by lazy { createColorPickerItem("【中英切换键】按键背景色", { theme.langKeyBackgroundColor }) { color -> updateColorTheme { it.copy(langKeyBackgroundColor = color) } } }
+    private val langKeyTextColorRow by lazy { createColorPickerItem("【中英切换键】按键图标与文字色", { theme.langKeyTextColor }) { color -> updateColorTheme { it.copy(langKeyTextColor = color) } } }
+    private val langKeyPressColorRow by lazy { createColorPickerItem("【中英切换键】按键按下高亮色", { theme.langKeyPressColor }) { color -> updateColorTheme { it.copy(langKeyPressColor = color) } } }
 
     // 8. 工具栏与箭头
     private val toolbarTextColorRow by lazy {

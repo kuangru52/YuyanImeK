@@ -46,7 +46,7 @@ class ThemePrefs(sharedPreferences: SharedPreferences) :
     )
 
     val lightModeTheme = ManagedThemePreference(
-        sharedPreferences, "light_mode_theme", ThemePreset.MintSummer
+        sharedPreferences, "light_mode_theme", ThemePreset.IceSkyBlue
     ).also { it.register() }
 
     val darkModeTheme = ManagedThemePreference(

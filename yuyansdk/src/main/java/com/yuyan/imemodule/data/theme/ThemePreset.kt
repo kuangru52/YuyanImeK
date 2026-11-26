@@ -37,6 +37,38 @@ object ThemePreset {
         functionKeyPressHighlightColor = 0x1fffffff,
     )
 
+    val IceSkyBlue = Theme.Builtin(
+        name = "晴空冰蓝",
+        isDark = false,
+        keyboardResources = 0,
+        barColor = 0xFFE2E8F0.toInt(),
+        keyboardColor = 0xFFE2E8F0.toInt(),
+        keyBackgroundColor = 0xFFFFFFFF.toInt(),
+        keyTextColor = 0xFF37474F.toInt(),
+        accentKeyBackgroundColor = 0xFF0C77FF.toInt(),
+        accentKeyTextColor = 0xFFFFFFFF.toInt(),
+        keyPressHighlightColor = 0x1F000000,
+        popupBackgroundColor = 0xFFD9DBDD.toInt(),
+        functionKeyBackgroundColor = 0xFFFFFFFF.toInt(),
+        functionKeyPressHighlightColor = 0x1F000000,
+        deleteKeyBackgroundColor = 0xFFFCD6D6.toInt(),
+        clearKeyBackgroundColor = 0xFF9EDADB.toInt(),
+        returnKeyBackgroundColor = 0xFFC9CED1.toInt(),
+        shiftKeyBackgroundColor = 0xFFC9CED1.toInt(),
+        shiftKeyActiveBackgroundColor = 0xFF5CB5AB.toInt(),
+        shiftKeyLockBackgroundColor = 0xFF5CB5AB.toInt(),
+        langKeyBackgroundColor = 0xFF9EDADB.toInt(),
+        symbolKeyBackgroundColor = 0xFFF9D694.toInt(),
+        numberKeyBackgroundColor = 0xFF92B1AB.toInt(),
+        sideSymbolKeyBackgroundColor = 0xFFDEE3E9.toInt(),
+        sideSymbolKeyTextColor = 0xFF37474F.toInt(),
+        sideSymbolKeyPressColor = 0x1F000000,
+        arrowButtonBackgroundColor = 0xFFC9CED1.toInt(),
+        toolbarTextColor = 0xFF37474F.toInt(),
+        toolbarActiveIconColor = 0xFF007AFF.toInt(),
+        candidateTextColor = 0xFF37474F.toInt(),
+    )
+
     val MintSummer = Theme.Builtin(
         name = "薄荷夏日",
         isDark = false,

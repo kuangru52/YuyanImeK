@@ -175,14 +175,14 @@ object CustomThemeSerializer : JsonTransformingSerializer<Theme.Custom>(Theme.Cu
         sb.append("  # 上档键按下高亮色\n")
         sb.append("  \"shiftKeyPressColor\": \"${theme.shiftKeyPressColor.toHexString()}\",\n\n")
 
-        sb.append("  # @ 符号键专属背景颜色\n")
-        sb.append("  \"atKeyBackgroundColor\": \"${theme.atKeyBackgroundColor.toHexString()}\",\n\n")
+        sb.append("  # 中英切换键专属背景颜色\n")
+        sb.append("  \"langKeyBackgroundColor\": \"${theme.langKeyBackgroundColor.toHexString()}\",\n\n")
 
-        sb.append("  # @键文字与图标颜色\n")
-        sb.append("  \"atKeyTextColor\": \"${theme.atKeyTextColor.toHexString()}\",\n\n")
+        sb.append("  # 中英切换键文字与图标颜色\n")
+        sb.append("  \"langKeyTextColor\": \"${theme.langKeyTextColor.toHexString()}\",\n\n")
 
-        sb.append("  # @键按下高亮色\n")
-        sb.append("  \"atKeyPressColor\": \"${theme.atKeyPressColor.toHexString()}\",\n\n")
+        sb.append("  # 中英切换键按下高亮色\n")
+        sb.append("  \"langKeyPressColor\": \"${theme.langKeyPressColor.toHexString()}\",\n\n")
 
         sb.append("  # 常用标点符号按键背景颜色\n")
         sb.append("  \"symbolKeyBackgroundColor\": \"${theme.symbolKeyBackgroundColor.toHexString()}\",\n\n")

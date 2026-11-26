@@ -350,11 +350,11 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
         return softKey.code == InputModeSwitcher.USER_KEYCODE_RETURN || softKey.label == "返回" || softKey.keyLabel == "Back"
     }
 
-    private fun isAtKey(softKey: SoftKey): Boolean {
+    private fun isLangKey(softKey: SoftKey): Boolean {
         if (isEnterKey(softKey)) return false
-        if (softKey.code == KeyEvent.KEYCODE_AT) return true
+        if (softKey.code == InputModeSwitcher.USER_KEYCODE_LANG) return true
         val label = softKey.label
-        return label == "@" || label == "@ / 0" || label.startsWith("@")
+        return label == "中/英" || label == "cn/En" || label == "En/中"
     }
 
     private fun isDotKey(softKey: SoftKey): Boolean {
@@ -362,7 +362,7 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
     }
 
     private fun isSideSymbolKey(softKey: SoftKey): Boolean {
-        if (isAtKey(softKey) || isDotKey(softKey) || isShiftKey(softKey) || isNumberKey(softKey)) return false
+        if (isLangKey(softKey) || isDotKey(softKey) || isShiftKey(softKey) || isNumberKey(softKey)) return false
         if (softKey.code == InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL) return true
         if (softKey.heightF > 0.5f) return true
         val sideLabels = arrayOf("，", "。", "？", "！", "～", "、", "；", "：", ",")
@@ -376,7 +376,7 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
         return softKey.code != InputModeSwitcher.USER_KEYCODE_LX17_SPLIT_NUM_SYM &&
                !isNumberKey(softKey) && !isEnterKey(softKey) && !isSpaceKey(softKey) && !isDeleteKey(softKey) &&
                !isSymbolKey(softKey) && !isSideSymbolKey(softKey) &&
-               !isClearKey(softKey) && !isReturnKey(softKey) && !isAtKey(softKey) && !isShiftKey(softKey) && !isDotKey(softKey)
+               !isClearKey(softKey) && !isReturnKey(softKey) && !isLangKey(softKey) && !isShiftKey(softKey) && !isDotKey(softKey)
     }
 
     private fun darkenColor(color: Int): Int {
@@ -534,7 +534,7 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
                 else -> mActiveTheme.shiftKeyBackgroundColor
             }
             isReturnKey(softKey) -> mActiveTheme.returnKeyBackgroundColor
-            isAtKey(softKey) -> mActiveTheme.atKeyBackgroundColor
+            isLangKey(softKey) -> mActiveTheme.langKeyBackgroundColor
             isDotKey(softKey) -> mActiveTheme.periodKeyBackgroundColor
             isSymbolKey(softKey) -> mActiveTheme.symbolKeyBackgroundColor
             isNumberKey(softKey) -> mActiveTheme.numberKeyBackgroundColor
@@ -579,7 +579,7 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
                     isClearKey(softKey) -> mActiveTheme.clearKeyPressColor
                     isShiftKey(softKey) -> mActiveTheme.shiftKeyPressColor
                     isReturnKey(softKey) -> mActiveTheme.returnKeyPressColor
-                    isAtKey(softKey) -> mActiveTheme.atKeyPressColor
+                    isLangKey(softKey) -> mActiveTheme.langKeyPressColor
                     isDotKey(softKey) -> mActiveTheme.periodKeyPressColor
                     isSymbolKey(softKey) -> mActiveTheme.symbolKeyPressColor
                     isNumberKey(softKey) -> mActiveTheme.numberKeyPressColor
@@ -643,7 +643,7 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
             isClearKey(softKey) -> mActiveTheme.clearKeyTextColor
             isShiftKey(softKey) -> mActiveTheme.shiftKeyTextColor
             isReturnKey(softKey) -> mActiveTheme.keyTextColor
-            isAtKey(softKey) -> mActiveTheme.atKeyTextColor
+            isLangKey(softKey) -> mActiveTheme.langKeyTextColor
             isDotKey(softKey) -> mActiveTheme.periodKeyTextColor
             isSymbolKey(softKey) -> mActiveTheme.symbolKeyTextColor
             isNumberKey(softKey) -> mActiveTheme.numberKeyTextColor
@@ -943,7 +943,7 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
         }
         if (selected.code == InputModeSwitcher.USER_KEYCODE_LX17_SPLIT_NUM_SYM ||
             isShiftKey(selected) || isDeleteKey(selected) || isClearKey(selected) ||
-            isReturnKey(selected) || isAtKey(selected) || isDotKey(selected) ||
+            isReturnKey(selected) || isLangKey(selected) || isDotKey(selected) ||
             isSpaceKey(selected) || isEnterKey(selected) || isSymbolKey(selected) || isNumberKey(selected)) {
             return listOf(selected)
         }
@@ -959,7 +959,7 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
         val selectedIsClear = isClearKey(selected)
         val selectedIsShift = isShiftKey(selected)
         val selectedIsReturn = isReturnKey(selected)
-        val selectedIsAt = isAtKey(selected)
+        val selectedIsLang = isLangKey(selected)
         val selectedIsDot = isDotKey(selected)
         val selectedIsSym = isSymbolKey(selected)
         val selectedIsNum = isNumberKey(selected)
@@ -974,7 +974,7 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
                     selectedIsClear -> isClearKey(key)
                     selectedIsShift -> isShiftKey(key)
                     selectedIsReturn -> isReturnKey(key)
-                    selectedIsAt -> isAtKey(key)
+                    selectedIsLang -> isLangKey(key)
                     selectedIsDot -> isDotKey(key)
                     selectedIsSym -> isSymbolKey(key)
                     selectedIsNum -> isNumberKey(key)

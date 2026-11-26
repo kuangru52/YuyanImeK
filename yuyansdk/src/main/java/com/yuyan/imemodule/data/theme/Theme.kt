@@ -94,9 +94,9 @@ sealed class Theme : Parcelable {
     open val shiftKeyTextColor: Int get() = keyTextColor                        // 上档键图标与文字色
     open val shiftKeyPressColor: Int get() = keyPressHighlightColor             // 上档键按下高亮色
 
-    open val atKeyBackgroundColor: Int get() = accentKeyBackgroundColor          // @键专属背景色
-    open val atKeyTextColor: Int get() = accentKeyTextColor                      // @键专属文字与图标色
-    open val atKeyPressColor: Int get() = accentKeyPressColor                    // @键专属按下高亮色
+    open val langKeyBackgroundColor: Int get() = functionKeyBackgroundColor        // 中英切换键专属背景色
+    open val langKeyTextColor: Int get() = keyTextColor                             // 中英切换键专属文字与图标色
+    open val langKeyPressColor: Int get() = keyPressHighlightColor                 // 中英切换键专属按下高亮色
 
     open val numberKeyBackgroundColor: Int get() = functionKeyBackgroundColor   // 123数字键背景色
     open val numberKeyTextColor: Int get() = keyTextColor                       // 123数字键文字与图标色
@@ -171,9 +171,9 @@ sealed class Theme : Parcelable {
         override val shiftKeyLockBackgroundColor: Int = shiftKeyActiveBackgroundColor,
         override val shiftKeyTextColor: Int = keyTextColor,
         override val shiftKeyPressColor: Int = keyPressHighlightColor,
-        override val atKeyBackgroundColor: Int = accentKeyBackgroundColor,
-        override val atKeyTextColor: Int = accentKeyTextColor,
-        override val atKeyPressColor: Int = keyPressHighlightColor,
+        override val langKeyBackgroundColor: Int = functionKeyBackgroundColor,
+        override val langKeyTextColor: Int = keyTextColor,
+        override val langKeyPressColor: Int = keyPressHighlightColor,
         override val symbolKeyBackgroundColor: Int = functionKeyBackgroundColor,
         override val symbolKeyTextColor: Int = keyTextColor,
         override val symbolKeyPressColor: Int = keyPressHighlightColor,
@@ -321,8 +321,14 @@ sealed class Theme : Parcelable {
         override val numberKeyTextColor: Int = keyTextColor,
         override val deleteKeyBackgroundColor: Int = functionKeyBackgroundColor,
         override val deleteKeyTextColor: Int = keyTextColor,
+        override val clearKeyBackgroundColor: Int = functionKeyBackgroundColor,
         override val returnKeyBackgroundColor: Int = accentKeyBackgroundColor,
         override val returnKeyTextColor: Int = accentKeyTextColor,
+        override val shiftKeyBackgroundColor: Int = functionKeyBackgroundColor,
+        override val shiftKeyActiveBackgroundColor: Int = accentKeyBackgroundColor,
+        override val shiftKeyLockBackgroundColor: Int = shiftKeyActiveBackgroundColor,
+        override val langKeyBackgroundColor: Int = functionKeyBackgroundColor,
+        override val arrowButtonBackgroundColor: Int = functionKeyBackgroundColor,
         override val toolbarTextColor: Int = keyTextColor,
         override val toolbarActiveIconColor: Int = accentKeyBackgroundColor,
         override val candidateTextColor: Int = toolbarTextColor,
@@ -427,9 +433,9 @@ sealed class Theme : Parcelable {
             shiftKeyActiveBackgroundColor = shiftKeyActiveBackgroundColor,
             shiftKeyTextColor = shiftKeyTextColor,
             shiftKeyPressColor = shiftKeyPressColor,
-            atKeyBackgroundColor = atKeyBackgroundColor,
-            atKeyTextColor = atKeyTextColor,
-            atKeyPressColor = atKeyPressColor,
+            langKeyBackgroundColor = langKeyBackgroundColor,
+            langKeyTextColor = langKeyTextColor,
+            langKeyPressColor = langKeyPressColor,
             spaceKeyTextColor = spaceKeyTextColor,
             toolbarTextColor = toolbarTextColor,
             candidateTextColor = candidateTextColor,
