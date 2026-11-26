@@ -408,7 +408,7 @@ class KeyboardLoaderUtil private constructor() {
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN, InputModeSwitcher.MASK_SKB_LAYOUT_STROKE ->{
                 createT9Keys(arrayOf(InputModeSwitcher.USER_KEYCODE_SYMBOL, InputModeSwitcher.USER_KEYCODE_NUMBER,
-                        KeyEvent.KEYCODE_SPACE, KeyEvent.KEYCODE_AT))
+                        KeyEvent.KEYCODE_SPACE, InputModeSwitcher.USER_KEYCODE_LANG))
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC -> {
                 createQwertyKeys(arrayOf(InputModeSwitcher.USER_KEYCODE_SYMBOL, InputModeSwitcher.USER_KEYCODE_NUMBER, KeyEvent.KEYCODE_SPACE))

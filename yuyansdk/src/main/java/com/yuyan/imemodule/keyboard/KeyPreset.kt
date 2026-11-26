@@ -222,6 +222,7 @@ object KeyPreset {
         KeyEvent.KEYCODE_W to arrayOf("WXYZ", "9"),
         KeyEvent.KEYCODE_CLEAR to arrayOf("重输"),
         KeyEvent.KEYCODE_APOSTROPHE to arrayOf("分词", "1"),
+        InputModeSwitcher.USER_KEYCODE_LANG to arrayOf("中/英", "0"),
         KeyEvent.KEYCODE_AT to arrayOf("@", "0"),
         InputModeSwitcher.USER_KEYCODE_COMMA_EMOJI to  arrayOf("，"),
         InputModeSwitcher.USER_KEYCODE_LEFT_COMMA to arrayOf("，", "。"),
@@ -252,7 +253,7 @@ object KeyPreset {
         InputModeSwitcher.USER_KEYCODE_LEFT_PERIOD to arrayOf("。", "9"),
         InputModeSwitcher.USER_KEYCODE_SYMBOL to arrayOf("符号"),
         InputModeSwitcher.USER_KEYCODE_NUMBER to arrayOf("123"),
-        KeyEvent.KEYCODE_AT to arrayOf("@", "0"),
+        InputModeSwitcher.USER_KEYCODE_LANG to arrayOf("中/英", "0"),
     )
 
     val t9NumberKeyPreset: Map<Int, Array<String>> = hashMapOf(
@@ -266,6 +267,7 @@ object KeyPreset {
         KeyEvent.KEYCODE_7 to arrayOf("7"),
         KeyEvent.KEYCODE_8 to arrayOf("8"),
         KeyEvent.KEYCODE_9 to arrayOf("9"),
+        KeyEvent.KEYCODE_PLUS to arrayOf("+"),
         KeyEvent.KEYCODE_AT  to arrayOf("@"),
         KeyEvent.KEYCODE_PERIOD to arrayOf("."),
         InputModeSwitcher.USER_KEYCODE_COMMA_EMOJI to  arrayOf(","),

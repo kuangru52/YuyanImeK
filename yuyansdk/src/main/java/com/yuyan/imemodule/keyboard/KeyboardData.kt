@@ -53,7 +53,7 @@ object KeyboardData {
         SkbStyleMode.Yuyan to arrayListOf(
             arrayOf(InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL, 8, 9, 10, KeyEvent.KEYCODE_DEL),
             arrayOf(11, 12, 13, InputModeSwitcher.USER_KEYCODE_LEFT_PERIOD),
-            arrayOf(14, 15, 16, KeyEvent.KEYCODE_AT))
+            arrayOf(14, 15, 16, KeyEvent.KEYCODE_PLUS))
     )
 
     val layoutTextEdit: Map<SkbStyleMode, ArrayList<Array<Int>>> = linkedMapOf(
