@@ -274,7 +274,7 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
         val lx17PrefixMode = list(
             R.string.lx17_prefix_mode_title,
             "lx17_prefix_mode",
-            Lx17PrefixMode.Left,
+            Lx17PrefixMode.Top,
             Lx17PrefixMode,
             listOf(
                 Lx17PrefixMode.None,
