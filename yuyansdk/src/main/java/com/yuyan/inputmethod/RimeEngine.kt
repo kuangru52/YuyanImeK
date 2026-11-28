@@ -226,7 +226,7 @@ object RimeEngine {
         val compositionText = Rime.compositionText
         showCandidates = when {
             compositionText.isNotBlank() -> {
-                val phrase = CustomEngine.processPhrase(compositionText.replace("\'", ""))
+                val phrase = CustomEngine.processPhrase(compositionText)
                 if(InputModeSwitcher.isEnglish && StringUtils.isLetter(compositionText) &&
                     !compositionText.equals(candidates.firstOrNull()?.text, ignoreCase = true) ){
                     phrase.add(0, compositionText)

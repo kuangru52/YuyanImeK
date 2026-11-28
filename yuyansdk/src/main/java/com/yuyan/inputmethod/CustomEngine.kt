@@ -1,6 +1,7 @@
 package com.yuyan.inputmethod
 
 import com.yuyan.imemodule.database.DataBaseKT
+import com.yuyan.imemodule.database.entry.UserWord
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.utils.StringUtils
 import com.yuyan.imemodule.utils.TimeUtils
@@ -54,11 +55,29 @@ object CustomEngine {
     }
 
     private val phraseCache = java.util.concurrent.ConcurrentHashMap<String, List<String>>()
-    private val userWordCache = java.util.concurrent.ConcurrentHashMap<String, List<String>>()
+    private val userWordCache = java.util.concurrent.ConcurrentHashMap<String, List<UserWord>>()
 
     fun clearCache() {
         phraseCache.clear()
         userWordCache.clear()
+    }
+
+    /**
+     * 根据输入拼音文本估计音节数
+     */
+    private fun estimateSyllableCount(rawComposition: String): Int {
+        if (rawComposition.isBlank()) return 1
+        val singleQuotes = rawComposition.count { it == '\'' }
+        if (singleQuotes > 0) {
+            return singleQuotes + 1
+        }
+        val len = rawComposition.length
+        return when {
+            len <= 2 -> 1
+            len <= 4 -> 1
+            len <= 7 -> 2
+            else -> (len / 3.5).toInt().coerceAtLeast(1)
+        }
     }
 
     fun predictAssociationWordsChinese(text: String): MutableList<String> {
@@ -89,21 +108,41 @@ object CustomEngine {
                 else -> "拼音全键"
             }
 
+            val inputSyllables = estimateSyllableCount(text)
+
             // 1. 查询用户自造词与扩展词库 (UserWord)，支持按当前键盘方案 (schema) 与 开启状态 (isEnabled) 筛选
-            val userWords = userWordCache.getOrPut(cleanText) {
+            val rawUserWords = userWordCache.getOrPut(cleanText) {
                 runCatching {
                     val dao = DataBaseKT.instance.userWordDao()
                     if (lowerCleanText.length <= 1) {
                         dao.queryExactByLayout(cleanText, currentLayoutName)
                             .ifEmpty { dao.queryExactByLayout(lowerCleanText, currentLayoutName) }
-                            .map { it.word }
                     } else {
                         dao.queryByLayout(cleanText, currentLayoutName)
                             .ifEmpty { dao.queryByLayout(lowerCleanText, currentLayoutName) }
-                            .map { it.word }
                     }
                 }.getOrDefault(emptyList())
             }
+
+            // 结合输入音节数与词长动态衰减加权，解决“输入1个音节却在顶部匹配超长长词”的问题
+            val userWords = rawUserWords
+                .sortedByDescending { uw ->
+                    val wordLength = uw.word.length.coerceAtLeast(1)
+                    val ratio = inputSyllables.toDouble() / wordLength
+                    // 当输入音节数小于词长时进行二次方衰减惩罚；音节数 >= 词长时 100% 满分保留
+                    val penalty = if (wordLength > inputSyllables) ratio * ratio else 1.0
+                    uw.frequency * penalty
+                }
+                .let { list ->
+                    val maxShortLen = maxOf(3, inputSyllables + 1)
+                    val exactOrShort = list.filter { it.word.length <= maxShortLen }
+                    // 对超过 maxShortLen 的超长前缀补全词限制展示数量（1个音节最多允许2个长词）
+                    val maxLongAllowed = if (inputSyllables == 1) 2 else 4
+                    val longPrefix = list.filter { it.word.length > maxShortLen }.take(maxLongAllowed)
+                    exactOrShort + longPrefix
+                }
+                .map { it.word }
+
             phrases.addAll(userWords)
 
             // 2. 查询 9键(34944)、LX17(GXXD/gxxd) 或 26键(dizhi) 精确匹配短语
