@@ -28,40 +28,6 @@ object ScelParser {
         val seenWords = HashSet<String>()
 
         try {
-            // 2. 从 Header 区域 (0x0530 到 0x1530) 提取作者编写的代表例词，确保卡片与描述中的例词 100% 装载入库
-            runCatching {
-                var pos = 0x0530
-                val headerEnd = 0x1530.coerceAtMost(bytes.size - 4)
-                while (pos < headerEnd) {
-                    val code1 = (bytes[pos].toInt() and 0xFF) or ((bytes[pos + 1].toInt() and 0xFF) shl 8)
-                    if ((code1 in 0x4E00..0x9FFF) || (code1 in 0x3400..0x4DBF)) {
-                        val wordStart = pos
-                        var charCount = 0
-                        while (pos < headerEnd - 1) {
-                            val code = (bytes[pos].toInt() and 0xFF) or ((bytes[pos + 1].toInt() and 0xFF) shl 8)
-                            val isWordChar = (code in 0x4E00..0x9FFF) || (code in 0x3400..0x4DBF) || (code in '0'.code..'9'.code) || (code in 'A'.code..'Z'.code) || (code in 'a'.code..'z'.code)
-                            if (isWordChar) {
-                                charCount++
-                                pos += 2
-                            } else {
-                                break
-                            }
-                        }
-                        if (charCount >= 2) {
-                            val wordStr = String(bytes, wordStart, charCount * 2, Charsets.UTF_16LE).trim { it.code <= 32 || it == '\u0000' }
-                            if (wordStr.isNotBlank() && isAcceptableWord(wordStr) && seenWords.add(wordStr)) {
-                                val finalPinyin = UserWordManager.autoGeneratePinyin(wordStr)
-                                val head = runCatching { PinyinHelper.getPinYinHeadChar(wordStr).lowercase() }.getOrDefault("")
-                                val t9 = UserWordManager.wordToT9Key(finalPinyin)
-                                result.add(UserWord(word = wordStr, pinyin = finalPinyin, pinyinHead = head, t9 = t9, frequency = 100))
-                            }
-                        }
-                    } else {
-                        pos += 2
-                    }
-                }
-            }
-
             val pinyinMap = HashMap<Int, String>()
             // 预设首音节映射
             pinyinMap[0] = "a"
