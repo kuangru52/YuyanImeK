@@ -78,8 +78,7 @@ object DictImporter {
 
             // 保存离线原始词库副本，供卡片高精读取 Header 字段与准确展示字节容量
             runCatching {
-                val dictsDir = File(context.filesDir, "imported_dicts")
-                if (!dictsDir.exists()) dictsDir.mkdirs()
+                val dictsDir = getImportedDictsDir(context)
                 File(dictsDir, fileName).writeBytes(bytes)
             }
 
@@ -177,11 +176,43 @@ object DictImporter {
     }
 
     /**
+     * 获取导入词库的存储目录：优先存储在应用外部存储（Android/data/<package_name>/files/imported_dicts/），
+     * 保持与主题目录（Android/data/<package_name>/files/theme/）一致。
+     */
+    fun getImportedDictsDir(context: Context): File {
+        val extDir = runCatching { context.getExternalFilesDir("imported_dicts") }.getOrNull()
+        val dir = if (extDir != null && (extDir.exists() || extDir.mkdirs())) {
+            extDir
+        } else {
+            File(context.filesDir, "imported_dicts")
+        }
+        if (!dir.exists()) dir.mkdirs()
+
+        // 迁移旧版内部存储 (filesDir/imported_dicts) 中的文件到新目录
+        runCatching {
+            val oldDir = File(context.filesDir, "imported_dicts")
+            if (oldDir.exists() && oldDir.isDirectory && oldDir.canonicalPath != dir.canonicalPath) {
+                oldDir.listFiles()?.forEach { oldFile ->
+                    if (oldFile.isFile) {
+                        val destFile = File(dir, oldFile.name)
+                        if (!destFile.exists()) {
+                            oldFile.copyTo(destFile, overwrite = true)
+                        }
+                        oldFile.delete()
+                    }
+                }
+                oldDir.delete()
+            }
+        }
+        return dir
+    }
+
+    /**
      * 删除词库对应本地缓存文件
      */
     fun deleteDictFile(context: Context, fileName: String) {
         runCatching {
-            val file = File(File(context.filesDir, "imported_dicts"), fileName)
+            val file = File(getImportedDictsDir(context), fileName)
             if (file.exists()) file.delete()
         }
     }

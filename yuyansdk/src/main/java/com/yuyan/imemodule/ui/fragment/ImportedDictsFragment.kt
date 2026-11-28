@@ -248,7 +248,7 @@ class ImportedDictsFragment : CsPreferenceFragment() {
                                 lifecycleScope.launch(Dispatchers.IO) {
                                     if (checked) {
                                         // 重新刷新并提取全量词条（包含 Header 描述区域词汇）
-                                        val savedFile = File(File(ctx.filesDir, "imported_dicts"), fileName)
+                                        val savedFile = File(DictImporter.getImportedDictsDir(ctx), fileName)
                                         if (savedFile.exists()) {
                                             val bytes = savedFile.readBytes()
                                             val words = DictImporter.parseDictBytes(fileName, bytes)
@@ -284,7 +284,7 @@ class ImportedDictsFragment : CsPreferenceFragment() {
 
     private fun getHeaderMetaForFile(context: Context, fileName: String): Pair<String, String> {
         runCatching {
-            val f = File(File(context.filesDir, "imported_dicts"), fileName)
+            val f = File(DictImporter.getImportedDictsDir(context), fileName)
             if (f.exists() && f.length() > 0) {
                 val bytes = f.readBytes()
                 val meta = DictImporter.extractHeaderMeta(fileName, bytes)
@@ -309,7 +309,7 @@ class ImportedDictsFragment : CsPreferenceFragment() {
 
     private fun getDictFileSizeStr(context: Context, fileName: String, wordCount: Int): String {
         runCatching {
-            val f = File(File(context.filesDir, "imported_dicts"), fileName)
+            val f = File(DictImporter.getImportedDictsDir(context), fileName)
             if (f.exists() && f.length() > 0) {
                 val kb = f.length() / 1024f
                 return if (kb >= 1024) String.format("%.1f MB", kb / 1024f) else String.format("%.1f KB", kb)
