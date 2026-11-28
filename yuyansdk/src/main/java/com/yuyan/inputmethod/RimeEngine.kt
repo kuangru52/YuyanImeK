@@ -3,6 +3,7 @@ package com.yuyan.inputmethod
 import android.view.KeyEvent
 import com.yuyan.imemodule.application.CustomConstant
 import com.yuyan.imemodule.application.Launcher
+import com.yuyan.imemodule.manager.AutoUserWordManager
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.utils.StringUtils
@@ -49,6 +50,7 @@ object RimeEngine {
     }
 
     fun onNormalKey(event: KeyEvent) {
+        AutoUserWordManager.confirmPendingUserWord()
         val keyCode = event.keyCode
         val keyChar = if(keyCode == KeyEvent.KEYCODE_APOSTROPHE) if(isFinish()) '/'.code else '\''.code
             else event.getEffectiveUnicodeChar()
@@ -58,6 +60,7 @@ object RimeEngine {
     }
 
     fun onDeleteKey() {
+        AutoUserWordManager.onBackspacePressed()
         keyRecordStack.processDelAction()
         updateCandidatesOrCommitText()
     }

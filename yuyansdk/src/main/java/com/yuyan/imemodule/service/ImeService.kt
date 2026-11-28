@@ -192,6 +192,7 @@ class ImeService : InputMethodService(), LifecycleOwner, SavedStateRegistryOwner
         android.util.Log.w("ImeLifecycle", "onStartInputView restarting=$restarting")
         val start = SystemClock.elapsedRealtime()
         try {
+            com.yuyan.imemodule.manager.AutoUserWordManager.confirmPendingUserWord()
             onSystemDarkModeChange(resources.configuration.isDarkMode())
             lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
             lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -216,6 +217,7 @@ class ImeService : InputMethodService(), LifecycleOwner, SavedStateRegistryOwner
     override fun onFinishInputView(finishingInput: Boolean) {
         android.util.Log.w("ImeLifecycle", "onFinishInputView finishingInput=$finishingInput")
         try {
+            com.yuyan.imemodule.manager.AutoUserWordManager.confirmPendingUserWord()
             lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
             lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
             stopSpaceVoiceRecognition(abandon = true)
@@ -233,6 +235,7 @@ class ImeService : InputMethodService(), LifecycleOwner, SavedStateRegistryOwner
     }
 
     fun deleteSurroundingText(beforeLength: Int = 1, afterLength: Int = 0): Boolean {
+        com.yuyan.imemodule.manager.AutoUserWordManager.onBackspacePressed()
         val ic = currentInputConnection ?: return false
         val selectedText = ic.getSelectedText(0)
         if (!selectedText.isNullOrEmpty()) {

@@ -22,5 +22,11 @@ data class UserWord(
     @ColumnInfo(name = "frequency")
     var frequency: Int = 100,
     @ColumnInfo(name = "time")
-    val time: Long = System.currentTimeMillis()
+    val time: Long = System.currentTimeMillis(),
+    @ColumnInfo(name = "fileName")
+    var fileName: String = "",
+    @ColumnInfo(name = "isEnabled")
+    var isEnabled: Boolean = true,
+    @ColumnInfo(name = "schema")
+    var schema: String = "全部方案"
 )

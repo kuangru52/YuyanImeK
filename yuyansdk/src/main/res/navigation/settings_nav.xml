@@ -52,6 +52,9 @@
         <action
             android:id="@+id/action_settingsFragment_to_keyCustomizationFragment"
             app:destination="@id/keyCustomizationFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_dictSettingsFragment"
+            app:destination="@id/dictSettingsFragment" />
     </fragment>
     <fragment
         android:id="@+id/sidebarSymbolFragment"
@@ -113,6 +116,25 @@
         android:id="@+id/keyCustomizationFragment"
         android:name="com.yuyan.imemodule.ui.fragment.KeyCustomizationFragment"
         android:label="按键客制化" />
+    <fragment
+        android:id="@+id/dictSettingsFragment"
+        android:name="com.yuyan.imemodule.ui.fragment.DictSettingsFragment"
+        android:label="用户词库">
+        <action
+            android:id="@+id/action_dictSettingsFragment_to_importedDictsFragment"
+            app:destination="@id/importedDictsFragment" />
+        <action
+            android:id="@+id/action_dictSettingsFragment_to_phrasesListFragment"
+            app:destination="@id/phrasesListFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/importedDictsFragment"
+        android:name="com.yuyan.imemodule.ui.fragment.ImportedDictsFragment"
+        android:label="导入词库" />
+    <fragment
+        android:id="@+id/phrasesListFragment"
+        android:name="com.yuyan.imemodule.ui.fragment.PhrasesListFragment"
+        android:label="个性化短语列表" />
     <activity
         android:id="@+id/setupActivity"
         android:name="com.yuyan.imemodule.ui.setup.SetupActivity"

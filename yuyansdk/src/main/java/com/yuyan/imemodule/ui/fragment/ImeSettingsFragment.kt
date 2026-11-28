@@ -205,10 +205,10 @@ class ImeSettingsFragment : CsPreferenceFragment() {
                     R.id.action_settingsFragment_to_clipboardSettingsFragment,
                 )
                 addDestinationPreference(
-                    "个性化短语",
-                    "自定义快捷码与常用短语映射",
+                    "用户词库",
+                    "扩展词库导入与个性化短语设置",
                     R.drawable.ic_menu_phrases,
-                    R.id.action_settingsFragment_to_phrasesSettingsFragment,
+                    R.id.action_settingsFragment_to_dictSettingsFragment,
                 )
 
                 // 点击展开【用户数据】选项

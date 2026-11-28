@@ -23,7 +23,7 @@ import com.yuyan.imemodule.database.entry.UserWord
 import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
 import com.yuyan.imemodule.utils.thread.ThreadPoolUtils
 
-@Database(entities = [SideSymbol::class, Clipboard::class, UsedSymbol::class, Phrase::class, SkbFun::class, UserWord::class, QuickPhrase::class], version = 7, exportSchema = false)
+@Database(entities = [SideSymbol::class, Clipboard::class, UsedSymbol::class, Phrase::class, SkbFun::class, UserWord::class, QuickPhrase::class], version = 9, exportSchema = false)
 abstract class DataBaseKT : RoomDatabase() {
     abstract fun sideSymbolDao(): SideSymbolDao
     abstract fun clipboardDao(): ClipboardDao
@@ -71,7 +71,7 @@ abstract class DataBaseKT : RoomDatabase() {
         private val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("DROP TABLE IF EXISTS user_word")
-                db.execSQL("CREATE TABLE IF NOT EXISTS user_word (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, word TEXT NOT NULL, pinyin TEXT NOT NULL, pinyinHead TEXT NOT NULL DEFAULT '', t9 TEXT NOT NULL DEFAULT '', frequency INTEGER NOT NULL DEFAULT 100, time INTEGER NOT NULL DEFAULT 0)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS user_word (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, word TEXT NOT NULL, pinyin TEXT NOT NULL, pinyinHead TEXT NOT NULL DEFAULT '', t9 TEXT NOT NULL DEFAULT '', frequency INTEGER NOT NULL DEFAULT 100, time INTEGER NOT NULL DEFAULT 0, fileName TEXT NOT NULL DEFAULT '', isEnabled INTEGER NOT NULL DEFAULT 1, schema TEXT NOT NULL DEFAULT '全部方案')")
             }
         }
 
@@ -87,6 +87,19 @@ abstract class DataBaseKT : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE user_word ADD COLUMN fileName TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE user_word ADD COLUMN isEnabled INTEGER NOT NULL DEFAULT 1")
+                db.execSQL("ALTER TABLE user_word ADD COLUMN schema TEXT NOT NULL DEFAULT '全部方案'")
+            }
+        }
+
         val instance = Room.databaseBuilder(Launcher.instance.context, DataBaseKT::class.java, "ime_db")
             .allowMainThreadQueries()
             .fallbackToDestructiveMigration()
@@ -96,6 +109,8 @@ abstract class DataBaseKT : RoomDatabase() {
             .addMigrations(MIGRATION_4_5)
             .addMigrations(MIGRATION_5_6)
             .addMigrations(MIGRATION_6_7)
+            .addMigrations(MIGRATION_7_8)
+            .addMigrations(MIGRATION_8_9)
             .addCallback(object : Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
@@ -106,6 +121,7 @@ abstract class DataBaseKT : RoomDatabase() {
                 }
             })
             .build()
+
         private fun initDb() {  // 初始化数据库数据
             runCatching {
                 if (instance.sideSymbolDao().getAllSideSymbolPinyin().isEmpty()) {

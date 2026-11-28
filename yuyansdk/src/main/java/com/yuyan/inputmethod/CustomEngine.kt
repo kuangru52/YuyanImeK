@@ -79,16 +79,29 @@ object CustomEngine {
 
     fun processPhrase(text: String): MutableList<String> {
         val phrases = mutableListOf<String>()
-        val cleanText = text.replace("'", "").trim()
+        val cleanText = text.replace("'", "").replace(" ", "").trim()
         if (cleanText.isNotEmpty()) {
             val lowerCleanText = cleanText.lowercase()
 
-            // 1. 查询用户自造词 (UserWord)，通过内存缓存避免高频按键阻塞 UI 线程
+            val currentLayoutName = when (InputModeSwitcher.skbLayout) {
+                InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN -> "中文 9 键"
+                InputModeSwitcher.MASK_SKB_LAYOUT_LX17 -> "乱序 17"
+                else -> "拼音全键"
+            }
+
+            // 1. 查询用户自造词与扩展词库 (UserWord)，支持按当前键盘方案 (schema) 与 开启状态 (isEnabled) 筛选
             val userWords = userWordCache.getOrPut(cleanText) {
                 runCatching {
-                    DataBaseKT.instance.userWordDao().query(cleanText)
-                        .ifEmpty { DataBaseKT.instance.userWordDao().query(lowerCleanText) }
-                        .map { it.word }
+                    val dao = DataBaseKT.instance.userWordDao()
+                    if (lowerCleanText.length <= 1) {
+                        dao.queryExactByLayout(cleanText, currentLayoutName)
+                            .ifEmpty { dao.queryExactByLayout(lowerCleanText, currentLayoutName) }
+                            .map { it.word }
+                    } else {
+                        dao.queryByLayout(cleanText, currentLayoutName)
+                            .ifEmpty { dao.queryByLayout(lowerCleanText, currentLayoutName) }
+                            .map { it.word }
+                    }
                 }.getOrDefault(emptyList())
             }
             phrases.addAll(userWords)
