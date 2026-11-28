@@ -130,11 +130,11 @@
     <fragment
         android:id="@+id/importedDictsFragment"
         android:name="com.yuyan.imemodule.ui.fragment.ImportedDictsFragment"
-        android:label="导入词库" />
+        android:label="用户词库" />
     <fragment
         android:id="@+id/phrasesListFragment"
         android:name="com.yuyan.imemodule.ui.fragment.PhrasesListFragment"
-        android:label="个性化短语列表" />
+        android:label="用户词库" />
     <activity
         android:id="@+id/setupActivity"
         android:name="com.yuyan.imemodule.ui.setup.SetupActivity"

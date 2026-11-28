@@ -134,7 +134,7 @@ class ImportedDictsFragment : CsPreferenceFragment() {
 
     override fun onResume() {
         super.onResume()
-        (activity as AppCompatActivity).supportActionBar?.title = "导入词库"
+        (activity as AppCompatActivity).supportActionBar?.title = "用户词库"
         onCreatePreferences(null, null)
     }
 

@@ -14,6 +14,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.database.DataBaseKT
@@ -72,6 +73,12 @@ class PhrasesListFragment : CsPreferenceFragment() {
             (button.parent as? ViewGroup)?.removeView(button)
         }
         fab = null
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as AppCompatActivity).supportActionBar?.title = "用户词库"
+        onCreatePreferences(null, null)
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
